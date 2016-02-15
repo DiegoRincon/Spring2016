@@ -51,7 +51,7 @@ public class Retriever {
 			Document d = indexSearcher.doc(docId);
 			String title = d.get(Indexer.TITLE);
 			String filename =  d.get(Indexer.FILENAME);
-			System.out.println(String.format("<p>%d: %s \t %s<p>", in, title, filename));			
+			System.out.println(String.format("<p><b>%d: %s</b><br \\> %s<p>", in, title, filename));			
 		}
 	}
 	
