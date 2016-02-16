@@ -32,18 +32,18 @@ public class Servlet extends HttpServlet {
 		   // Echo client's request information
 		   String query = request.getParameter("query");
 		   out.println("<p>Your query was: " + query + "</p>");
-//		   try {
+		   try {
 			   String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
 			   Path indexerPath = Paths.get(indexerPathString);
 			   if (Files.notExists(indexerPath)) {
 				   String dataPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.DATA_DEFAULT);
 				   new Indexer().go(indexerPathString, dataPathString);
 			   }
-//			   String results = new Retriever().go(Indexer.INDEXER_DEFAULT_NAME, query);
-//			   out.println(results);
-//		   } catch (ParseException e) {
-//			   e.printStackTrace();
-//		   }
+			   String results = new Retriever().go(indexerPathString, query);
+			   out.println(results);
+		   } catch (ParseException e) {
+			   e.printStackTrace();
+		   }
 		   out.println("</body>");
 		   out.println("</html>");
 	   } finally {
