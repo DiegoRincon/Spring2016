@@ -79,7 +79,7 @@ public class Indexer {
 		if (title != null) {
 			doc.add(new TextField(TITLE, this.htmlParser.getTitle(file), Field.Store.YES));
 		}
-		doc.add(new StringField(FILENAME, file.getCanonicalPath(), Field.Store.YES));
+		doc.add(new StringField(FILENAME, file.getPath(), Field.Store.YES));
 		writer.addDocument(doc);
 	}
 	
