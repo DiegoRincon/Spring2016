@@ -12,10 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 public class Servlet extends HttpServlet {
-   private static final long serialVersionUID = 8778174121968337225L;
+	private static final long serialVersionUID = 8778174121968337225L;
+	private static final String SEARCH_FORM = "<form method=\"get\" action=\"search\">"
+			+ "<input type=\"text\" name=\"query\" />"
+			+ "<input type=\"submit\" value=\"search\" />"
+			+ "</form>";
 
-   @Override
-   public void doGet(HttpServletRequest request, HttpServletResponse response)
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
 		   throws IOException, ServletException {
 	   // Set the response message's MIME type
 	   response.setContentType("text/html;charset=UTF-8");
@@ -29,6 +33,7 @@ public class Servlet extends HttpServlet {
 		   out.println("<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
 		   out.println("<title>Search Results</title></head>");
 		   out.println("<body>");
+		   out.println(SEARCH_FORM);
 		   // Echo client's request information
 		   String query = request.getParameter("query");
 		   out.println("<p>Your query was: " + query + "</p>");

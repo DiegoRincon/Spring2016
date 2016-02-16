@@ -48,14 +48,14 @@ public class Retriever {
 		TopDocs docs = TopDocs.merge(10, docsArray);
 		int in = 0;
 		StringBuffer result = new StringBuffer();
-		result.append("<h3>Results:</h3><br />");
+		result.append("<h3>Results:</h3>");
 		for (ScoreDoc doc : docs.scoreDocs) {
 			in++;
 			int docId = doc.doc;
 			Document d = indexSearcher.doc(docId);
 			String title = d.get(Indexer.TITLE);
 			String filename =  d.get(Indexer.FILENAME);
-			result.append(String.format("<p><b>%d: %s</b><br \\> %s<p><br />", in, title, filename));
+			result.append(String.format("<p><b>%d: %s</b><br \\> %s<p>", in, title, filename));
 			System.out.println(String.format("<p><b>%d: %s</b><br \\> %s<p>", in, title, filename));			
 		}
 		return result.toString();
