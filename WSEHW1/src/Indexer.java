@@ -21,16 +21,14 @@ public class Indexer {
 	public static final String CONTENTS = "contents";
 	public static final String FILENAME = "filename";
 	public static final String TITLE = "title";
+	public static final String INDEXER_DEFAULT_NAME = "indexer";
+	public static final String DATA_DEFAULT = "data";
 	
 	public Indexer() {
 		this.htmlParser = new HTMLParser();
 	}
 	
-	public void go(String[] args) throws IOException {
-		//Create Lucene Index in this Dir
-		String indexDir = args[0];
-		//Index files in this directory
-		String dataDir = args[1];
+	public void go(String indexDir, String dataDir) throws IOException {
 		
 		long start = System.nanoTime();
 		int numIndexed = index(indexDir, dataDir);
@@ -60,7 +58,7 @@ public class Indexer {
 		for (File file : files) {
 			if (file.isDirectory()) {
 				indexDirectory(writer, file);
-			} else if (file.getName().endsWith(".html")) {
+			} else if (file.getName().endsWith(".html") || (file.getName().endsWith(".htm"))) {
 				indexFile(writer, file);
 			}
 		}
@@ -92,7 +90,7 @@ public class Indexer {
 		}
 		
 		try {
-			new Indexer().go(args);
+			new Indexer().go(args[0], args[1]);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
