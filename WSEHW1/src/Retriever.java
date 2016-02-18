@@ -68,7 +68,7 @@ public class Retriever {
 		try {
 			if (args.length < 2) {
 				System.err.println("Usage: <indexerDir> <query>");
-				System.exit(0);
+				System.exit(1);
 			}
 			String indexerDir = args[0];
 			String[] queryArgs = Arrays.copyOfRange(args, 1, args.length);
