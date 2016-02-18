@@ -29,8 +29,7 @@ public class Retriever {
 		}
 		queryString.trim();
 		if (queryString.length() == 0) {
-			System.out.println("Query is empty");
-			return "<h3>No results were found</h3>";
+			return null;
 		}
 		System.out.println("Searching for " + queryString);
 		Path indexPath = Paths.get(indexerName);
@@ -46,26 +45,33 @@ public class Retriever {
 		TopDocs titleDocs = indexSearcher.search(titleQuery, 10);
 		TopDocs[] docsArray = {contentsDocs, titleDocs};
 		TopDocs docs = TopDocs.merge(10, docsArray);
-		int in = 0;
+		int resNum = 0;
 		StringBuffer result = new StringBuffer();
+		if (docs.scoreDocs.length == 0) {
+			result.append("<h3>No results were found</h3>");
+			return result.toString();
+		}
 		result.append("<h3>Results:</h3>");
 		for (ScoreDoc doc : docs.scoreDocs) {
-			in++;
+			resNum++;
 			int docId = doc.doc;
 			Document d = indexSearcher.doc(docId);
 			String title = d.get(Indexer.TITLE);
 			String filename =  d.get(Indexer.FILENAME);
-			result.append(String.format("<p><b>%d: %s</b><br \\> %s<p>", in, title, filename));
-			System.out.println(String.format("<p><b>%d: %s</b><br \\> %s<p>", in, title, filename));			
+			result.append(String.format("<p><b>%d: %s</b><br \\> %s<p>", resNum, title, filename));
+			System.out.println(String.format("<p><b>%d: %s</b><br \\> %s<p>", resNum, title, filename));			
 		}
 		return result.toString();
 	}
 	
 	public static void main(String[] args) {
 		try {
-			String indexerName = args[0];
+			if (args.length < 2) {
+				System.err.println("Usage: <indexerDir> <query>");
+			}
+			String indexerDir = args[0];
 			String[] queryArgs = Arrays.copyOfRange(args, 1, args.length);
-			new Retriever().go(indexerName, queryArgs);
+			new Retriever().go(indexerDir, queryArgs);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {

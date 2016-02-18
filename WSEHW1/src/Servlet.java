@@ -45,7 +45,9 @@ public class Servlet extends HttpServlet {
 				   new Indexer().go(indexerPathString, dataPathString);
 			   }
 			   String results = new Retriever().go(indexerPathString, query);
-			   out.println(results);
+			   if (results != null) {
+				   out.println(results);
+			   }
 		   } catch (ParseException e) {
 			   e.printStackTrace();
 		   }

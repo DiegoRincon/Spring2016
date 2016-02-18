@@ -85,7 +85,7 @@ public class Indexer {
 	
 	public static void main(String[] args) {
 		if (args.length != 2) {
-			System.err.println("Usage...");
+			System.err.println("Usage: <indexDir> <dataDir>");
 			System.exit(1);
 		}
 		
