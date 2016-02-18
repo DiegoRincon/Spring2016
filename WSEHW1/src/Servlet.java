@@ -14,7 +14,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 8778174121968337225L;
 	private static final String SEARCH_FORM = "<form method=\"get\" action=\"search\">"
-			+ "<input type=\"text\" name=\"query\" />"
+			+ "<input type=\"text\" name=\"query\" required />"
 			+ "<input type=\"submit\" value=\"search\" />"
 			+ "</form>";
 
