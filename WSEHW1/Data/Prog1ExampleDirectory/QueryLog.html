@@ -1,0 +1,629 @@
+<TITLE> Query Log Mining </TITLE>
+<H2> Query Log Mining </H2>
+
+<H3> Query Log Mining </H3>
+
+
+<p>
+<A href="http://didawiki.cli.di.unipi.it/lib/exe/fetch.php/wma/paper.pdf">
+Mining query logs: Turning search usage data into knowledge</A>
+Fabrizio Silvestri. Book length survey. Lots of material. Technical
+presentation is not always very clear, so you often have to go back
+to the original paper. But generally an amazing source. 
+
+<p> 
+<a href=i
+"http://facweb.cs.depaul.edu/mobasher/classes/ect584/papers/cms-kais.pdf">
+Data Preparation for Mining World Wide Web Browsing Patterns </A> 
+Cooley, Mobasher, and Srivastava
+
+<A href=
+"http://www.hangli-hl.com/uploads/3/1/6/8/3168008/sigir_2012_intent_mining.pdf">
+Mining Query Subtopics from Search Log Data</A>  Yunhua Hu et al. (2012) SIGIR. 
+
+<p>
+<A href="http://citeseer.ist.psu.edu/447490.html">
+Mining Web Logs to Improve Website Organization </A>
+Ramakrishnan Srikant and Yinghui Yang
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=956866">
+Query expansion using associated queries </A>
+Bodo Billerbeck et al., CIKM 2003.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1458217">
+Search advertising using web relevance feedback</A>
+Andrei Broder et al., CIKM 2008.
+
+<H3> Data sources </H3>
+(Cooley, Mobasher, and Srivasta)
+
+<H4> Server Log</H4>
+Most common source.
+<UL>
+<LI>IP address of user.
+<LI>Userid (not always available)
+<LI>Time
+<LI>Method/URL/Protocol e.g. "GET A.html HTTP/1.0"
+<LI> Status (200, 404, etc.)
+<LI> Size (Bytes)
+<LI> Referred
+<LI> Browser used.
+</UL>
+
+
+
+
+<p>
+Difficulties and limitations
+<UL>
+<LI> Only data for the one server.
+<LI> Data cleaning. Eliminate requests from robots.  Well-behaved robots
+either declare themselves as such, or start out by requesting "robots.txt".
+Badly behaved robots can sometimes be detected by various patterns:
+<UL>
+<LI> Temporal patterns.  E.g. large number of pages downloaded every night
+at midnight.
+<LI> Searching patterns. Breadth-first search, or patterns that resemble
+those of known robots.
+</UL>
+<LI> Cached pages. Can be solved using cache busting. E.g. SurfAid
+(IBM) includes in every web pages a Javascript called WebBug. "Every
+time the Web pages is loaded, Web Bug sends a request to the server asking
+for a 1x1 pixel image; the request is generated with parameters identifying
+the Web page containing the script and a random numeric parameter; the overall
+request cannot be cached [either] by the proxy [or] by the browser, but it is
+logged by the Web server so as to solve caching problems." 
+<LI> User identification:
+<UL> 
+<LI> Single IP address, several users: Users communicate through proxy.
+<LI> Multiple IP addresses, one session: Some ISP's do this for privacy.
+<LI> Multiple IP address, one user over time: User uses more than one account.
+</UL>
+Can solve using cookies, or (in large part) using URL rewriting: Whenever the
+server delivers an HTML page, any internal URL's are rewritten to include
+the session ID. Thus, if the user clicks on them, the session can be 
+identified.
+<LI> Boundaries for session. 30 minute timeout.
+<LI> For popular web sites, server logs are immense.  Must often be reduced
+before data mining can be carried out.
+</UL>
+
+<p>
+<b> Reconstructing search path: </b> Pages previously looked at are
+cached at the client side and not recorded in
+server log.  Hence, if user request page A and has previously requested C
+with a link to A, then infer that user has returned to C and followed the link 
+to A. 
+
+<H4> Mining Query Subtopics </H4>
+<A href=
+"http://www.hangli-hl.com/uploads/3/1/6/8/3168008/sigir_2012_intent_mining.pdf">
+Mining Query Subtopics from Search Log Data</A>  Yunhua Hu et al.
+
+<p>
+1. Ambiguous queries. E.g. two people of the same name. <br>
+2. Multifaceted queries. E.g. Purchase, repair, company information etc.
+
+<p>
+Two principles: <br>
+1. One subtopic per search (OSS). Therefore, if a user clicks multiple 
+URLs on a result page then they probably represent the same subtopic. <br>
+2. Subtopic clarification by additional keyword. Therefore, if a user
+issues a query and then the same query with an additional keyword, and
+then clicks on a page, the keyword probably characterizes the
+subtopic.
+
+<p>
+Cluster URL's and keywords. Each cluster corresponds to a subtopic.
+
+<p> <b> Data set: </b>
+Data set from TREC 2009 diversity task plus a couple of others of
+similar structure.<br>
+Data presented to participants had just the queries to be clustered.
+Gold standard set (test data) was a query log spanning 50 topics 
+hand categorized by topic and subtopic.
+ 
+
+<p>
+OSS rule: The fewer multiple clicks, the more reliable the rule.
+<center>
+<table border=1>
+<tr> <td> # of clicks <td> 2 <th> 3 <td> 4 <td> >= 5 
+<tr> <td> Accuracy <td> 0.902 <td> 0.824 <td> 0.741 <td> 0.683
+</table>
+</center>
+
+The more frequent the multiclick in the log, the more reliable the
+rule. Multiclicks that occur only once have have an accuracy of 0.779;
+multiclicks that occur more than 100 times have an accuracy of 0.88.
+
+<p>
+More common queries have more multiclicks. Of the top 1% of most 
+common queries, 90% have multiclicks. Over all queries, 10% have 
+multiclicks.
+
+<p> <b> Clustering method </b> <br>
+1. Create tree of initial queries and expanded queries. E.g. "harry shum"
+is a parent of "harry shum microsoft". <br>
+2. If there is no URL overlap (no URL's clicked both for both parent and
+child) then assume that this is not actually an  expansion. E.g.
+"hot dog" is not an expansion of either "hot" or "dog";  "fast food" 
+is not an expansion of "fast".
+
+<p> <b> Similarity measure </b>
+Similarity between two URL's is a weighted sum combining 
+(a) occurrence in multiclicks
+(b) sharing expansion terms (c) similarity of the URL's themselves.
+
+<p> <b> Clustering </b>
+Simple agglomerative clustering.
+
+<PRE>
+CLUSTERS = empty;
+for (U in URLs)
+  if (U is similar enough to some cluster C in CLUSTERS)
+     add U to C;
+  else { 
+      create a new cluster C containing U;
+      add C to CLUSTERS
+     }
+</PRE>
+
+<p> <b> Evaluation relative to proposed applications </b>
+1. Search result clustering. <br>
+2. Search result reranking i.e. putting a diverse group at the top. <br>
+Their measurements show that their technique should be helpful
+for both these.
+
+
+
+
+
+
+
+<H4> Server Application </H4>
+<A href="http://citeseer.ist.psu.edu/296142.html"> 
+Integrating E-Commerce and Data Mining: Architecture and Challenges 
+</A> S. Ansari et al.
+
+<p>
+Advantages: Record [description of] dynamically generated content.  
+Sessionize, identify users, using cookies. Save information missing
+from server logs: Stop button, local time of user, speed of user's connection.
+
+<p>
+Disadvantage: Have to either write or modify web server code.
+
+<H4> Proxy server logs</H4>
+Advantage:  many servers, many users (though generally not a representative
+collection of users).
+
+<p>
+Disadvantage: Low quality information.
+
+<H4> Client level </H4>
+Induce client to use "bugged" browser. Get all the information you want 
+(though the analysis of content is generally easier at the server side.)
+
+<p>
+Better yet, you can bug some of their other programs as well and get 
+even more information. E.g. if you monitor the browser, email, and 
+text editing programs, you can see how often the user is stuffing information
+from the browser into email and text files. 
+
+<p>
+Limitations
+<UL>
+<LI> Only certain users. Generally only certain types of users (e.g.
+university personnel), which may not be representative.
+<LI> Just because a browser is looking at a page all night doesn't mean
+a user is looking at the page.
+</UL>
+
+<p>
+Any usage collection runs into privacy issues; the more complete the
+data, the more serious the issue.
+
+<H3> Information to be extracted </H3>
+<p>
+Statistical measures
+<UL>
+<LI> Frequency of access (by page/item/etc.) <br>
+--- by demographic category of user <br>
+<LI> Average view time
+<LI> Average path length
+<LI> Invalid URLs
+<LI> Unexpected/unauthorized entry points
+</UL>
+
+<H3> Applications </H3>
+(Mostly but not entirely from Silvestri)
+<UL>
+<LI> General information about queries
+<LI> User characteristics
+<LI> Improving effectiveness of search engines
+<UL>
+<LI> Query expansion
+<LI> Query suggestion
+<LI> Personalized results
+<LI> Learning the ranking function / Search engine evaluation
+<LI> Query spelling correction 
+</UL>
+<LI> Improving efficiency of search engine
+<UL>
+<LI> Caching
+<LI> Partitioning the index. However, I did not understand a word of this.
+</UL>
+<LI> (Srikant and Yang) Web page organization
+<LI> (Broder) Advertisements
+</UL>
+
+<H4> Information about queries </H4>
+Distribution: Follows a power-law distribution with exponent 2.04. That is
+the Kth most popular query has frequency proportional to 
+(K+C)<sup>-2.04</sup> where C is a constant. Small number of queries account
+for most of the volume; large number of rare queries (long tail).
+
+<p>
+Subject matter: Remarkably unstable over time. See Silvestri.
+
+<p>
+Spatial demographic tracking. E.g. Famous Google tracking of swine flu of 2009
+in advance of CDC.  (However, that stopped working after the first two years:
+see 
+<A href="http://www.nature.com/news/when-google-got-flu-wrong-1.12413">
+When Google got flu wrong </A>, Declan Butler, <em>Nature</em>.)
+GooAgle trends. 
+
+
+<p>
+Associations (Cooley etc.)
+<UL>
+<LI> Correlation of pages / association rules
+<LI> Sequence rules.
+<LI> Cluster of pages
+<LI> Collaborative filtering pages/users.
+<LI> Cluster transactions.
+</UL>
+
+<p>
+Search patterns and paths.
+
+<H3> Mining techniques </H3>
+
+Statistical analysis, classification techniques, clustering, 
+Markov models, sequential patterns. 
+
+
+
+<p>
+Association rules: <br>
+Examples from 1996 Olympics Web site: (Cooley et al.) <br>
+Indoor volleyball =&gt Handball (Confidence: 45%) <br>
+Badminton, Diving =&gt Table Tennis (Confidence: 59.7%)
+
+<p>
+Sequential patterns:
+Atlanta home page followed by Sneakpeek main page (Support: 9.81%)
+Sports main page followed by Schedules main page (Support: 0.42%)
+
+<H4> User characteristics </H4>
+General characteristics:  Users mostly (78%) of the time only look
+at the first page of results. The conditional probability that they look
+at the K+1st given that they've looked at the Kth is an increasing function
+of K.
+
+<p>
+Statistics on re-retrieval: submitting the same query some time apart.
+
+
+<p>
+Relate web activities to user profile. <br>
+E.g. 30% of users who ordered music are 18-25 and live on the West Coast.
+
+<H4> Query expansion </H4>
+Adding terms to a query to gain precision. Variant of relevance feedback.
+
+<p> <b> Digression on relevance feedback </b>
+Old IR technique. (MR&S, chapter 9)
+
+<p>
+[Standard} relevance feedback: User does a query, gets documents back,
+marks some of them as relevant (or is observed clicking through to some
+of them).  Words that are common in the relevant document are added to the
+query, and the modified query is reissued.
+
+<p>
+In a Boolean model, OR'ing them improves recall and AND'ing them improves
+precision. In a vector model adding these tends to improve both recall (because
+a new relevant document may match words in the marked documents which were
+not in the query, such as synonyms) and precision (because words associated
+with unintended meanings of the query words, or unintended classes of documents
+will tend to be disfavored).
+
+<p>
+[Ordinary] pseudo-relevance feedback or blind relevance feedback: There is
+no actual feedback from the user; rather, the common words in <em> all </em>
+the retrieved documents are added to the query and the query is reissued.
+<p>
+This can also often improve retrieval.  Suppose that 50% of the documents
+retrieved are relevant to the intended subject and 50% are irrelevant, but
+deal with a variety of different subjects. (This is particularly apt to
+happen with multi-word queries.) Then the words that are common in many of
+the retrieved documents will be those that are actually relevant to the
+intended subject, and again, in a vector model, both recall and precision will
+go up in the modified query.
+
+<p>
+Has to be used with care with web search engines, because they are generally
+more unhappy with really long queries than conventional IR engines,
+<p>
+<b> End of digression </b>
+
+Getting back to query logs. Billerbeck et al. do query expansion using
+associated queries:
+
+<p>
+<b>Offline:</b> With each document D, associate the list of query words
+Q for which D is on the results page. (Note that this is different from
+the words in D, because these are drawn from the space of queries that
+people actually ask).
+
+<p>
+<b> Query Time:</b>
+<UL>
+<LI> 1. User issues query Q.
+<LI> 2. Search engine returns set of pages P.
+<LI> 3. Combine the queries associated with pages in P. 
+<LI> 4. Use the most important terms in these to expand Q.
+</UL>
+
+
+
+<H4> Query suggestion </H4>
+Suggest alternative query to user. If a lot of previous user first issue
+Q1 then Q2, and current user has issued Q1, suggest Q2. Various ways
+to implement this.
+
+<H4> Personalized results </H4>
+Rerank search results corresponding to user tastes as gathered from a
+query log. Method described in Silvestri from Liu is very complicated,
+but basically you have a fixed set of categories, you categorize web
+pages off-line, you learn what categories a user is interested using a
+moving time window (because tastes change), and you give extra ranking
+points to categories the user likes. 
+
+<p>
+Alternative, by Boydell and Smith, is to rerank on the client side using
+the information in the snippets rather than the full documents.  Safer
+in terms of privacy.
+
+
+
+
+<H4> Learning the ranking function / Search engine evaluation </H4>
+Essentially, learning comes down to evaluation. I discussed this in
+the evaluation lecture, but Silvestri has some more details. 
+
+<p>
+Interesting
+statistic from Joachims and Radlinksi: 
+In a test on results from a search engine, people click on the first 
+result 40% of the time and on the second about 10% of the time. If
+you swap the top two results, then they click on the first 30% of the time
+and still click on the second 10% of the time. Eyetracking shows that they're
+looking at both, so it isn't that they aren't looking at the second.
+<p>
+The point is that there is a strong bias toward clicking on results early
+in the page, so in evaluation, it is not even close to safe to say that
+a page is more relevant if it is clicked on than if it is not. If you do
+that, you just endorsing whatever order the search engine has already
+generated.
+<p>
+What you can say is that if A comes <em> after</em> B on
+the results page, and the user clicks on A but not B then on average
+A is more relevant than B. Using that fact, or variants, you can
+come up with an evaluation of search engine results from query logs,
+and thus with weights on the ranking function that optimize that evaluation.  
+
+<H4> Query spelling correction  </H4>
+Query spelling correction is similar to query suggestion. If query Q1 
+is frequently followed by query Q2 in the query logs, and Q1 is plausibly a 
+misspelling of Q2, then in future suggest Q2 as a correction for Q1. 
+"Plausibly a misspelling" can be much looser here than in a context without
+query logs. Phonetic similarity. Note that the correction may involve
+changing the number of words; users may have combined two words or split
+a single word.
+
+<H4> Caching </H4>
+<b>I. What do you cache?</b>
+<UL>
+<LI> Results.
+<LI> Partial results. ? Silvestri does not explain, and it is not obvious to
+me what this means.
+<LI> Posting lists; i.e. the complete inverted file entry for a given query 
+word.
+</UL>
+Answer: You do all three.
+
+<p>
+<b>II. Cache replacement strategies</b>
+<UL>
+<LI> Least recently used (LRU). Purely dynamic.
+<LI> Purely static: Keep the most commonly accessed information in the cache,
+regardless of the current query stream. Note the use of query logs.
+<LI> Combine these in various ways in more complicated schemes.
+<LI> Posting lists are of varying lengths; the more common a word, the longer
+the posting list. Therefore, static policy gives priority to a page based on
+[frequency of term in query log] / [length of posting list]
+</UL>
+Cache miss frequency is not the only issue. A disadvantage of a dynamic
+scheme is that, since parallel processes are accessing the cache, 
+you need to enforce a mutex, which slows things down. (I would have thought
+that you could get away with a single <em> write </em> process and avoid
+the need for mutex, but Silvestri says not, so I believe him.) 
+
+<p>
+<b>III. Prefetching</b>
+For K >= 2, if a user asks for the Kth result page, he will probably ask for
+the K+1st. (Emphatically not true for K=1). So once the user asks for
+the Kth page, you can prefetch (i.e. precompute and store in the cache) 
+the K+1st results page.
+
+<H4> Web Site Reorganization </H4>
+Srikant and Yang.
+
+<p>
+Insight: If a user searches down a hierarchy to index page B, backtracks, and 
+then ends up at target page T, and T is the first target page looked at
+in the search, then it seems likely that the user expected to find T under B,
+and therefore one can suggest that it might be good to add a link from B to T.
+
+<p>
+Test case: Wharton School of Business web site. The web site has 240 leaf 
+pages.  Based on 6 days worth of server logs with 15,000 visitors and 
+3,000,000 records (200 records per visitor seems like a large number, but of 
+course that includes imbedded image files and other junk), the program 
+suggested new links for 25 pages.
+Some examples:
+
+<p>
+Visitors expect to find the answer to "Why choose Wharton?" under
+"Student to Student Program's Question and Answer Session" directory 
+instead of 
+"Student to Student Program's General Description" 
+<p>
+Visitors expect to find "MBA Student Profiles" under "Student"  instead of 
+"MBA Admission".
+<p>
+Visitors expect to find "Calendar" under "Programs" instead of "WhartonNow".
+<p>
+Visitors expect to find "Concentrations" and "Curriculum" under "Students"
+instead of "Programs" (less convincing).
+
+<p>
+The program also made 20 other suggestions.
+
+
+
+<H4> E-commerce </H4>
+I couldn't find any good papers on this.  But I'd guess the main applications 
+are:
+
+<p>
+<b> Customer Profiling: </b> You can find out what kind of customers are
+buying what kind of items if you can get demographic information (which,
+apparently, you often can get just by asking --- one writer was shocked at
+how readily online shoppers provided personal information that the company
+had no business asking.) 
+
+<p>
+<b> Advertisement placement </b> (my own guess). The "referred" place in
+the server log tells you what advertisements are attracting what kind of 
+business.
+
+<H3>
+<A href="
+http://www.patrickpantel.com/download/papers/2012/acl12.pdfr":>
+Mining Entity Types from Query Logs via User Intent Modeling.
+</A>  </H3> 
+
+
+
+<H3>
+<A href=
+"http://www.hangli-hl.com/uploads/3/1/6/8/3168008/sigir_2012_intent_mining.pdf">
+Mining Query Subtopics from Search Log Data</A> </H3>
+
+<!--
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=837227">
+Mining Client-Side Activity for Personalization </A>
+K. Fenstermacher, M. Ginsburg
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=767194">
+The use of web structure and content to identify subjectively interesting web usage patterns </A>
+R. Cooley
+
+<p>
+<A href="http://citeseer.ist.psu.edu/453404.html">
+Extending Recommender Systems: A Multidimensional Approach  </A>
+Gedas Adomavicius and Alex Tuzhilin
+
+
+<p>
+<A href="http://citeseer.ist.psu.edu/467120.html">
+Using Site Semantics to Analyze, Visualize, and Support Navigation </A>
+Bettina Berendt. --->
+
+
+<H4> Other reading </H4>
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1772806">
+Caching search engine results over incremental indices
+</A> Roi Blanco et al., WWW-10.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=954341">
+A Survey of Web Cache Replacement Strategies</A>
+Podlipnig and Boszormenyi
+
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1458082.1458147">
+Mining search association patterns from search logs </A>
+Xuanhui Wang and  ChengXiang Zhai, CIKM 2008
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1645966">
+Analyzing and evaluating query reformulation strategies in web search
+logs</A>
+Jeff Huang and Efthimis Efthimiadis, CIKM 09.
+
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1772780">
+Web Search Result Diversification, </A> Rodrygo L.T. Santos, Craig
+Macdonald, Iadh Ounisr. WWW 10.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1534545">
+Architecture of the Internet Archive </A>
+Elliot Jaffe and Scott Kirkpatrick, SYSTOR '09.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1379098">
+What can history tell us?: Toward different models of interaction with 
+document histories </A> Adam Jatowt et al., HT '08.
+
+
+
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1451987">
+Query-log mining for detecting spam </A> 
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1772925">
+Web search/browse log mining: challenges, methods, and applications</A>
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1871583">
+Temporal query log profiling to improve web search ranking </A>
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1409224">
+Learning about the world through long-term query logs </A>
+
+<p>
+<A href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4292009&tag=1">
+Search Engines that Learn from Implicit Feedback </A>
+Thorsten Joachims and Filip Radlinkski, <em> Computer</em> August, 2007.
+<!--
+<a href="http://portal.acm.org/citation.cfm?id=1066379">
+Mining interesting knowledge from weblogs: a survey </A>
+Federici M. Facca, and Pier Luca Lanzi
+-->

@@ -1,0 +1,261 @@
+<TITLE> Web Search Engines: Lecture 3. Indexing and Query Engines </TITLE>
+
+<H2> Web Search Engines: Lecture 3. Indexing and Query Engines </H2>
+
+
+<H3> Required Reading </H3>
+CM&S chap. 5
+
+<H3> Additional reading </H3>
+MR&S chaps 4 and 5, secs 20.3-20.4 <br>
+BC&C, chaps 2, 4-6 is a <em>very</em> detailed discussion of
+data structures and algorithms for inverted indexes. But this is mostly 
+addresed to smaller collections, so I'm not sure to what extent these
+algorithms apply to web search.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1132959">
+Inverted files for text search engines </A> by Justin Zobel and
+Alistair Moffat, ACM Computing Surveys, vol. 38, no. 2, 2006,  <br>
+<A href="http://csdl.computer.org/dl/mags/mi/2003/02/m2022.pdf">
+Web Search for a Planet: The Google Cluster Architecture </A>
+by Luiz Andr&eacute; Barroso et al., IEEE Micro, 2003, vol. 23, pp. 22-28. <br>
+
+<A href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4221649">
+Challenges on Distributed Web Retrieval </A> by R. Baeza-Yates et al. 
+Data Engineering, 2007. <br>
+<A href=
+"http://www.morganclaypool.com/doi/abs/10.2200/S00193ED1V01Y200905CAC006">
+<em> The Data Center as a Computer: An Introduction to the Design of
+Warehouse-Scale Machines</em></A>, by Luiz Andr&eacute; Barroso and 
+Urs H&ouml;lzle, Morgan and Claypool, 2009.
+
+
+
+
+<H3> What information is indexed? </H3>
+<UL>
+<LI>
+<b> Index (Inverted file) </b> 
+For each term, record: Document. For each document, record:
+relevance measure, list of occurrences/use in anchor. Occurrences
+may be identified by byte (for indexing into cache copy); by word
+(for word-based proximity) and/or by structure key (for structural
+proximity).
+<LI>
+<b> Document file </b>
+Document ID. URLs. Outlinks. Inlinks. Query independent measure. Metadata:
+language, format, date, frequency of update, etc.
+<LI>
+<b> Document cache </b> for snippet and perhaps exact phrase.
+<LI>
+<b> Lexicon </b>
+For each word: related words with scores of degree of relatedness.
+<LI> 
+<b> Results cache:</b>
+The complete results page is cached for the K most popular queries, for some
+fairly large value of K. 
+(How this interacts with personalization, I don't know.)
+Google Instant is presumably also run off this cache. Each prefix links
+to associated results page.
+</UL>
+
+
+<H3> File structure for inverted index</H3>
+Hash table: Fast add, retrieve.  Does not support search by
+word prefix with wildcard.
+<p>
+B-tree, indexed by word. Logarithmic add, retrieve. Supports search
+by word prefix.
+<p>
+Trie. Not usable on disk.  Useful in-memory data structure while 
+compiling index.
+
+<H3> Order of docs for word W in document list. </H3>
+Order by DOC ID: Fast merging. <br>
+Order by relevance score:  Fast retrieval for single-word query. <br>
+Supplement by hash-table for W,D pair. <br>
+Google: Two lists: high-relevance and low-relevance, each sorted
+by Doc. ID.
+
+
+<H3> Distributed index </H3>
+<p>
+A. Divide by term.  Each documents generates set of word lists for each
+server.
+Queries with 1 word, or all words on same server
+are in luck.  Query involving multiple words on multiple servers:
+Wordlists must be retrieved to single machine, merging performed
+there.
+
+<p>
+B. Divide by document.  Each document goes to one index builder.
+Query is sent to all  servers, answers are
+merged in decreasing order. This is what is done in practice.
+
+<H3> Skip pointers </H3>
+See CM&S section 5.4.7 (pp. 151-154)
+
+
+<H3> Compression techniques </H3>
+
+These are important (a) to save disk space
+(b) to reduce disk traffic (c) to improve cache hits. 
+
+
+<H4>Inverted file</H4>
+Gap encoding. If there are N documents and the word appears in P of
+them, then the absolute document index has log N bits, but the
+average gap size is an integer of about size N/P and hence requires
+log N - log P bits. So, e.g. if N = 10 billion (say) and P = 100,000 
+(a pretty rare word, occurring in only 1/100,000 docs) then the listing
+of docs associated with the word is reduced from 33 bits to 17 bits.
+The more common the word, the higher the degree of compression. Also, if
+the distribution is non-uniform, then the savings is greater. E.g.
+suppose that the word appears in documents with ID numbers 1-50,000 and
+9,999,995,000-10,000,000,000. Then gap encoding has 100,000 gaps of size
+1, requiring 1 bit apiece + 1 gap of 10 billion, requiring 33 bits, for
+an average of very slightly more than 1 bit per entry. (Rough approximation,
+but right idea.)
+
+<p>
+Gap encoding of position works in same way. 
+<p>
+Note: it takes a little work to come up with a coding scheme that achieves
+(close to) this compression but still can encode large gaps when needed.
+See references.
+<p>
+Note: These bit-saving techniques cost you at decompression time, because the
+data is split up at the bit level, so you have to do a lot of fiddly bit 
+manipulation. (Also at indexing time, of course, but that doesn't matter
+as much.) However, it is always worth trading off
+a good bit of CPU time to save disk accesses.
+
+
+<p>
+Further compression techniques and more detail in Zobel and Moffat and in
+Witten et. al. <em>Managing Gigabytes</em>. 
+
+<H4> Link database </H4>
+See MR&S section 20.4.
+Here compression matters less, because this hardly involved in query answering
+(only for in-link queries, which are rare). Mostly used for PageRank, 
+which is offline.
+
+<p>
+Exploit two regularities
+<UL>
+<LI> A. The outlinks from page P all tend to go to the same site. Likewise the
+inlinks.
+<LI> B. If page P is close to Q in terms of the web site, then P and Q tend
+to have similar outlink/inlink lists.
+<LI> C. Closeness in web site can be gotten by sorting URL's lexicographically.
+</UL>
+
+So you do the following: <br>
+1. Sort the URL's lexicographically and assign DocID's <br>
+2. Use gap encoding. Because of (A) and (C), the gaps tend to be small. <br>
+3. Record the outlink list from page P as a modification of
+the list for Q, where Q has a doc ID within 7 previous.
+
+<p>
+Using these you can reduce the file to an average of 3 bits per link (as 
+opposed to 33 bits per link for the full DocID of 10 billion docs).
+
+<p align=center>
+<img src="google-arch.gif">
+</p>
+<p align=center>
+Modified from Barroso et al. 2003.
+</p>
+<p>
+Steps in query answering:  (Partly from Barroso, partly conjectural).
+<UL>
+<LI> DNS picks out a cluster geographically close to user.
+<LI> A Google Web server machine (GWS) at the cluster is chosen based on 
+load-balancing.
+<LI> Carry out any unequivocal regularizations (e.g. upper to lower case).
+<LI> Check results page cache. If found, then return cached page.
+<LI> Collect related words, corrected or alternate spellings.
+<LI> Query is sent to index servers.  Each index holds inverted index
+for a random subset of documents. 
+<LI> Index server returns list of docid's,
+with relevance scores, sorted in decreasing order.
+<LI> GWS merges lists, gets overall list sorted by query.
+<LI> Full text of actual documents are divided among file servers.
+GWS sends each file server the query plus the list of docid's on
+that server.
+<LI> File server returns document snippet for that query.
+<LI> GWS assembles summaries, advertisements from ad server, spelling 
+correction suggestions for some depth of results pages (not just first ten
+results).
+<LI> Return to user and save in results page cache.
+</UL>
+
+Note: One can deal with query expansion (by related words) either at query
+time, by expanding the query, or at indexing time, by indexing docs under
+each related word. I find it hard to believe you would do the latter, since
+it costs hugely in space (unless you use shared structures -- not easy
+with disk-based data structures) with little savings of time at query time.
+However, Barroso and Holzle 2007 do mention it as an option.
+
+
+<H3> Query answering on each index server </H3>
+Single term: For each highly relevant doc, combine relevance score with
+query-independent doc score. Sort.
+
+<p>
+Multiple terms T1, T2, ... Tk: For each doc D, do a modified intersection 
+of positional lists to find proximal groups, Boolean combinations. 
+If there is a NOT constraint in query, exclude any doc that violates the
+constraint.
+Compute 
+scores for proximal
+groups, combine with relevance scores for individual word and query
+independent score for D to find overall score for D on Q. Sort.
+
+
+<p>
+Exact phrase: Either proceed as with multiple terms --- better for
+rare combinations of common word ---  or find most unusual
+word in phrase, locate all occurrences, check neighborhood for phrase ---
+better for rare word surrounded by stop words.
+
+<!--
+<p>
+Exact phrase of stop words: The only way I can see to do this is to 
+index every exact phrase of stop words of more than a certain degree of
+rarity, up to a certain length. Of course queries of this kind are 
+very rare, and answers probably don't have to be very accurate. (Certainly
+the <em> order</em> is essentialy meaningless.
+
+ 
+
+<H2> Hardware issues in Google Query Servers </H2>
+(As of 2003). 
+Reliability from replication. <br>
+Multiple clusters distributed worldwide. <br>
+A few thousand machines per cluster. <br> 
+
+
+<p>
+"On average, a single query in Google reads hundreds of megabytes of data
+and consumes tens of billions of CPU cycles. Supporting a peak request
+stream of thousands of queries per second requires an infrastructure
+comparable in size to that of the largest supercomputer installations.
+Combining more than 15,000 commodity-class PC's with fault-tolerant 
+software creates a solution that is more cost-effective than a comparable
+system build out of a smaller number of high-end servers."
+
+
+<p>
+A rack: 40 to 80 custom-made servers. Pretty much typical desktop 
+configuration, except for an unusually large hard drive.
+Server last two or three years; then is outdated by faster machines.
+A comparable array of standard machines costs $7,700 per month.
+`
+<p>
+Cooling: Power density = 400 Watts  / square foot.  <br>
+Commercial data centers generally can handle 70-150 Watts per square foot.
+
+-->

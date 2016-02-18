@@ -1,0 +1,605 @@
+<TITLE> Lecture 6: Collaborative Filtering / Information Extraction</TITLE>
+<H2>Google Business Model </H2>
+<H3> Required reading </H3>
+<A href="http://faculty.ist.psu.edu/jjansen/academic/pubs/jansen_overview_sponosored_search.pdf"> 
+Sponsored search: an overview of the concept, history, and technology</A>
+Bernard J. Jansen and Tracy Mullen, <em> International Journal of
+Electronic Business,</em> 6:2 114-131. <br>
+
+<A href="http://www.jstor.org/stable/30034393"> 
+Internet Advertising and the Generalized Second-Price Auction: Selling
+Billions of Dollars worth of Keywords, </A> 
+Benjamin Edelman, Michael Ostrovsky, Michael Schwartz, 
+<em> American Economic Review,</em> 97:1, March 2007, 242-259. 
+The introductory section and section I (up to the beginning of p. 248)
+are required; the rest is optional.
+
+<H3> More reading </H3>
+<!--
+<A href="http://portal.acm.org/citation.cfm?id=1284321">
+Adwords and generalized online matching,</A>
+A. Mehta et al. <em> JACM,</em> 54:5, October 2007 <br>
+-->
+<A href="http://pages.stern.nyu.edu/~aghose/paidsearch.pdf">
+An Empirical Analysis of Search Engine Advertising: Sponsored Search in
+Electronic Markets, </A> Anindya Ghose and Sha Yang, <em> Management Science
+</em> 55:10, 1605,<br>
+
+<A href="http://googleblog.blogspot.com/pdf/Tuzhilin_Report.pdf">
+The Lane's Gifts vs. Google Report</A> Alexander Tuzhilin<br>
+
+Online Advertising Fraud, by N. Daswani et al. in M. Jakobsson and
+Z. Ramzan (eds.) <em> Crimeware</em> Symantec Press, 2008. Linked from
+<A href="http://www.neildaswani.com/?page_id=15"> Publications --- Neil
+Daswani </A> <br>
+
+<A href="http://www.eecs.berkeley.edu/~emc/papers/issre2009_187.pdf">
+The Goals and Challenges of Click Fraud Penetration Testing Systems,
+</A> Kintana et al. <em> International Symposium on Software Reliability
+Engineering </em> 2009
+<!--
+<A href="http://pages.stern.nyu.edu/~aghose/searchmarkets.pdf">
+Sponsored Search and Market Efficiency </A> Vasant Dhar and Anindya Ghose,
+<em> Information Systems Research</em> 21:4, December 2010, 760-772.
+-->
+
+<H3> Sponsored links </H3>
+The opposite is "algorithmic" or "organic" results.
+<H4> Mode of payment </H4>
+<UL>
+<LI> Cost per impression (or per mille -- i.e. thousand impressions). 
+Advertiser pays every time an ad appears on a results 
+page. Analogous to advertisement in traditional media, though more 
+precise.
+<p>
+Technically trickier than one might suppose; e.g. you have to disable
+caching.
+<LI> Cost per click. Advertiser pays every time searcher clicks on their
+ad. As far as I know, all search engines currently use this (certainly Google,
+Yahoo).
+<LI> Cost per action. Advertiser pays every time searcher clicks on ad
+and then buys product. Proportional to cost of product. Used in link to
+amazon program.
+</UL>
+
+Different risk and (though not mentioned in the articles I've seen)
+with trust: With CPI, the risk is taken by the sponsor, and the sponsor must
+trust the search engine. With CPA, the risk is taken by the search engine,
+and the search engine must trust the sponsor. With CPC, both sides
+can (to some degree) verify and the risk is divided. Thus, with CPC, the
+search engine has a strong direct incentive to place the ads correctly, whereas
+with CPI it has only a weaker incentive. 
+
+<p>
+Also, cost per action only works for items that people buy over the internet,
+not for large-ticket items (cars) or small-ticket item (soap, soft drinks).
+
+
+<H4> Bids placed on </H4>
+Query words, time period, geographical location. Query specification
+can be somewhat complex; e.g. if you are selling chocolate truffles, 
+you can bid on queries containing "truffle"
+but not on queries containing "truffle (not chocolate)".  Total budget.
+Auction carried out on each individual query. (Cached for common queries?
+Not sure that it would be practical). 
+
+<p>
+Not clear to me what the agreed on matching criterion is: whether it is
+the generalized Google match, which will presumably work better, but is
+opaque, or precise match, which is transparent. Also, I don't know how it
+interacts with personalized search.
+
+<H4> AdSense program </H4>
+Sponsored links on the results page comprise Google's <em> AdWords</em> 
+program. In the <em>AdSense</em> program, Google arranges with a publisher
+of a web site to present an ad for a sponsor. This has two forms:
+<UL>
+<LI> AdSense for Search. When a user does a keyword-based search on
+the publishers' site, the results page shows an ad chosen by Google.
+<LI> AdSense for Content. Whenever a user looks at the publisher's page
+they see an ad for a sponsor, labelled "Ads by Google".
+</UL>
+Both Google and the publisher are paid CPC.
+
+<H4> Form of auction </H4>
+(Simplified: We will add a further complexity below). For detailed description,
+examples, see readings.
+<UL>
+<LI> Individually negotiated.
+<LI> First price auction. Everyone submits a bid, slots awarded in descending
+order of bid, bidder pays what they bid. Unstable and subject to bidding
+wars, which actually occurred when Overture used it. 
+<LI> Second price auction. Bidder pays what next highest bidder bid, plus
+$.01. When there is only one slot, this enforces truthfulness; that is, the
+best strategy for each player is to bid what the slot is actually worth to 
+them. When more than one slot, it does not enforce truthfulness.
+<LI> Vickrey-Clarke-Groves auction (VCG). Each player pays the amount
+that the world would be a better place for their opponents if they didn't 
+exist (the "externality they impose"). See Edelman, Ostrovsky, Schwartz, or 
+the 
+<A href="http://en.wikipedia.org/wiki/Vickrey%E2%80%93Clarke%E2%80%93Groves_auction">
+Wikipedia article: Vickrey-Clarke-Groves auction.</A>
+For 1 item, agrees with second price
+auction. Enforces truthfulness. (According to Wikipedia, this is used 
+in stamp collecting auctions and by the NYU law school for course 
+registration.)
+</UL>
+
+VCG is theoretically better than second price auction, but Google etc. still
+use second price auction because:
+<UL>
+<LI> Possibly they make more money (debated).
+<LI> VCG is hard to explain to potential advertisers.
+<LI> Costs of switching over.
+<LI> Not clear that VCG works better in practice.
+</UL>
+
+<H4> Further complexity, at least for Google </H4>
+It is in Google's interest (a) that ads with a high click-through rate are
+ranked highly (more total clicks = more revenue); (b) that ads be relevant
+and sites be high quality (searcher satisfaction means that the searcher
+will continue to use Google).  Therefore, in doing the auction, Google
+does not use the bid as such; for ranking, it multiplies the bid by a 
+"quality score"
+some combination of click-through rate and Google's secret formula. What
+you pay is the actual next lowest bid.
+The
+downside is that Google is now selling a non-transparent item --- that is,
+advertisers don't exactly know how their bid is going to work; this regularly
+leads to discontent. Apparently, this doesn't change the theoretical analysis
+as much as one might suppose.
+
+ 
+
+<H4> Click Fraud </H4>
+In a pay-per-click system, fraudulent clicks aimed at either
+<UL>
+<LI> (a) raising the revenues of the search engine or publisher. Less likely 
+happen with large search engines, because 
+subverting the value of sponsored links is an extraordinarily self-defeating
+strategy for a search engine, though by that argument businessmen would
+always be honest. But it does happen with other publishes via
+AdSense and similar programs. User A with a web site puts an ad for B on
+his web site; if paid CPC, then A has an incentive to click on the ad on
+his own site, or to get his friends to. 
+<LI> (b) maliciously by competitors of the sponsor in order to
+exhaust the advertising budget of the sponsor.
+<LI> (c) maliciously by competitors of the publisher in order to
+created distrust, and to get the sponsor to cancel the ad. This requires
+a very sophisticated attack; it has to get past the search engines filter,
+but look fishy to the sponsor.
+</UL> 
+One estimate: 10-15% of all clicks are fraudulent. Google says that less than 
+10% of all clicks are invalid. But all such estimates are guesstimates
+(Tuzhilin).
+
+<p>
+The problem is that the search engine has no <em> direct</em> incentive to
+eliminate click fraud; quite the reverse. So sponsors always suspect that they
+are doing less than they might about it.
+
+<p>
+(Tuzhilin) If Google and the sponsor could combine information, then
+click fraud would be easier to detect. But the sponsor don't want to
+tell Google which clicks have led to conversions, and Google does not
+tell the publishers which clicks it considered valid and which it
+considered invalid. (When Google tags a click as invalid, the sponsor
+is not billed, but the click goes through to the sponsor's site anyway
+(a) so as not to tip off the fraudster that he has been caught (b)
+so as not to annoy a legitimate user in the case of a false positive.
+
+<p>
+Tuzhilin says, based on confidential information that there is
+a sequence of rather simple filters. These eliminate most click spam
+because most click spam uses pretty simple-minded techniques.
+He thinks Google is doing a reasonable, good-faith effort.
+
+<H2> Collaborative Filtering </H2>
+<H4> More reading </H4>
+
+<A href="http://www.springerlink.com/content/x78806445324k172/">
+Advances in Collaborative Filtering</A>, Yehuda Koren and Robert Bell in 
+F. Ricci et al (eds.) <em> Recommender Systems Handbook</em> Springer 2011.
+
+<p>
+<A href="http://www.springerlink.com/content/l4005r6273419375/">
+Evaluating Recommendation Systems </A>, Guy Shani and Asela Gunawardana,
+in Ricci et al. 2011.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=963772">
+Evaluating collaborative filtering recommender systems </A>
+By Jonathan Herlocker, Joseph Konstan, Loren Terveen, and John Reidl,
+ACM Transations on Information Systems, vol. 22, No. 1, 2004, pp. 5-53.
+Out of date in some respects, but still very thorough in terms of the issues.
+
+<H4> If you really want to read a lot, </H4>
+read the other chapters of
+<em><A 
+href="http://www.informatik.uni-trier.de/~ley/db/reference/rsh/rsh2011.html">
+Recommender Systems Handbook</A></em> F. Ricci et al. Springer 2011.
+
+
+<H3> Recommender Systems </H3>
+Netflix recommends movies to customers. Amazon recommends books.
+Based on:
+<UL>
+<LI> Explicit user ratings.
+<LI> Implicit information from user actions: Browsing, Purchases.
+Note that negative information is only a very slight indicator.
+<LI> External information about items.
+<LI> External information about users? 
+</UL>
+
+<H4> Other applications </H4>
+
+<UL>
+<LI> Alternative view of IR: "Recommend" a document to a query term.
+The advantage of this viewpoint is that it deals directly with synonymy,
+because you recommend doc D to term T1 if D is recommended to terms similar
+to T1.
+<LI> Personalized search: "Recommend" a document to a user.
+<LI>
+Annotation in context: E.g. labelling all messages in an online discussion
+group for interest to the reader.
+<LI> Find all good items: E.g. find all legal precedents relevant to a given
+case.  Lawyers are willing to spend lots of their time and their clients' 
+money, and deal with a low precision rate, to be sure that they have _all_ the 
+relevant precedents, and are not open to charges of malpractice from having
+missed one.
+<LI> Recommend sequence: Not just individual items, but an order in which
+items may viewed. E.g. launch.yahoo.com recommends a sequence of songs.
+<LI> Browsing. Generate interesting recommendations with useful supporting
+information.
+</UL>
+
+<H3>Neighborhood models </H3>
+Nearest neighbors algorithm. <br>
+User-based vs. Item-based. Start with user-based.
+
+<p>
+To predict user U's evaluation of item V:
+<UL>
+<LI> Find users U1 ... Uk with similar rankings.
+<LI> Have them "vote" on the rating of V.
+</UL>
+Note that to recommend, the task is to find the K highest rated items,
+not to predict the ratings on all movies. This is a somewhat different task.
+
+<P>
+Item-based method is dual: 
+<UL>
+<LI> Find items V1 ... Vk that have been ranked similarly. 
+<LI> Average U's evaluation of V1 ... Vk.
+</UL>
+
+<p>
+Tradeoffs. Let N=number of users and M=number of items; presumably M is 
+substantially less than N.
+<UL> 
+<LI> User-based is probably more accurate. In user-based we have N vectors,
+each M-dimensional; in item-based, we have M vectors each N-dimensional.
+Generally, large number of instances is good; large number of dimensions
+is bad.
+<LI> Item-based is probably more efficient. To get all rankings with 
+user-based using the naive algorithm, you need to compare all 
+N<sup>2</sup>pairs, each over M dimensions, so a running time of 
+O(N<sup>2</sup>M). With item-based, by the same argument, you have a running
+time of
+O(M<sup>2</sup>N), so it is better by a factor of N/M. You can do better
+than the naive algorithm, but the general comparison remains valid.
+<LI> Item-based lends itself to explanation: "We are recommending item V to
+you 
+because
+you liked V1 ... Vk". Whereas the user-based explanation "We are recommending
+I because U1 ... Uk, who have tastes similar to you, liked I" is less 
+satisfying. Explanations increase not only user satisfaction but also
+usefulness of recommendation.
+<LI> Item-based is easily combined with comparisons of items based on
+other kinds of information. This helps with the "cold start" problem
+of recommending a new item that no one has yet rated. Collecting external
+information about users is much more doubtful in terms of predictiveness,
+legality, and good taste.
+</UL>
+
+Alternate to nearest neighbors is clustering: Cluster user by item ratings.
+Predict that U's rating of V will be the average rating of V in U's cluster.
+Or dually cluster items by users. Or do both:
+
+<p> <b> Cluster both movies and users</b> .
+<PRE>
+1. Choose fixed number #V of item clusters and number #U of user clusters.
+2. Form initial clusters based on the ratings vectors.
+3. repeat  {
+4.     for each user U<sub>I</sub>, 
+5.        define a vector UU<sub>I</sub>[1...#M] s.t. 
+6.            UU<sub>I</sub>[J] = number of movies in Jth cluster that U<sub>I</sub> likes;
+7.     cluster the vectors UU<sub>I</sub>; 
+8.     for each movie V<sub>J</sub>, 
+9.        define a vector VV<sub>J</sub>[1...#U] s.t. 
+10.           VV<sub>J</sub>[I] = number of users in Ith cluster that like V<sub>J</sub>;
+       cluster the vectors VV<sub>J</sub>; 
+    }
+11. until nothing changes.
+</PRE>
+
+
+<H3> Singular Value Decomposition </H3>
+Model: There is a set of K item features. Each item is a vector of features;
+V[F] is the degree to which item V possesses F. Each user is a
+vector of features: U[F] is the degree to which user U values F.
+Assume that U's rating of V is approximately the dot product of U dot V
+= &Sigma;<sub>F</sub> U[F] * V[F].
+
+So the idea is
+<UL>
+<LI> Find the K-dimensional vectors U<sub>1</sub> ... U<sub>N</sub>
+and V<sub>1</sub> ... V<sub>M</sub> such that
+R<sub>I,J</sub> (rating) is as close as possible to
+U<sub>I</sub> dot V<sub>J</sub>, in terms of the sum of the squares of
+the errors: <br>
+&Sigma;<sub>I,J</sub> 
+(R<sub>I,J</sub> - U<sub>I</sub> dot V<sub>J</sub>)<sup>2</sup>
+<LI> Estimate unknown value of R<sub>I,J</sub>  as
+U<sub>I</sub> dot V<sub>J</sub>.
+</UL>
+
+<p>
+Algorithm: Iterative, hill climbing. See reading.
+
+<p>
+Mathematical connection:
+<UL>
+<LI> Carry out the SVD decomposition R = L*S*Q.
+<LI> Let L' be the M*K matrix of the first K columns of L. <br>
+Let S' be the K*K matrix in the upper right hand corner of S. <br>
+Let Q' be the K*N matrix of the first K rows of Q.
+<LI> The vectors V<sub>1</sub> ...  V<sub>M</sub> are the rows of L' * S'. <br>
+The vectors U<sub>1</sub> ...  U<sub>N</sub> are the columns of Q'. <br>
+(Alternatively you can associate S' with the U's or you can split it
+between the V's and the U's; it doesn't matter.)
+</UL>
+
+<H3> Temporal issues </H3>
+I.e. recent ratings should count more than older ones. Individual tastes 
+change; fashions change; external events make items popular/important.
+I will not discuss techniques, but see Koren and Bell.
+
+<H3> Evaluation </H3>
+
+<UL>
+<LI> Offline: You have a dataset of user ratings and actions.
+<LI> User studies: Small group of users interact with the system.
+<LI> Online studies: You deploy the system and measure.
+</UL>
+
+
+<H4> Offline evaluation </H4>
+Basic method: Separate out a test set of individual ratings, and see how
+accurately the CF algorithm predicts them.
+
+<p>
+Problems:
+<UL>
+<LI> You can only test the items for which the data set includes ratings.
+These are a highly biased sample of the space of all items. E.g. if people tend 
+to give ratings for items they like, then this measure rewards algorithms
+that give overly favorable ratings.
+<LI> Integrating the temporal dimension is tricky. See Shani and Gunawardana.
+<LI> The task at hand is not actually to predict rating but to recommend
+items. Of course you can simulate which items the system
+would have recommended to a given user at a given point in time, and if
+it turns out that the user actually rated it or bought it, then that is
+a success, but most of the time the user didn't rate or buy it, which can
+hardly be considered a failure.
+<LI> You have a record of what the users did in the <em>absence</em> 
+of the recommender system. What you are interested is what they would have done
+had the system existed. For evaluation, you have to assume these are the
+same, but of course the whole point of the system is that they are
+not the same.
+</UL>
+
+<H4> User Studies </H4>
+Usual pros and cons. Pro: Much more informative data, much more manipulable 
+experiment. Cons: Much higher cost per datum. Also, experimental subjects
+try to please the experimenter, leading to skewed results.
+
+<H4> Online studies </H4>
+Many of same difficulties as in offline studies. You don't dare try out a 
+system whose quality you are not very sure of.
+
+<H4> Inference from positive data </H4>
+In many cases the data set contains only "True" and "Null" e.g. the data
+set of what customers have bought what item. The inference that a null
+item is rejected is extremely weak, though non-zero. The CF <em>algorithms
+</em> actually still work reasonably well, but <em> evaluation</em> becomes
+very problematic; we can't either assume that a null rating is a negative
+rating or evaluate only over positive ratings.
+
+<H4> The sparse data problem </H4>
+Suppose that the users are ranking the items on a scale from 1 to 10, so that
+non-votes and negative votes are no longer confounded.  Still, the data
+is very sparse (most users have not ranked most objects).  This raises
+its own problems for offline evaluation.
+
+<p>
+1. The recorded votes are generally a non-representative sample of all potential
+votes, since users tend to be more interested in ranking items they like
+than items they dislike.  If algorithms are evaluated for their accuracy
+over the recorded votes recorded in the dataset, this creates a bias in 
+favor of algorithms that tend to give unduly many favorable votes. 
+If you try to fix this by treating a non-vote as a somewhat negative vote, then
+that creates a bias in favor of algorithms that tend to produce somewhat 
+negative votes. 
+
+<p>
+2. There are other subtler biases.  For example, suppose that item I has
+only been evaluated by one user U.  What is an algorithm to do about 
+recommending I to other users?  Well, some algorithms will recommend it to users
+who resemble U, some will not, but we have no way to measuring which is
+the better strategy. If [U,I] is in the training set, then we never test
+whether [U1,I] is a valid recommendation, because we don't have its value for
+any U1 != U.  And if [U,I] is in the test set, then we have no basis 
+for recommending it to U, because we have no evaluations of I in the 
+training set.
+
+
+<H4> Beyond accuracy </H4>
+<p><b> Coverage: </b>: <br>
+"Prediction coverage": For what fraction of pairs [U,I] does the system
+provide a recommendation?  <br>
+"Catalog coverage": What fraction of items I are recommended to someone? <br>
+"Useful coverage" (analogous to recall): What is the likelihood that
+an item actually useful to a given user will be recommended to him?
+<p> <b> Learning rate: </b> How soon can the system start to make
+recommendations to a user?
+<p> <b> Novelty: </b>  There is no point to recommending to grocery shoppers
+that they buy milk, bread, and bananas.  There is no point in recommending
+the Beatles "White Album" to music shoppers. If the user has highly rated
+6 books by an author, it doesn't take a lot of brains to recommend the 7th.
+Distinguish novelty from
+serendipity:  A recommendation is serendipitous if the user would have been
+unlikely to find the item otherwise.
+<p> <b> Strength:</b> How much does the system think the user will like the iterm? vs. <br>
+<b> Confidence:</b> How sure is the system of its own recommendation?
+
+<p>
+<b>Trust:</b> The recommender system wants to inspire confidence in itself.
+For that purpose, it actually pays to occasionally recommend items that
+the user already knows about and likes; this works against novelty.
+
+<p>
+<b> User Interface: </b> Additional material about the item (picture, snippet
+etc.); explanation of the recommendation (similar items bought by user etc.)
+
+<!---
+
+
+<H2> Information Extraction </H2>
+General idea: To leverage the redundancy of the web against the difficulty
+of natural language intepretation.  Somebody somewhere will have stated
+the fact you want in a form that your program can recognize.
+
+<p>
+General bootstrapping algorithm:
+<PRE>
+{ EXAMPLES := seed set of examples of the kind of thing you want to collect.
+  repeat { EXAMPLEPAGES := retrieve pages containing the examples in E;
+           PATTERNS := patterns of text surrounding the examples in E
+                         in EXAMPLEPAGES;
+           PATTERNPAGES := retrieve pages containing patterns in PATTERNS;
+           EXAMPLES := extract examples from PATTERNPAGES matching PATTERNS
+         }
+  until (some stopping condition: e.g. enough iterations, enough examples, 
+         some measure of accuracy too low, etc.)
+  return(EXAMPLES)
+}
+</PRE>
+
+<H3> KnowItAll (Etzioni et al.) </H3>
+Task: To collect as many instances as possible of various categories.
+(cities, states, countries, actors, and films.)
+
+
+<p>
+Domain-independent extractor and assessor rules.
+
+<p>
+<b>Extractor rule:</b>
+<PRE>
+Predicate: Class1
+Pattern: NP1 "such as" NPList2 <br>
+Constraints: head(NP1)=plural(label(Class1))
+             properNoun(head(each(NPList2)))
+Bindings: Class1(head(each(NPList2)))
+</PRE>
+
+E.g. For the class "City" the pattern is "cities such as NPList2"
+"cities such as" can be used as a search string.
+The pattern would match "cities such as Providence, Pawtucket,
+and Cranston" and would label each of Providence, Pawtucket, and
+Cranston as cities.
+
+<p>
+<b>Subclass extractors:</b>
+Look for instances of a subclass rather than the superclass.  E.g. it is
+easier to find people described as "physicists", "biologists",
+"chemists" etc. rather than "scientists."
+
+
+<p>
+<b>List extractor rules.</b>
+<UL>
+<LI> Take four instances of the category and search on them. (E.g.
+four known cities.)
+<LI> Find an HTML list containing all four.
+<LI> Predict that the other elements of the list are also instances
+of the category.
+</UL>
+
+<p> <b> Assessor </b> Collection of high-precision, searchable patterns.
+E.g. "[INSTANCE] is a [CATEGORY]" ("Kalamazoo is a city.") There will not
+be very many of these on the Web, but if there are a few, that is 
+sufficient evidence.
+
+<H4> Learning </H4>
+<p>
+<b> Learning synonyms for category names:</b>
+E.g. learn "town" as a synonym for "city"; "nation" as a synonym for
+"country" etc. <br>
+Method: Run the extractor rules in the opposite direction. E.g. Look
+for patterns of the form "[CLASS](pl.) such as [INST1], [INST2] ..."
+where some of the instances are known to be cities.
+
+<p> <b> Learning patterns </b> 
+<UL>
+<LI> 1. Start with a set I of seed instances (e.g. cities).
+<LI> 2. For each instance <em>i</em> in I; Issue a query to a Web 
+search engine for <em>i</em>, and, for each occurrence of <em>i</em> 
+in the returned documents, record a context string of the <em>w </em> 
+words before <em>i</em>, replace <em>i</em> by a place holder,
+and the <em>w</em> words after <em>i</em>.
+<LI> 3. Output the best patterns.  A pattern is a substring of a context
+string that contains the placeholder and at least one other word.
+Use patterns that (a) appear with more than one seed; (b) high precision.
+</UL>
+
+Some of the best patterns learned:
+<BLOCKQUOTE>
+the cities of [CITY] <br>
+headquartered in [CITY] <br>
+for the city of [CITY] <br>
+in the movie [FILM] <br>
+[FILM] the movie starring <br>
+movie review of [FILM] <br>
+and physicist [SCIENTIST] <br>
+physicist [SCIENTIST] <br>
+[SCIENTIST], a British scientist
+</BLOCKQUOTE>
+
+<H4>Learning Subclasses</H4>
+Subclass patterns:
+<BLOCKQUOTE>
+[SUPER] such as [SUB] <br>
+such [SUPER] as [SUB] <br>
+[SUB] and other [SUPER] <br>
+[SUPER] especially [SUB] <br>
+[SUB1] and [SUB2] (e.g. "physicists and chemists")
+</BLOCKQUOTE>
+
+<H4> Learning list-pattern extractors </H4>
+Looks for repeated substructures within an HTML subtree
+with many instances of the category in a particular place. <br>
+E.g. the pattern "<tr> <td> <a ...> CITY </A> </td>" will detect CITY
+as the first element of a row in a table. (Allows wildcards in the
+argument to an HTML tag.)
+Predict that the leaves of the subtree are all instances. <br>
+Hugely effective strategy; increases overall number retrieved by a factor of 7,
+and increases "extraction rate" (number retrieved per query) by a factor
+of 40.
+
+<p>
+Results:
+Found 151,016 cities of which 78,157 were correct: precision = 0.52.
+At precision = 0.8, found 33,000.  At precision = 0.9, found 20,000
+--->

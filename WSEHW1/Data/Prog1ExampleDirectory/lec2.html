@@ -1,0 +1,247 @@
+
+
+<TITLE> Web Search Engines: Lecture 2: Ranking Pages </TITLE>
+<H2> Lecture 2 </H2>
+
+<H3> PageRank </H3>
+<H4> Required reading </H4>
+
+<p>
+Lecture Notes: 
+<A href="http://cs.nyu.edu/courses/spring11/G22.2580-001/linkAnalysis.pdf"> 
+PageRank: Link Analysis for Ranking </A> <br>
+CM&S section 4.5 (link analysis); section 7.1 (Boolean and vector space 
+models).
+
+<H3> Additional Reading </H3>
+MR & S, chaps. 7 and 21. <br>
+<A href="http://dbpubs.stanford.edu/pub/1999-66">
+The PageRank Citation Ranking: Bringing Order to the Web </A>
+by Lawrence Page, Sergey Brin, Rajeev Motwani, and Terry Winograd.
+
+<p>
+E. Davis, <em> Linear Algebra and Probability for Computer Science
+Applications</em> chap 10 through section 10.2, for the setting of
+PageRank in the theory of Markov processes and stationary distributions.
+On the NYU Classes site.
+
+
+<p>
+B. Dean, <A href="http://backlinko.com/google-ranking-factors">
+Google's 200 ranking factors; The complete list </A>. I cannot vouch
+for the accuracy of this, and Mr. Dean does not claim complete accuracy.
+Some of them are redundant; e.g. several of the link measures are aspects
+of PageRank.  This list is addressed to companies that want to raise their
+profile. If anyone has a more reliable
+source, please let me know.
+
+
+<H4> Vector models of documents </H4> 
+<p>
+<b> Readings:</b> CMS 237-243. MRS 110-116. 
+<UL>
+<LI>
+Treat a document as a "bag of words". That is, consider what words are in the
+document and how often they occur (or, more generally, how important they
+are), but ignore order. 
+<LI>
+Consider a vector space of a million or so dimensions, where each dimension
+is one word in the language. 
+<LI>
+Let &#373;<sub>i</sub> be the unit vector for the <em>i</em>th word. <br>
+Let R(&#373;<sub>i</sub>,d) be the importance of word &#373;<sub>i</sub>
+in document d. <br>
+Identify d with the vector &Sigma;<sub>i</sub> R(&#373;<sub>i</sub>,d)
+&middot;&#373;<sub>i</sub>
+<LI>
+For most purposes, normalize document vector by dividing by the length.
+<LI>
+The similarity of two documents is the cosine of the angle between
+them. <br>
+Sim(d,e) = (d/|d|) &middot; (e/|e|).
+</UL>
+
+
+<H3> Query specific relevance </H3>
+<H4> Required reading</H4>
+MRS, chap. 2
+
+<p>
+<b> Note:</b> This is all for English. Other languages can be quite different.
+I'll discuss in a lecture at the end of the semester.
+
+<H4> Vector space theory of relevance </H4>
+Define: Term frequency of word w in document d. TF(w,d) = # of occurrences
+of w in d divided by length of d. <br>
+Inverse document frequency of w in collection c. 
+IDF(w,c) = log(size of c / number of documents in c containing w). <br>
+Define relevance of d to w, R(w,d) = TF(w,d) * IDF(w,c) (known as TF/IDF). <br>
+Use vector model for both document and query. <br>
+Rank results by decreasing similarity of document to query, as defined
+above.
+
+
+
+<p>
+Looking over the formal theories (vector space model, probabilistic models,
+etc.) again preparing this lecture, it seems to me that these can only
+have a remote family resemblance to what is going on in web search engines.
+
+<p>
+The issues are:
+<UL>
+<LI> Where is the text to match against the query taken from? <br>
+Contents of the document. Metainformation in the document. URL. 
+Anchor text on link pointing to the document (e.g. "Japanese car company")
+Text in linking page close to anchor (close in sequence, close in 
+structure, close in layout).
+<LI> How well does a word (or phrase) in the text match the word in the query.
+<UL>
+<LI> What is a term? (below)
+<LI> Regularizing (e.g. case)
+<LI> Stemming (e.g. prefix/suffix deletion)/Lemmatizing. See MRS
+<LI> Synonyms. E.g. Several of the results for the search "Holland population"
+do not include the word "Holland". "The Netherlands" in the text
+matches "Holland" in the query. (Of course, you never know about anchors on
+links).
+</UL>
+<LI> How important is the word in the text? <br>
+Frequency, HTML structure (e.g < TITLE >, < H3 >), font, size, position.
+<LI> How informative is the word? E.g. in the query "the black crow", "crow"
+is very unusual, "black" less so, "the" not at all. A common measure
+is IDF.
+<LI> How important is the word actually to the user? If the user types a
+full question, "How many species of frogs are known?" 
+he probably doesn't actually care if the document contains any of the 
+specific words except "species" and "frogs"
+<LI> Combining multiple words in query.
+<UL>
+<LI> Simple combination.
+<LI> Proximity weighting. Higher points if the words appear close together
+and in the right order.
+</UL>
+</UL>
+
+<H3> What is a term?</H3>
+(Digression: What is a Q has three parts: What things are considered a Q?
+What are the limits of a thing that is considered a Q? Individuation: 
+Whan are two manifestations the same Q, and when are they different? 
+Synchronic vs. diachronic).
+
+<p>
+Obvious answer: Break the text into strings of alphabetic characters, delimited
+by punctuation. Regularize to lower case.
+
+<p> <b> But </b> <br>
+<UL>
+<LI> Internal punctuation. Example from MRS p. 22: 
+"Mr O'Neill thinks that the boys' stories about Chile's capital aren't 
+amusing."
+<LI> Compound words: houseboat = house-boat = house boat.
+<LI> Hyphens: Can join compound words or can be punctuation between words.
+<LI> Multiple word tokens: San Francisco, New York. You don't want 
+"New York University" in text to match a query for "York University".
+<LI> Multiple words interact with hyphens.
+"New York-Los Angeles flights"
+<LI> Abbreviations and acronyms. USA = U.S.A. = usa = U.S. = US != us
+<LI> etc. Some more examples in MRS.
+</UL>
+
+<p>
+Goal: A term T in a query is something that users will use in queries, and it 
+matches term Q in document D to the extent that Q means what the user had in 
+mind.
+
+<p>
+Matching is an assymetric relation between terms in queries and terms in 
+documents because the use is different. E.g. a query for "us" might well mean
+United States because (a) users are lazy about upper case; (b) users
+rarely query on "us" the pronoun. However "us" in document is much less
+likely to mean "United States" because (a) documents (particularly high quality
+documents) are more careful about upper case and (b) "us" the pronoun
+is quite common.
+<H4> Stemming and Lemmatizing </H4>
+Goal: "organizes", "organized", "organizing" should match "organize". <br>
+"organization" should maybe match "organize" but not as well. <br>
+"organize" should definitely not match "organ".
+
+<p>
+<b> Lemmatizing </b> Using detailed linguistic knowledge plus lexicon to
+find the actual root of the word. <br>
+<b> Stemming </b> Approximate lemmatizing by using a comparative simple
+(though complicated enough) set of rules.
+
+<p>
+Strong stemming "impossibilities" => "poss" vs. weak stemming 
+"impossibilities" => "impossibility"
+
+<p> In English, it's hard to demonstrate reliable improvement from 
+stemming/lemmatizing. In languages with more inflection, it's critical.
+
+<H4> Result diversity </H4>
+BCC 455-460.
+
+<p>
+<A href="http://journal.webscience.org/368">
+Increasing Diversity in Web Search Results,</A>
+Dimitrios Skoutas, Enrico Minack, and Wolfgang Nejdl, <em>Web Science</em> 2010.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1498766">
+Diversifying Search Results </A>
+Rakesh Agrawal et al., WSDM 2009.
+
+<p>
+Note the extreme non-diverse result page is just multiple copies of a single 
+page.
+<p>
+Similar problem to clustering, with similar techniques and evaluation
+measures. The differences are:
+<UL>
+<LI> The critical thing is to choose a representative rather than
+identify a set.
+<LI> It is not important to identify the cluster for each page (though one
+can always do that, using the nearest representative).
+</UL>
+Measures of diversity:
+
+<p>
+Let q be query; Rel(d,q) be the relevance of doc d to q;
+L a positive parameter.  <br>
+<p> Dist(d1,d2) = distance between D1 and D2 in the vector model 
+
+<p>
+Skoutas: Distance-based. Choose points far apart but close to the query.
+Choose the set S that maximizes <br>
+&nbsp &nbsp L*min<sub> d in S</sub> Rel(d,q) + min<sub>d1,d2 in S</sub>
+Dist(d1,d2). <br>
+Problem: This favors extreme documents.
+
+<p>
+Skoutas: Coverage-based. Make sure that all relevant document is close to
+some returned document. <br>
+Choose the set S that minimizes <br>
+max<sub>d relevant to Q</sub> Rel(q,d)<sup>L</sup> * Dist(d,nearest doc in S)
+
+<p>
+Agrawal: Choose set S that maximizes the probability that a searcher will
+find some document relevant to their information need. Note that this
+is weighted by number of queries in each category, not by number of documents.
+
+
+
+
+<H4> Personalization</h4>
+There really doesn't seem to be much information about this published. <br>
+<A href="http://en.wikipedia.org/wiki/Google_Personalized_Search"> 
+Wikipedia article </A> <br>
+<A href="http://justinbriggs.org/better-understanding-personalized-search">
+Short article.</A>
+
+<H4> What is a document? </H4>
+MRS p. 20.  A web page. A section of a web page. A web site. <br>
+Web pages themselves are not all that clearly individuated. <br>
+Parts of the content of a web page may not be visible in the browser
+(though present in the HTML) until you click on this or that; hence
+the relevance may be mysterious. 
+

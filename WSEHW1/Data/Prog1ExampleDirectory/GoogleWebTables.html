@@ -1,0 +1,63 @@
+<p>
+<A href="http://www.eecs.umich.edu/~michjc/papers/webtables_vldb08.pdf">
+WebTables: Exploring the Power of Tables on the Web,</A>
+Michael Cafarella et al.
+
+<H3> WebTables </H3>
+Experimental version at this
+<A href="https://research.google.com/tables">
+rather drab web site </A>
+
+<p>
+<b> Objective: </b> Get useful information out of vast number of relational
+tables on Web.
+
+<p>
+14.1 billion HTML tables in English documents in Google index (2008). <br>
+About 154 Million of these are actually relational tables (rest are for 
+formatting etc.)
+<H4> Offline </H4>
+<UL>
+<LI> Extract true relational tables out of HTML tables using features. <br>
+e.g. 1 column or 1 row -- No good. <br>
+columns heterogeneous in type -- probably no good. <br>
+Use ML techniques to build classification filter over similar structural
+features.
+
+<LI>
+Extract metadata: name of attributes. Test on features to determine whether
+first row is list of attributes.
+
+<LI> 
+Construct ACSDb (Attribute Correlation Statistics Database): list of all
+sets of attributes.
+
+<LI>
+Compute absolute probabilities P(a) and conditional probabilities P(a|b) that
+an attribute will appear in a table. 
+
+</UL>
+
+
+<H4> Applications </H4>
+<p>
+<b> Table Search Engine. </b>
+Give high rank to tables that match query in top row and in leftmost column. 
+Give query-indendent high rank to tables with high "Schema coherency"
+of the attributes, based on the ACSDb.
+
+<p>
+<b> Schema Auto-Complete. </b> A web designer enters some of the attributes of
+a table. Auto-complete suggests some more, based on high conditional 
+probability.
+
+<p>
+<b> Attribute synonymy.</b>
+Attribute A is a synonym for attribute B if 
+<UL>
+<LI>
+A and B never appear together in the same schema.
+<LI> 
+For most other attributes C, P(C|A) and P(C|B) are approximately equal.
+</UL>
+

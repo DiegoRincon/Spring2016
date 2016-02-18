@@ -1,0 +1,110 @@
+<TITLE>
+Web Search Engines: Example Projects
+</TITLE>
+<H2> Example Projects </H2>
+
+
+<H3> Query Answering </H3>
+Answer a specific type of query over some category.  For instance,
+"Did person X ever meet person Y?", "Does animal/plant X live in
+place Y?" "What is the best course to take at NYU if you
+want to learn about subject Y?"
+
+
+Some comments about these:
+
+General comment: You need to get a question that is not too easy to answer
+reliably. (For example, as mentioned in the main page, the question,
+"What movies did actor X work in?" is too easy to answer from imdb.com.)
+
+<H4> Did X ever meet Y? </H4>
+
+<UL>
+<LI>
+There are at least three possible answers: "Definitely yes,", "Definitely
+no", and "Possibly". 
+<LI> The obvious solution is to do a search on the strings "X met Y", "Y
+met X", "X never met Y", "Y never met X".  But that
+misses most "Yes" answers and almost all "No" answers.  Rather, in most
+cases one has to infer that X met or didn't met Y from other information.
+For instance: If you can find a page that states that Marie Antoinette was 
+married to Louis XVI, you can infer that they met. If you can find a page
+with George Washington's dates and a page with Julius Caesar's dates,
+you can infer that they never met.
+
+<p>
+Obviously, you are not going to come close to finding all combinations of
+text patterns that would
+allow a human reader to answer this question.  A reasonable project here would
+be to have a system in which some number of patterns are encoded, and in which
+new patterns can be fairly easily added.
+
+<LI>
+For a project like this, it would be reasonable to restrict yourself to
+Wikipedia pages and to people with Wikipedia entries, for example.
+
+<LI> Evaluation is a little tricky.  If queries are taken at random from
+the space of all people (or even the space of all people with Wikipedia
+entries) then a program that always answers "No" will be right 99.99% of
+the time. We will discuss this later in the semester.
+</UL>
+
+<H4> What is the best course to take at NYU if you want to learn about 
+subject Y </H4>
+
+<UL>
+<LI> You should return a ranked list.  E.g. If the subject is in the title,
+that's really good; if it is in the short course description, that's 
+less good; if it is somewhere on a course web page, that's even less good.
+<LI>
+You might try using WordNet to deal with synonymy.
+</UL>
+
+<H3> Entity Classification </H3>
+Given a category of entities and an attribute with various values, and
+given a corpus of labelled instances, use the web pages for the
+labelled instances to learn a classifier that will enable you to predict
+the attribute value on a new instance.
+
+<p>
+Clearly, here, one wants to choose the categories and attribute quite
+carefully so that the project is neither trivial nor impossible. (As always
+in this project, it is better to err on the side of impossible than on
+the side of trivial.) For instance: Categorize a product into categories
+such as "Food", "Clothing," "Electronics", etc.
+
+
+<p>
+Probably, the learning should take place off-line and the classification of
+a new instance should take place at query time.
+
+<H3> Entity Clustering </H3>
+Divide a collection of entities into clusters, based on the web pages
+describing them.
+
+<H3> Web page classification </H3>
+Given a collection of Web pages, labelled by the value of some attribute,
+learn a classifier for that attribute. For example, distinguish right-wing
+blogs from left-wing blogs. Divide web pages into categores such as 
+"Blogs", "Commercial", "Information", "Personal" etc.
+
+<H3> Web page clustering </H3>
+Given a collection of Web pages, divide them into clusters.
+
+<H3> Coordinate parallel texts </H3>
+Given a collection of web pages describing the same thing, match sentences
+making the same statement. For instance, a collection of news stories
+about the same event, or a collection of articles about the same disease
+from different medical sites.
+
+<H3> Multimedia </H3>
+Report features of a multimedia page, or search for pages with specified
+features, combining information from the surrounding text with information 
+from the actual content.  E.g. "Search for a line drawing of a cat"; the
+identification of an image as a cat can be done from the text, whereas
+the identification of an image as a line drawing can, perhaps, be done
+from the JPEG file.  Or "give the features of a given piece of music";
+some of these can be gotten from the text, others can be gotten from the
+MP3 file.
+
+ 

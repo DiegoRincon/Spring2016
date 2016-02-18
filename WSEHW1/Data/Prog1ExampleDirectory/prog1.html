@@ -1,0 +1,88 @@
+<TITLE> Programming Assignment 1 </TITLE>
+<H2> Programming Assignment 1 </H2>
+
+<p>
+Assigned: Jan. 25 <br>
+Due: Feb. 22 
+
+<p>
+In this assignment, you will build programs to do basic indexing and querying.
+
+<p>
+As in all the programming assignments and the course project, you should use
+the <A href="https://lucene.apache.org/">Apache Lucene library</A>. 
+Most of what
+you need for this assignment is built as basic functions in that library.
+Pretty much all of the programming
+you need to do for this assignment is to build two drivers; and
+even most of that is laid out in the Gospodneti&cacute; and Hatcher textbook. The
+point of this assignment is to get familiar with the
+basics of getting Lucene functions and an HTML parser running; it is not 
+supposed to be a 
+challenging programming assignment.
+
+<p>
+The assignment involves writing two separate programs: an indexer and 
+a retriever.
+
+<p>
+The indexer creates an index for all the words (including stop words) in
+all the HTML files in a particular directory. HTML markup should
+<em>not</em> be included as search terms in the index. 
+
+<p>
+The retriever should be implemented as a Google-like web page. That is,
+there should be a web page where an external user submits a query. Once the
+query is submitted, the retriever consults the index and generates a 
+results page.
+
+<H3> Retriever </H3>
+Queries are simple single- or multi-word queries with no punctuation.
+
+<p>
+The results page is an HTML page with the following parts.
+<UL>
+<LI>A header: <b> Results for query </b> [echo query] <b> in directory </b>
+[directory name].
+
+<LI> Top-ranked 10 documents that match the query, or all the matching 
+documents if there are fewer than 10. For each document,
+<UL>
+<LI> create a separate paragraph
+<LI> list the file name
+<LI> if the file has an HTML TITLE list the title. If the file has no
+title but the body begins with an HTML H1, H2, or H3, list that.
+</UL>
+</UL>
+That's all.
+
+<p>
+For the query engine, use the default Lucene <tt>search</tt> and
+<tt>score</tt>, described in chap 3 of Gospodneti&cacute; and Hatcher.
+
+<H3> Indexer </H3>
+In Java, the name of the directory of files to be indexed should be a 
+command line argument. In Python, it should be an argument to an indexer
+function called in the interpreter. The indexer function should be called
+"indexer".
+
+<p>
+You may assume that HTML files all have the file extension .html or .htm,
+and conversely you may assume that any file with those extensions is 
+legitimate HTML.
+
+<p>
+For tokenizing, use the Lucene <tt>StandardAnalyzer</tt>. For
+indexing use the <tt> Indexer </tt>. You do not have to worry about
+optimizing the indexer for performance or parallism, so  you can skip G&H 
+section 2.7 - 2.9. 
+
+<p>
+You will need to use an HTML parser. This does not come with Lucene; however
+there are plenty of fine, free, parsers available. The parser you use does
+not have to be very sophisticated, but it should be fairly forgiving (e.g.
+it should not demand things like < /p > close tags.) G&H (pp. 242-245) 
+recommend and discuss 
+<A href="http://tidy.sourceforge.net/"> HTML Tidy </A>; that should be fine.
+
+

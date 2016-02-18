@@ -1,0 +1,408 @@
+<TITLE> Lecture 7: Clustering Algorithms </TITLE>
+<H2> Lecture 7: Clustering </H2>
+<H3> Required Reading </H3>
+
+Chakrabart chap. 4 through section 4.2.
+
+<H3> Further Reading </H3>
+<A href="http://www8.org/w8-papers/3a-search-query/dynamic/dynamic.html">
+Grouper: A Dynamic Clustering Interface to Web Search Results </A>
+Oren Zamir and Oren Etzioni  <br>
+<A href="ftp://ftp.cs.umn.edu/dept/users/kumar/doccluster.ps">
+A Comparison of Document Clustering Techniques </A> by
+Michael Steinbach, George Karypis, and Vipin Kumar <br>
+
+<H3> Clustering algorithms </H3>
+<UL> 
+<LI> Decompositional (top-down)
+<LI> Agglomerative (bottom-up)
+</UL>
+
+<p>
+Decompositional algorithms are almost always based on vector space
+(only terms in which to see high-level structure.)
+
+<p>
+Any decompositional clustering algorithm can be made hierarchical by
+recursive application. 
+
+
+<H3> K-means algorithm </H3>
+<PRE>
+K-means-cluster (in S : set of vectors : k : integer)
+{  let C[1] ... C[k] be a random partition of S into k parts;
+   repeat {
+            for i := 1 to k {
+               X[i] := centroid of C[i];
+               C[i] := empty 
+              } 
+            for j := 1 to N {
+               X[q] := the closest to S[j] of X[1] ... X[k]
+               add S[j] to C[q]
+              } }
+    until the change to C (or the change to X) is small enough.
+}
+</PRE>
+
+<p>
+Features:
+<UL>
+<LI>
+Objective function: minimize the
+sum of the squared distance from each point to centroid of cluster.  <br>
+For unit vectors, this is equivalent to maximizing the average dot 
+product S[i] dot S[j} where S[i] and S[j] are in the same cluster.
+
+<p>
+Sum of the squared distance steadily decreases over the iterations. <br>
+Hill-climbing algorithm.
+
+
+<LI>
+Disjoint and exhaustive decomposition.
+<LI>
+For fixed number of iterations, linear in N.
+Clever optimization reduces recomputation of X[q] if small change to S[j].
+Second loop much shorter than O(kN) after the first couple of iterations.
+<LI>
+"Anytime" algorithm: S[j] always a decomposition of S into convex subregions.
+<LI>
+Random starting point: Multiple runs may give different results, choose
+"best"
+</UL>
+
+<p>
+Problems:
+<UL>
+<LI> Have to guess K.
+<LI> Local minimum. Example: In diagram below, if K=2, and you start
+with centroids B and E, converges on the two clusters {A.B.C}, {D,E,F}
+<p align=center>
+<img src="lec4a.gif">
+</p>
+
+<LI> Disjoint and exhaustive decomposition.
+<LI> Starvation: Complete starvation of C[j], or starvation to single
+outlier.
+<LI> Assumes that clusters are spherical in vector space. Hence
+particularly sensitive to coordinate changes (e.g. changes in weighting)
+</UL>
+
+<p>
+Variant 1: Update centroids incrementally. Claims to give better results.
+
+<p>
+Variant 2: Bisecting K-means algorithm:
+
+<PRE>
+for I := 1 to K-1 do {
+    pick a leaf cluster C to split;
+    for J := 1 to ITER do split C into two subclusters C1 and C2;
+    choose the best of the above splits and make it permanent
+}
+</PRE>
+
+Generates a binary clustering hierarchy. Works better (so claimed) than
+K-means.
+
+<p>
+Variant 3: Allow overlapping clusters: If distances from P to C1 and
+to C2 are close enough then put P in both clusters.
+
+<P>
+Full mean vector would get very long (= number of different words in
+all the documents.)  Solution: truncate after first M terms. (Typically
+M=50 or 100.)
+
+
+
+<H3> Agglomerative Hierarchical Clustering Technique </H3>
+<PRE>
+{ put every point in a cluster by itself
+  for I := 1 to N-1 do {
+     let C1,C2 be the most mergeable pair of clusters;
+     create C parent of C1, C2
+  } }
+</PRE>
+
+Various measures of "mergeable" used.
+
+<UL>
+<LI> Minimum distance between d1 in C1 and d2 in C2.
+Then this is basically Kruskal's algorithm for minimum spanning tree; 
+runs in almost linear time.
+However, not a good clustering measure.
+<LI> Average distance between d1, d2 in C1 union C2.
+Quickly computable.
+<LI> Maximum distance between d1 in C1 and d2 in C2 (= diameter
+of C1 and C2)
+</UL>
+
+<p> Characteristics 
+<UL>
+<LI> Creates complete binary tree of clusters
+<LI> Various ways to determine "mergeability".
+<LI> Deterministic
+<LI> O(N<sup>2</sup>) running time.
+</UL>
+
+Conflicting claims about quality of agglomerative vs. K-means.
+
+<H3> One-pass Clustering </H3>
+<PRE>
+pick a starting  point D in S;
+CC = { { D } } } /* Set of clusters: Initially 1 cluster containing D */
+for Di in S do {
+    C := the cluster in CC "closest" to Di
+    if similarity(C,Di) &gt threshhold 
+      then add Di to C;
+      else add { Di } to CC;
+}
+</PRE>
+Features:
+<UL> 
+<LI>Running time: O(KN) (K = number of clusters)
+<LI>Fixed threshhold
+<LI>Order dependent. Can rerun with different order.
+<LI>Disjoint, exhaustive clusters
+<LI>Low precision
+</UL> 
+
+<H3> STC (Suffix Tree Clustering) algorithm </H3>
+
+<b> Step 1:</b> Construct suffix tree.
+
+<em> Suffix tree: </em> S is a set of strings. (In our case, each elt
+of S is a sentence, viewed as a string of words.)
+A compact tree containing all 
+suffixes of strings in S.
+<UL>
+<LI> Rooted directed tree.
+<LI> Each edge is labelled with a non-empty substring of S. Label of
+node N = concatenation of labels of edges from root to N.
+<LI> Compact: no two edges out of the same node have edge-labels
+that begin with same word.
+<LI> For suffix Q in S, there is a node with label Q. 
+<LI> Each node for a suffix Q of string Z in S labelled with index of Z
+and starting position of Q in Z.
+</UL>
+
+<p>
+Example: S = { "cat ate cheese", "mouse ate cheese too", "cat ate mouse
+too" }
+
+<p align=center>
+<img src="lec4.gif">
+</p>
+
+
+Suffix tree can be constructed in linear time.
+
+<p> <b>Step 2:</b> Score nodes.
+For node N in suffix tree, let D(N) = set of documents in subtree of N.
+Let P(N) be the phrase labelling N. Define score of N, s(N) =
+|D(N)| * f(|P(N)|).  f(1) is small; f(K) = K for K = 2 ... 6; 
+f(K) = 6 for K &gt 6.
+
+<p><b> Step 3: </b> Find clusters.
+
+<p>
+A. Construct an undirected graph whose vertices are nodes of the suffix tree.
+There is an arc from N1 to N2 if the following conditions holds:
+<UL>
+<LI> Either N1 or N2 is among the 500 top-scoring nodes.
+<LI> | D(N1) intersect D(N2) | / max(|N1|,|N2|) > 0.5.
+</UL>
+
+<p>
+B. Each connected component of this graph is a cluster. Score of
+cluster computed from scores of nodes, overlap function.
+Top 10 clusters returned.
+Cluster can be described
+using phrases of its ST nodes.
+
+
+<H4> Example </H4>
+Query "salsa" submitted to MetaCrawler (consults with several
+search engines and combines answer.) Returns 246 documents in 15 clusters,
+of which the top are
+<UL>
+<LI> Puerto Rico; Latin Music  (8 docs)
+<LI> Follow Up Post; York Salsa Dancers (20 docs)
+<LI> music; entertainment; latin; artists (40 docs)
+<LI> hot; food; chiles; sauces; condiments; companies (79 docs)
+<LI> pepper; onion; tomatoes (41 docs)
+</UL>
+
+<H4> Features </H4>
+<UL>
+<LI> Overlapping clusters.
+<LI> Non-exhaustive
+<LI> Linear time.
+<LI> High precision.
+</UL>
+
+<H3> Clustering using query log </H3>
+(Beeferman and Berger, 2000)
+Log records query, links that were clicked through. <br>
+Create bipartite graph where query terms connect to links. <br>
+Cluster of pages = connected component. <br>
+Also gives cluster of query terms -- useful to suggest alternative queries
+to user.
+
+<H3> Detection of identical or near-identical pages </H3>
+<A href="http://www.scope.gmd.de/info/www6/technical/paper205/paper205.html">
+Syntactic Clustering of the Web </A>
+Broder, Glassman, Manasse, and Zweig, 1998 (WWW6)
+
+<p>
+Shingle : K consecutive words. <br>
+Fix a shingle size K.  Let S(A) be the set of shingles in A and
+let S(B) be the set of shingles in B.  <br>
+The <em> resemblance </em> of A and B
+is defined as | S(A) intersect S(B) | / | S(A) union S(B) |. <br>
+The <em> containment </em> of A in B
+is defined as | S(A) intersect S(B) | / | S(A) |. <br>
+
+
+<!--
+
+<p>
+You can estimate the resemblance of sets A and B based on random sample. <br>
+Let U be a set of shingles. <br>
+Let h be a random one-to-one hash function from U to integers. <br>
+Fix a sample size value <em>s</em> <br>
+For a set W of shingles, let F(W) be the <em>s</em> smallest 
+elements of h(W). Then the ratio <br>
+<BLOCKQUOTE>
+|F(A) intersect F(B)| / 
+|F(A union B)|
+</BLOCKQUOTE>
+is a statistical (unbiased) estimate for the resemblance of A,B; and
+as s becomes large this converges to the resemblance. (Note: If
+A=B, then this is 1.0; if A and B are disjoint then this is 0.0.)
+
+-->
+
+Estimate the resemblance of sets A and B using random sampling: <br>
+<PRE>
+Step 1: Choose a value m and a random function P(W) from elements to integers.
+
+Step 2: For set X, let V(X) = { x in X | P(x) mod m = 0} be a sample of X. 
+        This is called the <em> sketch </em> of X. <br>
+Step 3: | V(A) intersect V(B) | / |V(A) union V(B) | 
+        is an estimate of the resemblance of A and B.  <br>
+
+        |V(A) intersect V(B)| / V(A) is an estimate of the containment of A in B
+</PRE>
+
+<p>
+Note: if you just sample A and sample B, get a substantial underestimate of
+the resemblance.
+
+<p>
+Implementation uses shingle size = 10, m = 25, 40 bit sketch. 
+
+<p>
+High-level algorithm <br>
+Step 1: Normalize by removing HTML and converting to lower-case. <br>
+Step 2: Calculate sketch of shingle set of each document. <br>
+Step 3: For each pair of documents, compare sketches to see if they 
+exceed resemblance threshhold. <br>
+Step 4: Find connected components.
+
+<p>
+Implementation of Step 3. Obviously all-pairs comparison is not feasible;
+however, most pairs have no shingles in common. Also want to reduce disk
+I/O since this cannot be done in-memory.
+
+
+<PRE>
+3.1. Use merge-sort to generate sorted file F1 of &lt shingle, docID &gt pairs. 
+3.2. Eliminate shingles that appear in only one docID (most). <br>
+3.3. for each shingle S in F1, 
+        for each pair of docs docID1, docID2 associated with S in F1, 
+            write record &lt docID1, docID2 &gt to F2.
+     F2 now has one record of form &lt docID1, docID2 &gt for each shingle
+         shared by doc1 and doc2.
+3.4. Merge-sort F2, combining and keeping count of identical elements.
+     Generate file F3 of record &lt docID1, docID, count of common shingles &gt
+</PRE>
+
+Further issues:
+<UL>
+<LI> Eliminate very common shingles (more than 1000 documents). Almost
+all automatically generated by standard programs.
+<LI> Eliminate truly identical documents by computing and comparing fingerprint
+of entire document.
+</UL>
+
+<H3> Known clusters </H3>
+You have a known system of clusters with examples (e.g. Yahoo).
+The problem is to place a new page into the proper cluster(s).
+
+<p>
+In machine learning, this is known as <em> classification </em> rather
+than clustering.  Lots of algorithms.
+
+
+<H3> Evaluating Clusters </H3>
+
+<p> <b>Formal measures:</b>
+Normalize all vectors to length 1.  Assume fixed number of clusters.
+<UL>
+<LI> Minimize average diameter of clusters.
+(Diameter of cluster C = max distance between two points in C)
+<LI> Minimize average distance between points in cluster. 
+<LI> Minimize means-squared distance from point to centroid.
+Maximum likelihood estimate if clusters generated by normal distribution
+around centroid.
+<LI> Average over cluster C of longest edge in minimum spanning tree for
+C. 
+</UL>
+
+<p>
+Variable number of clusters:
+Any of the above + suitable penalty for more clusters.
+
+<p> Formal measures test adequacy of clustering algorithm, but not
+relevance of measures to actual significance.
+
+<p>
+Ask subjects to cluster, compare systems of clusterings.
+<UL>
+<LI>
+Let E1, E2 be within-cluster arcs in cluster systems 1, 2. Then measure
+|E1 intersect E2| / |E1 union E2|.  (Note that, if two system both contain
+2 clusters, then the above is at least 1/3; on average 1/2.)
+<LI> 
+For any cluster C in system 1, let m(C) be closest cluster in system 2.
+Compute weighted average of m(C) over all C.
+</UL>
+
+<p>
+Ask subjects to evaluate similarity of all pairs of documents. Correlate 
+these similarities with clustering (e.g. average similarity within cluster
+/ average similarity between clusters)
+
+<p>
+Ask subjects whether system of clustering seems natural or useful.
+
+<p>
+For clustering of responses to query:
+<UL>
+<LI> Max precision over all clusters. (Hearst and Pedersen) 
+(User model: User can easily identify most relevant cluster, only
+examines that one.)
+<LI> Variant: Sort clusters in decreasing order of precision. Examine
+them in order, down to a fixed number of documents. Compute precision
+over these.
+</UL>
+
+
+
+
+
+
+
+

@@ -1,0 +1,680 @@
+
+<TITLE> Lecture 7: The Invisible Web,  Specialized Search Engines, and 
+Metasearch</TITLE>
+<H2> Lecture 7: The Invisible Web, Specialized Search Engines, and 
+Metasearch</H2>
+
+<H3> Required reading </H3>
+<A href="http://portal.acm.org/citation.cfm?id=1454163">
+Google's Deep Web crawl </A> Madhavan et al. 
+<em>Proc. VLDB Endowment</em>, 1:2,
+August 2008. <br>
+This is the central, current article on "surfacing" the invisible web,
+but unfortunately it is very
+poorly written. Do what you can with it. 
+<p>
+<A href="http://www.eecs.umich.edu/~michjc/papers/webtables_webdb08.pdf">
+Uncovering the Relational Web,</A> Michael Cafarella et al., WebDB 2008. 
+
+<p>
+<A href="http://www.eecs.umich.edu/~michjc/papers/webtables_vldb08.pdf">
+WebTables: Exploring the Power of Tables on the Web,</A>
+Michael Cafarella et al. 
+
+<H3> More Reading </H3>
+<A href="http://www-db.cs.wisc.edu/cidr/cidr2009/Paper_115.pdf">
+Harnessing the Deep Web: Present and Future</A> J. Madhavan et al.,
+<em>CIDR (Conference on Innovative Data Systems Research), 2009. </em> 
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1897839">
+Structured Data on the Web </A>, M.J. Cafarella, A. Halevy, and J. Madhavan,
+<em>CACM,i</em> 54:2, Feb. 2011. <br>
+It is not clear to me to what extent the applications of WebTables described
+here are in the present tense or in the "future hopeful" tense.
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1860708">
+Understanding deep web search interfaces: A survey.</A>
+Ritu Khare, Yuan An, and Il-Yeol Song, <em> ACM SIGMOD Record</em> 39:1,
+March 2010. <br>
+
+<H3> Older but useful <.H3>
+<A href="http://citeseer.ist.psu.edu/708823.html">
+Structured Databases on the Web: Observations and Implications
+</A> Kevin Chang et. al <br>
+<A href="http://www.emeraldinsight.com/1468-4527.htm"> Indexing the
+invisible web: a survey </A> by Yanbo Ru and Ellis Horowitz, 2005.
+<p>
+<A href="http://www.press.umich.edu/jep/07-01/bergman.html">
+The Deep Web: Surfacing Hidden Value </A>
+by Michael K. Bergman, Journal of Electronic Publishing <br>
+
+ <A href="http://ilpubs.stanford.edu:8090/725/">
+Crawling the Hidden Web </A>  
+Sriram Raghavan, Hector Garcia-Molina, <em>VLDBM</em> 2001.
+<!--
+"Accessibility of information on the Web" by Steve Lawrence and C. Lee
+Giles, <em>Nature</em> vol.400, July 8, 1999, pp. 107-109. (class
+handout) -->
+
+
+<H3> Invisible Web </H3>
+<b> Indexable Web: </b> Pages that can be found by crawling  <br>
+<b> Invisible Web </b> (Hidden web, deep web):
+Information that can be read with a web
+browser, but will not be found by a standard crawler for various reasons.
+
+<UL>
+<LI> Static page accessible only through web site search engine; no hyperlinks.
+and no browsing. (Though of course as soon as someone creates a link to
+these from outside, they and all the internally linked pages become visible).
+<LI> Page is generated dynamically from a database not directly
+accessible (e.g. Bobcat pages. Driving instructions on mapquest.com).
+<LI> Information not suited to keyword search.  E.g. driving 
+instructions on mapquest.com)
+<LI> Internal page only meaningful in context of specific database.
+E.g. online catalogs.
+<LI> Page protected by password; robot exclusion protocol; licence etc.
+<LI> Wrong format e.g. Excel.
+<LI> Page just floating there, with no particular connections to it.
+(Not much to be done about that.)
+</UL>
+
+<H3> Specialized Search Engines </H3>
+<UL>
+<LI>Databases: Generate dynamic pages from private database.
+<LI>Local search engines: Deliver static pages at same web site 
+using search engine interface.
+<LI>Special topic search engines: Deliver pages of specified types or topic
+from many sites.
+</UL>
+
+Advantages to specialized seach engine derive from 
+<UL>
+<LI> Predictable format.
+<LI> Restricted subject.
+<LI> Restricted user pool.
+<LI> Smaller (100,000 or a million documents vs. billions of documents)
+</UL>
+
+Advantages include:
+<UL>
+<LI> Collection
+<UL>
+<LI> Focussed crawling
+<LI> Deeper crawling within a site
+<LI> Use local search engine interface.
+<LI> Freshness
+<LI> Content supplier reports (e.g. bookfinder.com, Froogle)
+<LI> Lose serendipity (relevant page far from where you would expect it).
+</UL>
+<LI> Document individuation
+<UL> 
+<LI>Conflation of "the same" document
+<LI>Indexing subdocuments within a page (e.g. individual articles or 
+advertisements)
+</UL>
+<LI> Query language
+<UL> 
+<LI> Specialized fields
+<LI> Specialized input form
+<LI> Special symbols, terminology (e.g. chemical formula)
+<LI> Alternative medium (e.g. audio)
+<LI> Expert level language (e.g. for reference librarians).
+</UL>
+<LI> Retrieval
+<UL>
+<LI> Disambiguation
+<LI> Ranking criterion. E.g. Authority of web site; user evaluation;
+Citations other than hyperlinks (Citeseer) etc. 
+<LI> Domain-specific search term relations.
+<LI> Even standard IR measures such as IDF change just as a result of
+narrowing the collection; allows greater precision.
+</UL>
+<LI> Clustering
+<LI> Relations between pages and data collection
+<LI> Presentation.
+<LI> Personalization
+</UL>
+
+<H3> Froogle </H3>
+Merchant sends database (and thereafter updates) in a uniform format
+to Froogle. Froogle collates, enables a uniform search engine.
+
+<p>
+Similarly for engines for restricted categories of merchandise.
+(Cars, real estate, books, etc.) Restricting the categories
+enables domain-specific query attributes, drop-down value lists,
+appropriate presentation and interaction, greater precision.
+
+<H3>
+<A href="http://citeseer.ist.psu.edu/">Citeseer </A> </H3>
+(Now superseded by Google Scholar, but has the advantage of having been
+published.)
+Collects CS research papers; structures by citation. 700,000 documents.
+
+<H4> Collection </H4>
+Use search engine with keywords like "publications" or "papers" as
+starting point for crawl.  Also uses known online journals, proceedings.
+
+<H4> Single document processing </H4>
+Converts Postscript, PDF to plain text. Translate to various formats<br>
+Extracts index terms. <br>
+Extracts fields: Author, Title, Date, Pub, Abstract. <br>
+Identifies bibliography and references.  <br>
+Identifies citations in text. <br>
+Locate author home pages.
+
+<H4> Cross-document processing </H4>
+Identify reference with document. Note: Wide variance in form of referece.
+plus typos, errors <br>
+Identify common references to external document (i.e. not online) <br>
+Textual similarity between documents. <br>
+Co-citation similariy between documents. <br>
+
+<H4> Query answer </H4>
+<b>Query results </b> <br>
+Quotation from document with snippet. <br>
+Order by decreasing number of citations.  <br>
+<p>
+<b> Document summary </b> 
+Title, date, authors, abstract, Citations to paper, similar docs
+at sentence level. bibliography, similar docs based on text, related
+docs from co-citation, histogram by year of number of citing articles.
+
+
+<H4> Meta-search </H4>
+Will discuss in a later lecture
+
+<H3> Categorization of Deep Web </H3>
+<A href="http://citeseer.ist.psu.edu/708823.html">
+Structured Databases on the Web: Observations and Implications
+</A> Kevin Chang et. al, 2004 <br>
+
+<p>
+Figures are 3 years old, and no longer accurate, but suggestive;
+and methods and question still relevant.
+
+<p>
+Randomly sampled dataset: Generated 1 million random IP address out of
+2.2 billion IP address space.  Generated HTTP request.  
+2256 sites respond to HTTP request: Estimate 4.4 million web sites total.
+<p>
+On subset of 100,000 pages, searched to depth 10 looking for deep
+Web interface page. Found 129 interface pages at 24 sites.  91% of
+these are at depth at most 3 from root.
+
+<p> Over the entire sample of 1,000,000 sites,
+looked to
+depth 3 for database interface page. 
+
+
+<table>
+<TR> <TD> <TD> Sampling Results <TD> Total Estimate 
+<TR> <TD>Deep Web sites <TD>  126 <TD> 307,000
+<TR> <TD> Web databases <TD> 190 <TD> 450,000
+<TR> <TD> - structured <TD> 43 <TD> 102,000
+<TR> <TD> - unstructured <TD> 147 <TD> 348,000
+<TR> <TD> Query interfaces <TD> 406 <TD> 1,258,000
+</table>
+
+E.g. barnesandnoble.com is a Deep Web site. It has several databases:
+books, music, etc. Each of these has two interfaces: A simple search
+and an advanced search. (The simple search interface is repeated
+on several pages; these are not counted separately.) The databases
+on barnesandnoble.com are structured: Relational database with 
+attributes "title" "author" "price" etc.  The database on
+cnn.com is unstructured: news articles. 
+
+
+<H3> Domain-specific studies </H3>
+In many domains, database pages are reachable by hyperlinks via a browsing
+structure (e.g. 80% of book databases and movie databases.) Therefore
+at least in principle attainable by standard crawler.  In other domains
+much fewer (e.g. airfares only 3%). In fact, however, 75% of crawlable
+deep web pages are not indexed in Google, and in another 24% the
+copy cached in Google is out of date.  Only 5% are indexed and fresh
+in Google.
+
+<p>
+Query schemas have between 1 and 18 attributes, with an average of 6.
+
+<p>
+Frequency of attribute names
+follow a power-law distribution (we will discuss in a future lecture).  
+Top 20 attributes account for 38% of
+occurrences. (Top 5 are : title, keyword, price, make, and artist)
+61% of attributes occur in only one source.  Attributes are strongly
+clustered by domain. 
+
+<p>
+Complexity of most "advanced" search: 
+<UL>
+<LI> Max number of constraints allowed. Avg is &gt 4 in all domains;
+in airfares and car rentals, avg = 10.
+<LI> Connection type: Conjunctive,disjunctive,
+or exclusive. In all domains, conjunctive are the huge majority.
+</UL>
+
+
+
+
+
+
+<A href="http://www.press.umich.edu/jep/07-01/bergman.html">
+The Deep Web: Surfacing Hidden Value </A>
+by Michael K. Bergman, Journal of Electronic Publishing
+
+<p>
+Note: Many of the techniques used are proprietary and not adequately
+described.  The whole paper was an advertisement
+for BrightPlanet.com (later CompletePlanet.com; no longer functional,
+though still on the web)
+and therefore should be taken with a grain of salt.  Nonetheless,
+a lot of good information.
+
+
+<p>
+Definition of deep web site: A site that dynamically generates pages
+based on a search query.
+
+<p>
+Number of deep web sites: <br>
+Compile ten lists of deep web sites.  Total: 43,348. <br>
+Automatically filter search sites. Total: 17,579 search sites <br>
+Hand examine 700 random sites, filter on further criteria. 13.6% excluded.
+Apply this correction throughout.
+
+<p>
+Estimating total number of deep web sites. <br>
+Technique: Overlap analysis. <br>
+<BLOCKQUOTE>
+Suppose A and B are randomly chosen subsets of O.  <br>
+Let AB=A intersect B.<br>
+Expected size of AB = |A||B|/|O|.  <br>
+Therefore if you know |A|, |B|, |AB|, you can estimate |O|=|A||B|/|AB|. <br>
+</BLOCKQUOTE>
+In this case A, B are listings of deep Web site.  <br>
+Problem: Independence
+assumption not near valid; tend to be positively correlated. <br>
+Then |AB| &gt |A||B|/|O| so |O| &gt |A||B|/|AB|, so you have an
+underestimate of |O|. <br>
+
+<p>
+Values range from 43,000 to 96,000.  Estimate that the latter is
+an underestimate by a factor of 2; hence 200,000.  94% are publicly 
+available.
+
+<p>  
+<b> An enormous invisible Web site,</b> though not a very interesting one: <br>
+<A href="http://http://www.ncdc.noaa.gov/oa/ncdc.html">
+NOAA (National Oceanic and Atmospheric Administration)
+National Climatic Data Center</A>
+Doppler Weather Radar Data: 1600 TBytes (as of 2006) <br>
+NOAA projects that they will be storing 140 PetaBytes by 2020.
+
+
+
+<H3> Indexing the Invisible Web </H3>
+<A href="http://www.emeraldinsight.com/1468-4527.htm"> Indexing the
+invisible web: a survey </A> by Yanbo Ru and Ellis Horowitz, 2005.
+
+<UL>
+<LI> Locating invisible web sites
+<LI> Classifying pages as invisible web sites
+<LI> Categorizing the subject matter of invisible web sites
+<LI> Indexing invisible web sites content offline
+<LI> Searching invisible web sites at query time
+</UL>
+
+
+<H3> Locating invisible web sites </H3>
+<p>
+1. Search (in Google etc.) under "X search" or 
+"X database". X is often a supercategory of what you're actually looking
+for. <br>
+2. Search engine for search engines: e,g, 
+<A href="http://www.searchengineguide.com/searchengines.html">
+Search Engine Guide. </A> Ru and Horowitz have a list of 24 others, not all
+of which are still extant.
+
+<H3> Classifying pages as invisible web sites </H3>
+Pre-query: J. Cope, N. Craswell, D. Hawkings 
+"Automated discovery of search interfaces on the web". Learn a classifier
+(decision tree from C4.5) to learn the features of a deep web query page.
+Precision = 87%, recall = 85%.
+
+<p>
+Post query: 
+<A href="http://csdl.computer.org/dl/proceedings/wise/2003/1999/00/19990125.pdf"
+> Crawling for Domain-Specific Hidden Web Resources </A>
+Andre Bergholz, Boris Chidlovskii. 
+
+<p>
+Step 1: Domain-specific crawl to collect candidate query forms. <br>
+Start with 10,000 categories from top 5 level of Google hierarchy. <br>
+For each category, collect 200 pages and 20 relevant keywords. <br>
+From each page, do a breadth-first crawl of HTML pages
+within the same site: maximum
+distance = 8, max number of pages = 1000.
+
+<p>
+Step 2: For each crawled page, check whether this is a queryable form with 
+text input using features of the HTML.  If so:
+
+<p>
+Step 3: Run query prober.  Fill in non-text values (buttons, drop-down menus,
+etc.) randomly.  For text fields, try two experiments: <br>
+A. Fill in values with domain keywords. <br>
+B. Fill in values with nonsense string. <br>
+
+<p>
+If the page is a true hidden web query form, then you expect to see:
+<UL>
+<LI> All responses to nonsense strings have similar length (standard deviation
+less than 5%).
+<LI> At least 80% of responses to domain strings are at least 3 times longer
+than responses to nonsense strings
+<LI> At least 80% of responses to domain strings has a "largest difference
+subtree" (presumably containing the content) of at least 1 KByte.
+</UL>
+
+<p>
+Results: Collected 4800 hidden web query pages.
+
+
+<H3> Categorizing the subject matter of invisible web sites </H3>
+Pre-query: Use features of the query page. <br>
+Post-query: Fill out query page and use features of answers. <br>
+However, the papers cited in Ru and Horowitz on this are not actually
+very interesting.
+
+
+
+<H3> Indexing invisible web sites content offline </H3>
+ 
+
+<A href="http://citeseer.ist.psu.edu/461253.html">
+Crawling the Hidden Web </A> </H3>
+(Sriram Raghavan, Hector Garcia-Molina)
+
+<p align=center>
+<img src="HiWE.gif">
+</p>
+
+HiWE: Hidden Web Exposer
+
+<p>
+Analyze form into form elements. <br>
+Form element = type, label, domain <br>
+Type = selection list, text box, text area, checkbox, or radio button. <br>
+Label = label on element e.g. "company name". "state" etc. <br>
+Domain = set of values. E.g. { IBM, Microsoft, Intel ...} or
+{ Alabama, Alaska ...} <br>
+Need to parse physical layout of form; associate labels with nearby 
+form elements.  Metatags would help, except that no one ever uses them.
+LITE (Layout-based Information Extraction)
+
+
+<p>
+Task-specific database holds known values relevant to query. These
+are (a) given by user; (b) built-in (e.g. date fields, state field);
+(c) extracted using wrapper from data source 
+(either task-specific (Semiconductor research corporation) or
+general (Yahoo)); (d) extracted from form (labels and values).
+
+<p>
+Matcher fills out form. Finds standard label name closest to form label.
+Either enumerates values given in form, or enumerates values associate
+with label in database.  
+
+<p>
+Response analyzer saves responses (excluding failures), adjusts
+weights on relation of value for label. (If a query gives failure,
+then reduce the weight of each of the values used.)
+
+
+<p> <b>Evaluation metrics </b> <br>
+Metric 1: number of successful submissions (answer gotten) / number of
+total submissions. <br>
+The problem is that this penalizes HiWE if the question was meaningful
+and appropriate, but the database just doesn't happen to have any information
+about it.  That is, HiWE is supposed to be clairvoyant. <br>
+Metric 2: number of semantically correct submissions (meaningful query in
+form) / number of total submission.  Fairer measure but requires manual 
+evaluation.
+
+<h4> Results </H4>
+Success rate increases as a function of elements per form.  Over all 
+forms with at least 2 elements, 78.9% of queries correct on metric 1.
+On forms with at least 5 elements 90% correct on metric 1.
+
+<H4>
+<A href="http://www.deg.byu.edu/papers/daswis01.pdf"> On the Automatic
+Extraction of Data from the Hidden Web</A> Stephen W. Liddle, Sai Ho Yau,
+and David W. Embley
+</H4>
+
+<p>
+Does not try to use text elements; only elements with finitely many values
+(buttons, drop down menus etc.) Assume that, if you leave text element
+blank, it will match all or many possibilities; not always true, of course. 
+<p>
+Main result: For most such web sites, unnecessary try all combinations of the 
+finite values. Systematic way (stratified sampling) to generate a sequence 
+of combinations and a halting condition so that, if a significantly smaller
+number of queries will get all the information, then following this strategy
+is likely to get all this information with much fewer than all possible 
+combinations.
+
+<H4>
+<A href="http://citeseer.ist.psu.edu/509283.html"> Automatic Information 
+Discovery from the "Invisible Web" </A> King-Ip Lin and Hui Chen.
+</H4>
+
+
+<p>
+Short article, few details, not very convincing, but interesting architecture.
+
+<UL>
+<LI> Create a search engine database. Description from meta-tags, anchors
+from inlinks, content.
+<LI> Query pre-processing.  Broaden the query by adding related terms from
+Google web search.
+<LI> Search engine selection: Match query to search engine description.
+<LI> Forward query to search engines and merge.
+</UL>
+
+<p>
+<b> Other issues </b>
+<UL>
+<LI> Learning the query language (Boolean operators etc.)
+<LI> Query reformulation
+</UL>
+
+
+
+
+<H2> Metasearch engines </H2>
+
+<A href="http://portal.acm.org/citation.cfm?id=505284"> 
+Building efficient and effective metasearch engines </A>
+Weiyi Meng, Clement Yu, and King-Lup Liu, ACM Computing Survey, vol. 34
+no. 1, March 2002, pp. 48-89. (Not a very good paper, but it does cover
+the major points and it has a good bibliography.)
+
+<H3> Overview </H3>
+A metasearch engine sends a user query to a collection of search engines
+(either general or specialized search engines),  combines the answers,
+and presents them to the user. Applies mostly to search engine in the
+sense of a program that returns a ranked list of web pages with snippets.
+
+<UL>
+<LI> Offline: Collect and categorize search engines.
+<LI> Given a query:
+<UL>
+<LI> Select appropriate search engines. Choose number of docs to retrieve
+from each engine.
+<LI> Reformulate query to match search engine language
+<LI> Identify duplicates
+<LI> Either compute merged ranking or cluster (or both).
+<LI> Either select or combine snippets.
+<LI> Present
+</UL>
+<LI> Server-based vs. client-based (e.g. <A href="turbo10.com"> Turbo10 </A>).
+The advantage of client-based is that you can start to present results before
+all the search engines have returned.
+<LI> Work from results page vs. download the actual documents returned.
+</UL>
+
+<H3> Select appropriate search engine </H3>
+<H4> Rough representative approach </H4>
+The content of the database is characterized by a small number of keywords
+culled from the home page etc.
+<H4> Statistical representative approach </H4>
+Collect statistics about frequency of words in documents in the collection.
+Meng et al. go to town on this.
+<H4> Learning based approach </H4>
+Offline: present a collection of queries to each search engine. Evaluate
+quality of search engine response.
+
+<p>
+Query time: Compare user query to previous queries and choose the search
+engines that scored highest on the related queries.
+
+<p>
+<b>Options: </b><br>
+Queries:  Generated by experimenter or culled from user logs. <br>
+Query specific evaluation: Manual; or number of pages returned; or 
+download sample pages and calculate relevance; or click
+through data. <br>
+Query-independent evaluation: Average query specific evaluation over queries; 
+or excessive delay.
+Comparison: Apply a learning technique to the prediction of evaluation
+from query.  Note that if queries are generated by known category as in 
+HiWE, then  
+the categories can be used to guide the learner (e.g. learn one classifier
+per category.)
+O
+<H3> Identifying the same page </H3>
+If you have the same or equivalent URL then it's easy.
+
+<p>
+Otherwise, identifying duplicate pages from snippets provided by two different
+snippet extractors has got to be tough to do with any degree of accuracy.
+I didn't find much information on this.
+`
+<H3> Merging rankings </H3>
+See Liu <em> Web Data Mining </em> p. 227.
+
+<p>
+Combining separate systems of rankings to get an overall ranking is a well
+known problem in "voting theory".  There is provably no method for doing
+this that does not sometimes give rise to some kind of anomalies. (Arrow's 
+theorem etc.) Figure
+skating judging went through a whole sequence of algorithms before going
+to a system of cardinals a couple of years ago.  The situation here is 
+complicated by the fact that you have null values, which count only somewhat
+as a vote against the page.
+
+<p>
+One method: "Reciprocal ranking". Let R<sub>P,E</sub> be the rank of page
+P returned by engine E. For each page, compute the sum of 1/R<sub>P,E</sub>,
+where this reciprocal is considered 0 if E does not return P.  Order the 
+pages by decreasing value of reciprocal sum.
+
+
+<H3> Clustering </H3>
+From downloaded pages or from snippets.
+
+
+<p>
+<A href="http://doi.wiley.com/10.1002/spe.829">
+A personalized search engine based on web-snippet hierarchical clustering </A>
+Pablo Ferragina and Antonio Gulli, <em> Software: Practice and Experience</em>
+2007.
+
+
+<p>
+<b> Two offline knowledge bases: </b> <br>
+1. A collection of anchor texts on inlinks within a 50 million page collection.
+<br>
+2. A modified TF-IDF measure for terms based on Dmoz.  Terms are ranked
+with respect to Dmoz categories.  More specific categories are ranked
+higher than more general categories.  Terms are considered similar if
+they have high ranks in the same categories.
+
+<p> <b> Online: </b>
+<UL>
+<LI>
+Collects snippets from 18 search engine using 
+<A href="http://www.cs.uiowa.edu/~asignori/helios/building-meta-search-engine.pdf">
+Helios,</A> an open-source 
+meta-search engine by the same (or overlapping) research group.
+
+<LI>
+Snippet analyzer.  Combines snippets with anchor texts. Deletes stop words,
+does stemming, identifies part of speech and named entities.
+
+<LI> Builds sentence for labelling clusters, by cutting and pasting
+from snippets, using KB information and analysis.
+
+<LI> Hierarchy of overlapping clusters. Bottom-up clustering method.
+Form collections that share phrases.  If two similar collections
+are created, prune the lower-ranked one. 
+
+</UL>
+
+<p>
+Example output: (from figure 8)
+
+<p>
+<b> Allergy</b>
+<UL> 
+<LI> Air Cleaner 
+<UL>
+<LI> Cleaners Improve The Air Quality
+<LI> Air cleaners With Hepa
+<LI> Purifier's [sic] Cleaning The Air
+<LI> Products At Great Prices
+<LI> Allergy Control
+<LI> Purifiers Great Selection Of Air
+<LI> Pillow Mattress Encasings
+<LI> Products Allergy
+</UL>
+<LI> Products
+<UL>
+<LI> Allergy Products
+<LI> Clearners Improve The Air Quality
+<LI> Information Symptoms Medication Product
+<LI> Asthma Relief Products
+<LI> Allergy Store
+<LI> Relief from Allergies
+<LI> Asthma Treatment
+<LI> Pillow Mattress Encasings
+<LI> Pollen Mold
+</UL>
+<LI> Information
+<UL>
+<LI> Asthma Immunology Is An Information
+<LI> Asthma Immunology Online
+<LI> Allergy Information
+<LI> Allergy Anaphylaxis Network
+<LI> Allergy Associates
+<LI> Organization Providing Consumer-friendly 1
+</UL>
+<LI> Relief
+<UL>
+<LI> Latex Allergy
+<LI> Clearners Improve The Air Quality
+<LI> Buy Online
+<LI> Information Symptoms Medication Product
+</UL>
+</UL>
+
+<p>
+The "personalization" here is pretty slight.  If I'm understanding this,
+it's just a user-interface feature.  The user can mark certain clusters
+as of interest, and have the rest disappear off the screen.
+
+
+

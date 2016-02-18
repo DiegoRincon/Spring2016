@@ -1,0 +1,180 @@
+<TITLE>
+Web Search Engines: Course Project
+</TITLE>
+<H2> Course Project </H2>
+<p>
+In programming assignments 1-4, you will build a bare-bones search engine, 
+with a basic crawler, indexing, retrieval, and ranking 
+capabilities. The course project is to extend this search engine significantly
+in one dimension or another.
+
+<p>
+The one absolute constraint is that the project must be a web search engine.
+That is: 
+There is a web page on which a user can issue queries. 
+The program generates a results page, which
+is hopefully a good answer to the query. The information in
+the results page derives from unstructured data on the web, not created
+by you. 
+
+<p> Specifically:
+<UL>
+<LI> The type and form of query (keyword, Boolean, menu-driven etc.)
+is up to you except that a very large number of queries should be within
+the query language (much too many to hand-code all the answers).
+<LI> The interface should be web-based; you should set up a web page 
+that runs the program.  Keep the interface as simple as possible, consistent
+with the purpose of the project.  I do not want you spending time adding
+bells and whistles to the interface, even if cool, unless they really 
+increase the functionality.
+<LI> The system should be usable by a naive user.  What the system does,
+and how it works, should sufficiently explained by a very brief description
+on the web interface page itself.
+<LI> How and when you collect pages and process information is up to you. E.g.
+<UL>
+<LI> Crawl at query time.
+<LI> Issue a Google query at query time.
+<LI> Collect pages from pre-determined sites at query time.
+<LI> Do any of the above off-line.
+<LI> You may even do manual processing on information collected off-line,
+as long as the ratio of manual work to computer work is plausibly small.
+<LI> No manual processing may be done by the programmer at query time
+(the program is supposed to work while the programmer is asleep). 
+However, the program is allowed to require interaction with the <em> user.</em>
+</UL>
+<LI> You may restrict the category of web pages used in any way you want
+(e.g. only HTML pages; only JPEG files; only NYU.EDU pages; only
+Wikipedia pages) <em> except</em> that you may not restrict it to highly
+structured pages (e.g. databases). You may combine information from a structured
+source with information from a non-structured source, as
+long as you can make the case that the non-structured information is
+being used in an important way.
+<p>
+Similarly, the project should not involve getting information that is 
+presented in a very predictable and systematic even in a non-structured
+format.  For instance, "Find all the movies that a specified actor has
+acted in" is not an acceptable project, because it can be easily done very
+reliably by finding the actor's page on www.imdb.com and parsing it.
+</UL>
+
+<p>
+In general, I would rather see an unsuccessful, imaginative approach
+to a open-ended or impossible problem than a successful, pedestrian
+approach to an easy problem.
+
+<H3> Suggestions for possible projects </H3>
+What I recommend is to add a substantially new functionality to the basic
+search engine. For example:
+<UL>
+<LI> Improve the crawler by implementing a heuristic for search or
+implementing near-duplicate detection.
+<LI> Implement a strategy for result diversity.
+<LI> Implement document clustering.
+<LI> Implement search for non-text files e.g. images.
+<LI> Implement question answering for some class of queries.
+<LI> Table extraction and interpretation.
+<LI> Information extraction: Extracting some particular kind of information
+from text.
+<LI> Specialized search engine: Implement a search engine that gives
+high quality results for some particular class of queries.
+</UL>
+
+<p>
+I'm happy to consider other possibilities as well. If there is something
+you want to do, it is best to check with me well in advance of the
+due date for the project proposal.
+
+<p>
+In general, I am not enthusiastic about systems-oriented projects --- that
+is, doing some part of the search engine on a large scale or at high speeds
+--- first, because Lucene is already highly tuned for that, and you are 
+unlikely to be able to beat it; second, because it's outside my expertise,
+and I can't either advise or evaluate such a project. I can accept it only
+if you can find someone else who can both advise you on it, and who can give
+me unbiased advice on evaluating it.
+
+<p>
+The project should be preferably that is fundamentally different from the
+functionalities in Lucene.  If you want to reimplement a functionality
+that is present in Lucene, that could be OK, but you will have to make a 
+case that the way you are doing it is quite different from the way it is done
+in Lucene. For instance, if you have an idea for a better way to do scoring,
+you will have to justify that it is substantially different from any of
+Lucene's built-in scoring functions.
+<H3> Public software and external resources </H3>
+You may use any publicly available software and web resources
+that you want, and I encourage you to, but they must all be credited
+in your write-up and in a credits page linked to your query page.  
+Web pages from which content has been extracted
+should be cited, by title and URL, on the results page.
+
+<H3> Group Projects </H3>
+You may do a group project, if you want.  I expect a project that reflects
+a proportionally greater amount of work.  All members of the group get
+the same grade on the project.  After the project proposal has been
+accepted, I will consider the membership of the group to change only if
+I have unanimous agreement from all the members of the group. Proposals and
+final projects should be submitted by one member of the group; the other
+members should send email confirming their participation.
+
+
+
+<p>
+If you want to use this same project for this and another class, you may 
+request this when you submit your project proposal. The other instructor
+must also be consulted and approve it
+at that time.  Again, the project will have to
+be proportionally larger.  Such requests will be considered
+case by case.
+
+<H3> Evaluation </H3>
+Systematic
+evaluation is not required but is certainly welcome, if the nature of the
+project allows it.
+
+<H3> Project proposal </H3>
+The project proposal is due  Monday, March 21. It should contain:
+<UL>
+<LI> If a group project, the members of the group.
+<LI> Objective of the project.
+<LI> Sketch of the architecture. Since the sketch will probably be 
+over-ambitious, you should state the order in which you will work on
+various parts of the system. 
+<LI> List of external software to be used.
+<LI> List of web resources to be used.
+<LI> Other pertinent system features (e.g. the programming language to be used).</UL>
+None of this, except the membership list, constitutes a commitment on your
+part; though if you make a major change after the proposal is accepted, please
+consult with me.  I just want to be sure that by mid-semester you have 
+started seriously thinking about the project.  The proposal will not
+be graded; HOWEVER IT MUST CONFORM TO ACADEMIC STANDARDS REGARDING CITING
+WORK THAT YOU HAVE USED.
+
+<H3> Deliverable </H3>
+The project is due Monday May 4. You should submit on the NYU Classes site:
+<UL>
+<LI> The URL of the page where your project is running.  <b> No credit will
+be given for a project that does not run. </b>
+<LI> The source code for the project. The code should be executable on
+the departmental Linux machines. 
+<LI> A README file with instructions for compiling and running the project.
+<LI> A write-up of the project.  This should include the same material as
+the proposal (brought up to date) and also:
+<UL> 
+<LI>
+Some examples where the project succeeds (if any) and where it fails
+(if any).
+<LI> (Optional) Discussion of interesting/unexpected issues met with in
+the project, either overcome or not.
+<LI> (Optional) Systematic evaluation of the project.
+<LI> (Optional) Discussion of what you would do next to improve the system,
+if you were going to work on it more.
+</UL>
+</UL>
+
+Again as will all academic projects, CITATIONS MUST BE GIVEN FOR MATERIALS, 
+SOFTWARE, RESOURCES, IDEAS, TEXT ETC. AND ACKNOWLEDGEMENTS MUST BE MADE
+FOR ANY ASSISTANCE FROM ANY PERSON (except myself). FAILURE
+TO DO SO WILL BE CONSIDERED PLAGIARISM AND CHEATING AND WILL RESULT IN
+A GRADE OF "F" FOR THE COURSE.
+

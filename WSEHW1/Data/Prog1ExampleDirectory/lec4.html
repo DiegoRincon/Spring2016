@@ -1,0 +1,528 @@
+<TITLE> Web Search Engines: Lecture 4: Near Duplicate Pages / Evaluation</TITLE>
+
+<H2> Lecture 4: Duplicate Pages / Evaluation </H2>
+<H3> Exact Duplicates </H3> 
+<p>
+See notes
+<A href="http://cs.nyu.edu/courses/summer11/G22.1170-001/hash.pdf">
+Notes here</A> technique 1.
+
+<p> Check-sum (sum of the ASCII values of the letters), discussed in CM&S
+is no good, because the range of values is too small. Suppose that there
+are a billion web pages that are no more than 10,000 characters long.
+The check sum for a web page (ASCII) that is no more than 10,000 characters 
+long is at most 2,550,000. Therefore most check sums will have about 400
+web pages corresponding. 
+
+
+<H3> Near Duplicate Pages </H3>
+See MR&S section 19.6. One point is not very clearly explained there. You 
+can't actually choose a random permutation over the  set
+{ 0 ... 2<sup>63</sup>-1},
+because it would take about 2<sup>69</sup> bits just to write down such a 
+thing. But you don't have to specify the whole permutation, just its value 
+on the shingle keys that actually occur. 
+
+<p>
+So you carry out the following algorithm:
+
+<PRE>
+/* PermutationCount is a mapping D1xD2 -> N, where D1, D2 are document
+ID's and N is the number of permutations &pi; for which x<sup>&pi;</sup><sub>1</sub> = x<sup>&pi;</sup><sub>2</sub> 
+in the notation of MR&S. If no record for D1 x D2, then 0. 
+PermutationCount is implemented as a hash table */
+
+NumDocs: number of documents;
+Docs[1 ... NumDocs]: Document set.
+Shingles[1 ... NumDocs]; /* Shingles[I] is the set of 64-bit hash codes
+                            for shingles in Docs[I] */
+
+procedure NextPermutation () {
+
+X[1 ... NumDocs] /* X[I] =  x<sup>&pi;</sup><sub>I</sub> */
+H = emptyhashtable /* H is hash table with Key, Value pairs < Q, Pi(Q) > 
+                      where Q is the 64 bit hash of a shingle */
+for (I = 1 ... NumDocs)
+  for (Q in Shingles[I]) {
+     P = retrieve(H,Q);
+     if (P == Null) {
+       P = random 64 bit number;
+       store(H,Q,P); }
+     if (P < X[I]) X[I] = P;
+    } endfor
+endfor
+
+P2Docs = emptyhashtable; /* P2Docs is hash table with Key, Value pairs < P,L >
+                         where L is the list of docs I s.t.  x<sup>&pi;</sup><sub>i</sub> = P;
+for (I= 1 ... NumDocs) {
+  L = retrieve(P2Docs,X[I]);
+  for (J in L) {
+      C = retrieve(PermutationCount, < I,J >))
+      if (C == Null) C = 0;
+      store(PermutationCount(< I,J > ,C+1))
+    } endfor
+  store(P2Docs,X[I],AddList(I,L))
+} endfor 
+
+end NextPermutation
+ 
+
+procedure TestForDups() {
+NumPerms = 200;
+
+for (I=1 ... NumDocs) Shingles[I] = set of hashes of shingles in Docs[I]; 
+PermutationCount = emptyhashtable;
+for (P=1 ... NumPerms) NextPermutation();
+any < I,J > for which retrieve(I,J) > 0.80 * NumPerms is a duplicate pair;
+}
+</PRE>
+
+This can get into trouble if there is a "boilerplate shingle" (e.g. 
+automatically produced by a web document authoring tool in every page) 
+which appears in more than sqrt(NumDocs) documents. If so, then the inner
+loop in the last part of NextPermutation may iterate more than O(NumDocs) times
+in total. So once a shingle gets too many documents associated, you ignore
+it, now and in future (you keep a permanent table). With that fix, the 
+algorithm clearly runs in time O(NumPerms * total size of document set).
+    
+<H4> Simhash </H4>
+CMS p. 63.
+<UL>
+<LI> Identify a collection of weighted features (e.g. word or n-word shingle)
+Document is characterized by feature values: f<sub>i</sub>(D) = w<sub>i</sub>
+<LI> Map each feature f<sub>i</sub> into a B-bit hash code 
+h<sub>i</sub>[1 .. B].
+<LI> For a document D, define a vector V[1 .. B] as follows:
+&nbsp &nbsp V[J]  = &Sigma;<sub>i</sub> (2 h<sub>i</sub>[J]-1) * f<sub>i</sub>(D) 
+<br>
+(Note: 2 h<sub>i</sub>[J]-1 is 1 if h<sub>i</sub>[J] = 1 and  
+-1 if h<sub>i</sub>[J] = 0.)
+<LI> Define a bit vector W[1..B] by W[J] = 1 if V[J] > 0 and W[J] = 0 if
+V[J] < 0.
+
+</UL>
+Now, two documents that are close in feature space have values of V that
+are close; and with high probability two documents that are far apart in
+feature space have values of V that are far apart. The point, though, is that
+we've squashed a huge dimensional feature space down into a collection of
+B-dimensional while more or less preserving distance relations.
+
+<p>
+Put it another way: Any particular feature f<sub>i</sub> corresponds to
+a basis vector that is an essentially random sequence of 1's and -1 in
+B-space. The dot product between two random sequences of 1's and -1's of length
+B is the sum of B random 1's and -1's, so follows the normal distribution, and
+tends to be about sqrt(B). Therefore for any two such vectors U and V,
+the cosine of the angle between them, U dot V / (|U|*|V|)
+is about sqrt(B) / [sqrt(B) * sqrt(B)] = 1/(sqrt(B)). So with high probability
+every pair of vectors
+h<sub>i</sub> is nearly orthogonal in B dimensional space. (Note that there
+are only B<sup>2</sup> pairs of vectors; that is not enough to make it
+likely to that the set of all dot products has any real outliers.) 
+
+<p>
+(In B-dimensional space, there can be are at most B vectors that are 
+strictly orthogonal to one another. But there can be many more vectors than
+that that are <em> nearly</em> orthogonal to one another.)
+<H2> Evaluation of Web Search </H2>
+CM&S Chapter 8
+
+<H4> Additional reading </H4>
+<p>
+MR&S Chapter 8.
+
+<p>
+<A href="http://www.sigir.org/forum/F2002/broder.pdf"> 
+A Taxonomy of Web Search </A> Andrei Broder, <em>SIGIR Forum,</em> 36:2,
+2002, 3-10. 
+<p>
+"The retrieval effectiveness of web search engines: 
+considering results descriptions,"
+Dirk Lewandowski, 
+<A href="http://www.emeraldinsight.com/journals.htm?issn=0022-0418&volume=64&issue=6&PHPSESSID=03v1os5k4ng8v9j1918osci5v7">
+<em> Journal of Documentation</em></A>, 
+64:6 2008, 915-937.
+
+<p>
+<A href="http://www.bui.haw-hamburg.de/fileadmin/user_upload/lewandowski/doc/ASLIB2009_preprint.pdf"> The retrieval effectiveness of search engines on 
+navigational queries.</A> Dirk Lewandowski
+
+<p>
+<A href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.141.5807">
+Evaluating search engines by modeling the relationship between relevance
+and clicks. </A>  B. Carterette and R. Jones, NIPS
+2007.
+
+ 
+<H2> Evaluating the results returned for one query </H2>
+
+<H3> Precision and Recall </H3>
+D = set of all documents <br>
+Q = set of documents retrieved <br>
+R = set of relevant documents <br>
+
+<p>
+Standard measures in IR (in fact, in all applications where the objective
+is to find a set of solutions): <br>
+Precision = |QR| / |Q| -- fraction of retrieved documents that are relevant
+= 1 - (fraction of retrieved documents that are false positives). <br>
+Recall = 
+|QR| / |R| -- fraction of relevant documents that are retrieved
+= 1 - (fraction of relevant documents that are false negatives). <br>
+
+<p>
+E.g. suppose there are actually 8 relevant pages. The query engine returns
+5 pages of which 3 are relevant. Then Precision = 3/5 = 0.6. 
+Recall= 3/8 = 0.375.
+
+<p>
+If Q1 subset Q2, then Recall(Q2)  >= Recall(Q1).  Prec(Q2) can be
+either greater or less than  Q2.  If you consider the precision over the
+first K documents returned for K = 1, 2, ... then the precision goes
+up every time d<sub>K</sub> is relevant and down every time it is
+irrelevant, so graph is sawtoothed. But on the whole precision tends to
+go down, so there is a trade-off between recall and precision as you get
+more documents.
+
+<H3> Probabilistic definition of precision/recall </H3>
+Pick a document d at random from the collection. Let Q be the event that
+d is retrieved in response to a given query and let R be the event that
+d is relevant.
+
+<p>
+Precision = Prob(R|Q). <br>
+Recall = Prob(Q|R).
+
+<H4> F-measure </H4>
+F-measure combines precision and recall into a single number, which is
+their harmonic mean.
+
+1/F = (1/2) (1/P + 1/R) <br>
+F = 2PR / (P+R).
+
+<p>
+Note that (a) if either P or R is close to 0 then F is close to 0 (no reward
+for trivial solutions like returning all documents, with P ~ 0 and R=1).
+(b) if P and R are close in value then  F is about their average; (c)
+otherwise F is between P and R, but closer to the smaller of the two.
+
+
+<H3> Measures </H3>
+Recall is pretty much irrelevant for web search because (a) users almost never
+want all relevant documents (b) it is impossible to determine what is the
+set of relevant documents. So most of traditional IR evaluation theory goes
+out the window.
+
+<UL>
+<LI> A. K-precision. Precision over first K results (e.g. K=3, K=10), regardless
+of order. (Problematic if there are fewer than K relevant pages on the web.)
+<LI> B. Discounted precision. W(1)*R(1) + W(2)*R(2) + ... where R(I) is the
+relevance of the Ith result and W is a descreasing sequence of weights
+<LI> C. Rank of Kth relevant document (e.g. K = 1). (Larger is bad.)
+(Problematic if fewer than K relevant documents returned.)
+</UL>
+
+Note that these correspond to different user models:
+<UL>
+<LI> User looks at all relevant documents in first K results.
+<LI> User starts at top, decides at each step
+whether to continue based on weighted coin
+flip. (Weight may depend on I but does not depend on whether or not he has seen
+any relevant documents.) Measure = expected value of docs he reads.
+<LI> User reads from top until he has read K relevant documents. 
+</UL>
+
+<H3> Relevance </H3>
+Relevance is taken relative to an <em> information need,</em> not to a query.
+The gold standard here is a reference librarian who can interact with the
+user to find out what he/she actually needs to know.
+
+<p>
+Note that the effectiveness of the query engine on a given query will often
+be inherently limited because of the inadequacy of the query as an expression
+of the information need. This inadequacy, in turn, may have several sources:
+<UL>
+<LI> The technical limitations of the query interface.
+<LI> The incompetence / impatience of the user formulating the query.
+<LI> The information need may be:
+<UL>
+<LI> More naturally expressed in some non-verbal mode e.g. image.
+<LI> Involve meta-data. E.g. "I need an article on the subject that was
+published in a peer-reviewed scientific journal". "I need a web page that
+my 6 year old will understand"
+<LI> Inherently involve multiple documents. E.g. "I want one article 
+that argues in favor of balancing the budget and a second that refutes the
+first."
+<LI> Involve characteristics whose relation to
+the text is very complex.  "I want a precedent that will help me win
+my case." "I want to find a proof that the Chebyshev center of a bounded
+region is unique."
+</UL>
+</UL>
+
+
+<p>
+Some of these are more problems for the serious researcher; others apply to
+the man-in-the-street user as well.
+
+<p>
+Also the phrase "relevant to an information need" is actually ambiguous. Does
+it mean "has to do with the same subject as the information need" or 
+"goes some way toward satisfying the information need".
+<p>
+Difficulty formulating good information need exactly. If narrow ("What year
+was Babe Ruth traded to the Yankees?") one page usually suffices. If broad
+("Give me information about high blood pressure") relevance becomes hard
+to judge.
+
+<p>
+<b>Other relevance issues:</b>
+<UL>
+<LI> Scale:
+<UL>
+<LI> Boolean
+<LI> Bounded scale: 0,1,2,3.
+<LI> Fraction of information need met (number between 0 and 1)
+<LI> Amount of relevant information provided (unbounded number).
+</UL>
+<LI> How to count when part of the page is relevant?
+<LI> How to count dead links/non-responsive links/links to unusable pages?
+<LI> How to count pages with false/unreliable information?
+<LI> Web page, web document (which may be multi-page), or web site?
+<LI> Sum of relevance, or marginal additional relevance E.g. if you have
+4 pages all of which have exactly the same information, does that count
+as 4 good pages or as 1. Note: no way to do this fairly, without somehow
+quantifying total informational content. E.g. there is no reason that
+4 pages, each with a different quarter of the information, should in total
+be better than 1 page with all the information.
+</ul>
+
+<H4> Usefulness of page as part of larger informational search </H4>
+A page may be useful even if it does not directly address the informational 
+need:
+<UL>
+<LI> Hub page that points to good authorities. Generally, a page
+that leads the user via browsing to good information. 
+<LI> Page leads to information source outside web. E.g.
+<LI> The text may give meta-information about the information need. E.g.
+"Nothing is known about X". 
+"Y is the expert/best book on X" 
+<LI> The page may provide useful guidance for reformulating the query
+(e.g. gives synonyms or related words).
+</UL>
+
+
+<h3> Snippets </H3>
+(Lewandowski 2008) 4 cases:
+<UL>
+<LI> 1. Document relevant, snippet relevant.
+<LI> 2. Document relevant, snippet unpromising.
+<LI> 3. Document irrelevant, snippet promising.
+<LI> 4. Document irrelevant, snippet unpromising.
+</UL>
+
+Problems:
+<UL>
+<LI> How do we incorporate this into our measure of relevance? 
+<LI> One's first thought is to say that (2) represents a failure of
+the snippet extractor. On second thought, that may not be the case. The document
+may be relevant even though there does not exist a convincingly interesting
+snippet, particularly with multi-word queries. 
+<LI> One's first thought is to say that (3) does not represent
+a failure of the snippet extractor, whose job it is, after all, to find
+the segment of the text most relevant to the query, whether or not that is
+representative of the document. On the other hand, maybe that's not its job. 
+E.g. with a scientific paper, you might do better to return both the snippet 
+and the paper abstract, so that the user can see whether the paper as a whole 
+is relevant.
+</UL>
+
+<H2> Comparing search engines overall </H2>
+Formulate a set of information needs, evaluate the search engines on all,
+combine the results.
+
+<UL>
+<LI> Balance subject matter? By frequency in actual query space or what?
+<LI> How to combine (the eternal multi-judge problem)? The obvious thing is
+to add, and that has its advantages, but there are also drawbacks.
+<LI> Separate by query mode? Broder suggests three category of query:
+<UL>
+<LI> Informational. Searching for any and all relevant web pages.
+<LI> Navigational. Searching for a specific web page (e.g. home page).
+<LI> Transactional. Searching for an interactive web page (e.g. shopping).
+</UL>
+but these categories are very ill-defined and unstable in the literature.
+</UL>
+
+<H2> Experimental design </H2>
+ 
+<H4> Measure relevance </H4>
+Experimenter formulates need, poses queries, evaluates 
+pages for relevance. Or pays other people to do some of these.
+<UL>
+<LI> Same people formulate/pose/evaluate?
+<LI> Results page randomized for order?
+<LI> Identity of search engine anonymized?
+</UL>
+
+<p> Crowdsourcing <br>
+<A href="http://portal.acm.org/citation.cfm?id=1480506.1480508">
+Crowdsourcing for relevance evaluation</A>
+Omar Alonso, Daniel Rose, Benjamin Stewart, ACM SIGIR 42:2 2008. <br>
+Pay randoms on the web 1 penny per answer. This seems utterly unreliable
+to me.
+
+
+<H4> User log analysis. </H4>
+Click-through data in user logs. Advantages: Natural
+data, lots of data. Disadvantage: difficulty of interpretation. Confounding
+effects. E.g. are people clicking on the first item returned because it
+is most relevant (i.e. looks most relevant from the snippet) or just because
+it is first? If they click on only one, is that because the remaining
+pages are not relevant or because their need was satisfied, or because they
+gave up? Even if they don't click at all, perhaps their question was answered
+from the results page? (Increasingly the case, as results pages become
+more expressive.)
+You can correct for some of this, to some extent, by feeding
+people results in randomized order, but you don't want to do a lot of that to
+naive users.
+
+<H4> Survey  </H4>
+Ask users to fill out a survey about their purposes and their success.
+(Broder, 2002).
+
+<H4> Protocol analysis </H4>
+Ask users, engaged in a task of some complexity, to talk out loud as they work;
+explain how they formulate and reformulate queries, how they choose links to
+follow, how they decide whether to continue.
+<p>
+Well known dangers:
+<UL>
+<LI> The process of giving a protocol can alter behavior.
+<LI> People give rationalizations for their behaviors that are sincere but
+demonstrably false.
+</UL>
+Data is rich but limited and hard to interpret.
+
+
+<H4> Other experimental designs </H4>
+Subjects are given a list of questions to answer. Compare how long they take
+to answer the questions with one search engine as opposed to another, or
+study how they use the search engines.
+
+<p>
+Subjects are given a task, asked to use two different search engines and
+compare the quality of their results.
+
+	<h4> Behavioral studies of relevance </h4>
+<p>
+<A href=
+"http://comminfo.rutgers.edu/~tefko/Saracevic%20relevance%20pt%20III%20JASIST%20%2707.pdf">
+Relevance: A Review of the Literature and a Framework for Thinking on the 
+Notion in Information Science. 
+Part III: Behavior and Effects of Relevance
+</A> Tefko Saracevic. 
+<em> Journal of the American Society for Information Science and Technology
+</em> 
+58(13):2126-2144, 2007.
+
+<!--
+<A href=
+"http://comminfo.rutgers.edu/~tefko/Saracevic%20relevance%20pt%20II%20JASIST%20%2707.pdf">
+Part II: Nature and Manifestations of 
+Relevance </A> 58(3):1915-1933  -->
+
+<H3> Significance of evaluation </H3>
+Failures and errors occur for the following reasons:
+<UL>
+<LI> 1. Web content
+<UL>
+<LI> 1.A No information on Web
+<LI> 1.B Incorrect/outdated information
+<LI> 1.C Information hard to find on site. Page poorly designed, bad links, 
+site too big, etc.
+<LI> 1.D Redundancy between web pages.
+</UL>
+<LI> 2. Crawler problem
+<UL>
+<LI> 2.A Document not indexed
+<LI> 2.B URL out of date (document moved)
+<LI> 2.C Dead/non-responsive link
+<LI> 2.D URL content changed
+<LI> 2.E Multiple copies of identical/near-identical page
+</UL>
+<LI> 3. Retrieval problem
+<UL>
+<LI> 3.A False positive
+<LI> 3.B False negative
+<LI> 3.C Misjudge importance of page
+<LI> 3.D Misordering of pages
+<LI> 3.E Wrong page on Web site (e.g. link to internal page when top-level
+page would be better or vice versa)
+<LI> 3.F Engine too slow
+</UL>
+<LI> 4. Query language problem 
+<UL>
+<LI> 4.A Insufficiently expressive
+<LI> 4.B Ill-defined.
+<LI> 4.C Too complicated / misleading
+</UL>
+<LI> 5. User problem (particularly in observational studies)
+<UL>
+<LI> 5.A Poor choice of query terms
+<LI> 5.B Ineffective use of query language
+<LI> 5.C Ineffective use of browser
+<LI> 5.D Information overload -- too many pages causes user to give up.
+<LI> 5.E Impatient
+<LI> 5.F Distracted
+</UL>
+<LI> 6. Results page problem
+<UL> 
+<LI> 6.A Confusing format
+<LI> 6.B Misleading snippets
+</UL>
+<LI> 7. Browsing problem
+<UL> 
+<LI> 7.A Page cannot be downloaded
+<LI> 7.B Page takes too long to download
+<LI> 7.C Page cannot be correctly displayed
+</UL>
+<LI> 8. Page unsuitable to user
+<UL>
+<LI> 8.A Too elementary
+<LI> 8.B Too advanced
+<LI> 8.C Wrong language
+<LI> 8.D Pornographic or objectionable
+</UL>
+<LI> 9. Non-text media
+<UL>
+<LI> 9.A Poor quality at web site.
+<LI> 9.B Browser doesn't know format.
+<LI> 9.C Poor quality at browser.
+<LI> 9.D Limited textual information. (In almost all real cases,
+such media are indexed by related text.)
+<LI> 9.E Format unsuited to user (e.g. limited vision/hearing).
+</UL>
+</UL>
+
+<!--
+Different experiments detect different combinations of these. For example:
+
+<p>
+Tester specifies query; test subject read first 30 pages; labels each
+page "relevant", "irrelevant", or category of failure (e.g. "bad link"; 
+"too long to download" etc.) This tests separately  3.A possibly combined
+with 3.E; 2.C; 7.A; 7.B.
+
+<p>
+Tester is aware (not through search engine) of a valuable page; runs
+a variety of queries; tabulates fraction of queries for which page is in
+top 100. Combines 2.A, 3.B, 3.C, 3.D.
+
+
+<p>
+Tester specifies list of questions in some subject area to be answered in
+fixed time period;
+test subjects use search engine as best they can.  This combines pretty
+much all possible errors.
+--->

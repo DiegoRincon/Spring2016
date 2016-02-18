@@ -1,0 +1,146 @@
+
+<TITLE> Lecture 7: Specialized Search Engines </TITLE>
+<H2> Lecture 7: Specialized Search Engines </H2>
+
+<H3> <A href="http://www.cs.nyu.edu/~xuwei/WordNet_NLP.pptx">
+Wei Xu's presentation on Word Net and other NLP online tools </A> </H3>
+
+<H3> Specialized Search Engines </H3>
+<UL>
+<LI>Databases: Generate dynamic pages from private database.
+<LI>Local search engines: Deliver static pages at same web site 
+using search engine interface.
+<LI>Special topic search engines: Deliver pages of specified types or topic
+from many sites.
+</UL>
+
+Advantages to specialized seach engine derive from 
+<UL>
+<LI> Predictable format.
+<LI> Restricted subject.
+<LI> Restricted user pool.
+<LI> Smaller (100,000 or a million documents vs. billions of documents)
+</UL>
+
+Advantages include:
+<UL>
+<LI> Collection
+<UL>
+<LI> Focussed crawling
+<LI> Deeper crawling within a site
+<LI> Use local search engine interface.
+<LI> Freshness
+<LI> Content supplier reports (e.g. bookfinder.com, Froogle)
+<LI> Lose serendipity (relevant page far from where you would expect it).
+</UL>
+<LI> Document individuation
+<UL> 
+<LI>Conflation of "the same" document
+<LI>Indexing subdocuments within a page (e.g. individual articles or 
+advertisements)
+</UL>
+<LI> Query language
+<UL> 
+<LI> Specialized fields
+<LI> Specialized input form
+<LI> Special symbols, terminology (e.g. chemical formula)
+<LI> Alternative medium (e.g. audio)
+<LI> Expert level language (e.g. for reference librarians).
+</UL>
+<LI> Retrieval
+<UL>
+<LI> Disambiguation
+<LI> Ranking criterion. E.g. Authority of web site; user evaluation;
+Citations other than hyperlinks (Citeseer) etc. 
+<LI> Domain-specific search term relations.
+<LI> Even standard IR measures such as IDF change just as a result of
+narrowing the collection; allows greater precision.
+</UL>
+<LI> Clustering
+<LI> Relations between pages and data collection
+<LI> Presentation.
+<LI> Postprocessing. E.g. Wolfram Alpha (will deal with later under information
+extraction).
+<LI> Personalization
+</UL>
+
+<H3> Examples </H3>
+<H4> Collective business site </H4>
+Collective business web sites of all kinds (bookfinder.com, expedia.com,
+Google shopping etc.) 
+
+<p>
+Merchant sends database (and thereafter updates) in a uniform format
+to site. Site collates, enables a uniform search engine. 
+
+<p>
+Similarly for engines for restricted categories of merchandise.
+(Cars, real estate, books, etc.) Restricting the categories
+enables domain-specific query attributes, drop-down value lists,
+appropriate presentation and interaction, greater precision.
+<p>
+More of a database
+than a search engine, but does support keyword matching.
+
+
+
+<H4> Citeseer </H4>
+<A href="http://citeseerx.ist.psu.edu/">CiteSeerX </A> </H3>
+Precursor to Google Scholar, but has the advantage of having been
+published.
+Collects CS research papers; structures by citation. 
+
+<p>
+<b>Collection:</b>
+Use search engine with keywords like "publications" or "papers" as
+starting point for crawl.  Also uses known online journals, proceedings.
+
+<p>
+<b> Single document processing </b>
+Converts Postscript, PDF to plain text. Translate to various formats<br>
+Extracts index terms. <br>
+Extracts fields: Author, Title, Date, Pub, Abstract. <br>
+Identifies bibliography and references.  <br>
+Identifies citations in text. <br>
+Locate author home pages.
+
+<p>
+<b> Cross-document processing </b>
+Identify reference with document. Note: Wide variance in form of referece.
+plus typos, errors <br>
+Identify common references to external document (i.e. not online) <br>
+Textual similarity between documents. <br>
+Co-citation similariy between documents. <br>
+
+<p>
+<b>Query results </b> <br>
+Quotation from document with snippet. <br>
+Order by decreasing number of citations.  <br>
+<p>
+<b> Document summary </b> 
+Title, date, authors, abstract, Citations to paper, similar docs
+at sentence level. bibliography, similar docs based on text, related
+docs from co-citation, histogram by year of number of citing articles.
+
+<H4> Other Specialized Search </H4>
+<UL>
+<LI> Medical search.
+<A href="www.omnimedicalsearch.com"> OmniMedicalSearch.com </A>
+Leverage (my conjecture): Limited set of authoritative sources. Limited
+class of documents. Limited terms.
+
+<LI>
+<A href="http://chemxseer.ist.psu.edu/">
+ ChemXSeer </A>
+Indexes by chemical name, formula. The issue here is the specialized nature of
+terms and term matching.
+<LI> Searching for tables. Discussed below.
+<LI> Multimedia search.
+Search by image, by hum etc. Will discuss in a later lecture.
+<LI> Software Search.  Will discuss in a later lecture.
+<LI> Language-specific search. Will discuss in a later lecture.
+Not clear what leverage you get over Google, except (a) possibly user 
+interface; (b) with obscure languages or character sets (e.g. Sumerian
+cuneiform) Google may not be willing to make the investment. 
+</UL>
+

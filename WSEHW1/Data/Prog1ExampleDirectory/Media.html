@@ -1,0 +1,697 @@
+
+<TITLE> Media: Images and Music </TITLE>
+<H2> Media: Images and Music </H2>
+
+
+<H3> All media </H3>
+<P> <b> Features </b>
+<UL>
+<LI> Purely text-based (meta-text, nearby text, query log mining).
+<LI> Purely content-based: Extracted from the actual media.
+<LI> Mixed
+</UL>
+<P> <b> Query language</b>
+<UL>
+<LI> Text query
+<LI> Query by example: User has some image and wants to retrieve similar
+images.
+<LI> User-generated content: Query by humming, query by user sketch.
+<LI> Mixed query
+<LI> Browsing
+</UL>
+
+<p>
+Pervasive terminology: The "semantic gap"; the difference between media 
+features that are easy to compute from the content and the features of
+interest to the user.
+
+<p>
+Very broadly speaking, the state of the art: Use signal processing theory to
+define local features in the image/waveform (e.g. edgelets). Or use deep
+learning to start with actual pixel values.
+Use high-powered
+supervised classification ML techniques to build and tune a classifier for
+the semantic features of interest. Evaluate.
+
+
+<H3> Web Images </H3>
+
+<H4> Highly Recommended </H4>
+<A href="http://people.csail.mit.edu/torralba/publications/80millionImages.pdf">
+80 Million Tiny Images: A Large Dataset for Non-parametric Object and
+Scene Recognition
+</A> A. Torralba, R. Fergus, and W. Freeman
+
+<H4> Survey articles </H4>
+<A href="http://portal.acm.org/citation.cfm?id=1348248">
+Image Retrieval: Ideas, Influences, and Trends of the New Age </A>
+R. Datta et al., <em> ACM Computing Surveys </em> 40:2, April 2008.
+Recent, exhaustive, and dull.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1013208.1013210">
+Image Retrieval from the World Wide Web: Issues, Techniques, and Systems
+</A> M.L. Kherfi, D. Ziou, and A. Bernardi
+<em> ACM Computing Surveys </em> 36:1, 2004. Much more readable.
+
+Web Image Reranking.
+<H3> General issues </H3>
+
+<H4> Categorize images </H4>
+<UL> <LI> Photographs
+<LI> Other contentive images
+<LI> Trademarks, logos, icons, text, etc.
+<LI> Pornography
+</UL>
+
+This can be largely done reasonably accurately on the basis of easily 
+determined image characteristics. E.g. Trademarks etc. tend to have regions
+of simple structure, uniform color, high contrast.  Icons are small, almost
+by definition. There are reasonably
+accurate filters for nude photographs based on color distribution and shapes. 
+Etc.
+
+<H4> Duplicate images or image parts </H4>
+<A href=
+"http://www.intel-research.net/Publications/Pittsburgh/101220041248_261.pdf">
+Efficient Near-Duplicate Detection and Sub-Image Detection </A>
+Yan Ke, Rahul Suktahankar, Larry Huston, <em>ACM Intl Conf Multimedia</em>
+2004.
+
+<p>
+Find duplicate images, given changes in format, resolution, cropping, merging, 
+geometric transformation.
+
+<p>
+Method: Compute transformation-invariant image features of subregions of the 
+image.  Use "locality sensitive hashing" for approximate similarity retrieval.
+
+
+<H3> Text-based query </H3>
+Associate text with image:
+
+<p>
+Keywords for a given image file from:
+<UL>
+<LI> Image file name
+<LI> Anchors on h-links to image.
+<LI> Captions of image in text file containing image (note: more than one
+text file may contain the same image file).
+<LI> Text near image in text file containing page (a) in HTML structure
+(b) in physical layout.
+<LI> Significant text not particularly near image in containing text page.
+<LI> Parse labels of images in page with many images.
+</UL>
+Weight by "closeness" of text to image, and text characteristics (e.g.
+font size).
+
+<p>
+Google generally does well with this, but reasonably often makes mistakes that
+can only be understood if you look at the embedding page.
+
+
+<H3> Recent Work </H3>
+Recent work on web images tends to be characterized by
+<UL>
+<LI> Very sophisticated machine learning techniques
+<LI> Substantive but not deep image analysis.  Use of well-chosen but low-level
+image features. Little or no geometric analysis.
+<LI> Limited natural language analysis.  Main problem addressed is dealing
+with synonymy and other close relations between individual words.
+</UL>
+
+<H4> Tasks </H4>
+<UL>
+<LI> Text-based search (either in local database or as part of an
+image meta-search engine).
+<LI> Annotation of an image with a word
+<LI> Correspondence of word to the correct <em> part </em> of the image.
+<LI> Clustering
+<LI> Browsing support for collections
+<LI> Auto-illustration (given a text, suggest illustrations)
+<LI> Image operations:
+<UL>
+<LI> Picture completion (Hays and Efros).
+<LI> Colorization (Torralba et al.)
+<LI> Orientation correction (Torralba et al.)
+</UL>
+</UL>
+
+<H4> Search </H4>
+<P>
+<A href="http://portal.acm.org/citation.cfm?id=944965">
+Matching Words and Pictures 
+</A> K. Barnard et al. <em> Journal of Machine Learning Research </em>
+2003.
+<BLOCKQUOTE>
+User studies show a large disparity between user needs and what technology
+supplies (Armitage and Enser 1997, Enser 1993, 1995). This work make 
+hair-raising reading --- an example is a request to a stock photo library
+for "Pretty girl doing something active, sporty in a summery setting, beach
+-- not wearing lycra, exercise clothes -- more relaxed in tee-shirt.  Feature
+is about deodorant, so girl should look active -- not sweaty, but happy,
+healthy, carefree -- nothing too posed or set up -- nice and natural looking."
+</BLOCKQUOTE>
+
+Cite various studies of requests to image collections.
+<UL>
+<LI> Both category and individual (e.g particular people or places).
+<LI> Both by objects in the picture and by concepts evoked.
+<LI> Queries based on image features (color, texture, etc.) are almost 
+non-existent.
+<LI> Text associated with images is useful. E.g. newspaper archives are
+indexed by caption.
+</UL>
+
+
+<H3>
+<A href="http://people.csail.mit.edu/torralba/publications/80millionImages.pdf">
+80 Million Tiny Images: A Large Dataset for Non-parametric Object and
+Scene Recognition
+</A> </H3> A. Torralba, R. Fergus, and W. Freeman
+
+<p>
+<A href="http://cs.nyu.edu/~fergus/drafts/ipam_fergus.ppt"> PowerPoint 
+slides </A>
+
+
+<p>
+Great opening sentence:
+<BLOCKQUOTE>
+With overwhelming amounts of data, many problems can be solved without the need
+for sophisticated algorithms.
+</BLOCKQUOTE>
+
+<p>
+32 x 32 color pictures are generally recognizable. Lower resolution does not
+work. Vector of 3072 dimensions (1024 pixels x 3 colors) = 3072 Bytes per
+image.
+
+<p>
+General idea: Collect from the web a vast collection of annotated images,
+and use nearest neighbors to classify.
+
+<p> <b> Data Set Collection </b>
+<UL>
+<LI> 1. Collect 75,846 non-abstract nouns from Wordnet.
+<LI> 2. Download all images retrieved for these from Altavista, Ask,
+Flickr, Cydral, Google image [or Google web?], Picsearch, and Webshots.
+Over 8 months, collected 97,000,000 images.
+<LI> 3. Remove intra-word duplicates and uniform images -> 79,300,000 images
+from 75,062 words.
+<LI> 4. Down-sample images as they arrive to 32x32 pixels. Total: 760 GBytes
+<LI> 5. Normalize image to standard avg. brightness and contrast.
+<LI> 6. Images are labelled with the search word and the URL.
+</UL>
+
+<p> <b> Nearest neighbors. </b> <br>
+D(I1,I2) = &Sigma;<sub>x,y,c</sub> [I1(x,y,c) - I2(x,y,c)]<sup>2</sup>. <br>
+DWarp(I1,I2) = minimize [over transformation T] RawDist(I1,T(I2)) where
+T is a combination of translation, scaling, and horizontal mirror. <br>
+DShift(I1,I2) further allows shifts in X and Y of individual pixels by 5 pixels.
+
+<p> <b> Use of Wordnet </b> <br>
+Convert wordnet into a tree of terms by extracting the most common 
+meaning of all the words, and using the hypernym (supercategory) 
+relationship.  Then when searching for a category, you can include
+all words that are subcategories; e.g. if looking for person, include
+"artist", "politician", "kid" etc.
+
+<p> <b> Annotation </b>. Collect nearest neighbors. Each image "votes"
+for its label plus all supercategories
+
+<p> <b> Person detection </b> <br>
+Find 80 nearest neighbors, see how many are labelled "person" or
+(more usually) subcategory. Note: Better for pictures where the 
+person is large (a) because easier to match (b) because label is more
+likely to refer to the person.
+
+<p> <b> Person localization </b>
+Extract multiple crops of the picture, renomalize to 32x32, see which
+crops match. 
+
+<p> <b> Scene recognition </b>
+Collect votes among nearest neighbors for subcategory of "location"
+(e.g. "landscape", "workplace", "city" etc.) 
+
+<p> <b> Image colorization </b>
+Given a grey scale image, find nearest neighbors in grey, apply average color.
+
+<p> <b> Image orientation </B> 
+Try all rotations, find the orientation with the best match.
+
+<h4> Indexing </H4>
+Indexing points in a large dimensional space, to come close to a non-sparse
+query. Various techniques. 
+<UL>
+<LI> 2 pass -- exhaustive search with crude estimate to eliminate distant
+element, then exact match on those that remain. 
+<LI> 
+<A href="http://en.wikipedia.org/wiki/K-d_tree">
+K-D tree:</A> 
+</UL>
+ 
+
+<H4> Inverse power law distribution </H4>
+The frequency of categories in the images corresponds to a inverse power
+law distribution with &alpha; about 1.49. <br>
+Most common images: People (29%), plants (16%), sky (9%), building (5%). 
+The bottom 1000 or so categories are each represented in a single image.
+
+<H3> Training image classifiers from images collected off the web </H3>
+Fergus et al. 
+<BLOCKQUOTE>
+As many as 85% of the returned images may be visually unrelated to
+the intended category, perhaps arising from polysemes (e.g. "iris" can be
+iris-flower, iris-eye, Iris-Murdoch). Even the 15% subset which do correspond
+to the category are substantially more demanding than images in typical
+training sets --- the number of objects in each image is unknown and variable
+and the pose (visual aspect) and scale are uncontrolled.
+</BLOCKQUOTE>
+
+<P>
+<A href="http://portal.acm.org/citation.cfm?id=1153619">
+Animals on the Web </A>
+T. Berg and D. Forsyth
+
+<p>
+Animal images are particularly hard to identify (a) because they can adopt
+multiple poses, and are often seen from odd angles (b) because they have
+evolved to be camouflaged.
+<UL>
+<LI> Google web search on 10 categories of animals --- alligator, ant, bear,
+beaver, dolphin, frog, giraffe, leopard, monkey, penguin ---
+collects 10,000 web pages with 14,000 images at least 120x120. <br>
+Google search on 13 queries related to monkeys ("monkey" "monkey zoo" etc.)
+collects 9,300 web pages with 12,866 images of which 2569 are actually monkeys.
+<LI> Divide web pages for each search word into topics. Display 30 images
+per topic. User asked which topics are of interest. Topics are lumped into
+"interesting" and "uninteresting". Optionally, users may move displayed
+images from one category to another.
+<LI> Apply probabilistic 
+classifier to images,  matching on text associated with images 
+with image features. Image features used: "shape based geometric blur features"
+color features and texture.
+</UL>
+
+<p>
+<A href="http://www.robots.ox.ac.uk/~vgg/publications/papers/fergus05a.pdf">
+Learning Object Categories from Google's Image Search
+</A> R. Fergus et al.
+
+<UL>
+<LI> Google image search for categories (training on English language retrieval
+and validating on foreign language retrieval --- Google translator):
+airplane, car rear, face, guitar, leopard, motorbike, wrist watch.
+<LI> Convert to grey scale,  normalize to 300 pixel width.
+<LI> Train classifier on images. Image features: various kinds of region
+and edge detectors plus texture.
+<LI> Multiple objects per image. 
+<LI> Probabilistic model: Find in image regions R1 ... Rk and category
+C1 ... Ck to maximize the probability that region Ri is category Ci.
+</UL>
+
+<P>
+<A href="http://www.robots.ox.ac.uk/~vgg/publications/papers/schroff07.pdf">
+Harvesting Image Databases from the Web
+</A> F. Schroff, A Criminisi, A. Zisserman
+
+<p>
+18 categories: Airplane, beaver, bike, boat, camel, car, dolphin, elephant,
+giraffe, guitar, horse, kangaroo, motorbike, penguin, shark, tiger, wrist
+watch, zebra.
+
+<p>
+Compare three downloading methods:
+<UL>
+<LI> Google web search, extract images. <br>
+8773 in class, 25252 non-class, 26% precision.
+<LI> Google image search, download associated web pages, extract all images. 
+<br>
+5963 in class, 135432 non-class, 4% precision.
+<LI> Google image search. 
+4416 in class, 6766 non-class, 39% precision.
+</UL>
+
+<p>
+Filter out non-photographs based on image characteristics.  Overall 
+precision goes from 29% to 35%, number of in-class examples goes from
+13,000 to 10,000. (Varies considerably across categories.)
+
+<p>
+Rank images in each category using surrounding text plus meta-data.
+Naive Bayes on various text features (file name, word within 10 of image
+link etc.)
+
+<p>
+Train on visual features (similar to Fergus') using SVM.
+
+<p>
+Results: At 15% recall getting overall 86% precision.
+
+ 
+<H3>
+<A href=
+"http://graphics.cs.cmu.edu/projects/scene-completion/scene-completion.pdf"> 
+Scene Completion using Millions of Photographs </A></H3>
+James Hayes and Alexei Efros
+</A>
+
+<UL>
+<LI> Offline: Collect 2,000,000 images. (Preliminary experiment on 10,000 
+images worked very badly.)
+<LI> Online: User supplies photograph and marks area to be corrected.
+<LI> Find 200 nearest neighbors.
+<LI> Match local context: region around hole to correspondingly shaped
+region in images.
+<LI> Patch in and repair seam.
+</UL>
+
+Note 4th example in figure 6, where algorithm has actually removed the
+scaffolding.
+
+
+<p>
+Evaluation: Subjects evaluated doctored photos as real 37% of the time.
+Note however that subjects only evaluated real photos as real 87% of the time.
+34% of doctored photos marked as fake within 10 seconds (as opposed to 3%
+of real photos).
+
+<!--
+
+<P>
+<A href="http://people.csail.mit.edu/brussell/research/AIM-2005-025-new.pdf">
+LabelMe: a database and web-based tool for image annotation
+</A>
+B. Russell et al. Tool for users on the web to label images and parts of images.
+Objective to get a large corpus of images with (reasonably) high-quality
+textual labels.
+
+<P>
+<A href="http://citeseer.ist.psu.edu/415151.html">
+Searching For Multimedia: An Analysis Of Audio, Video, And Image Web Queries
+</A>
+B. Jansen, A. Goodrum, A. Spink.  How users search for multimedia
+
+<P>
+<A href="http://kobus.ca/research/publications/CVPR-01/clustering-art.pdf">
+Clustering Art
+</A>
+K. Barnard, P. Duygulu, D. Forsyth. Cluster images on the San Francisco
+Art Museum web site by image characteristics and text labels.
+-->
+
+<H3>
+<A href="http://www.springerlink.com/content/m8x1567r331g2405/">
+A survey of browsing models for content based image retrieval </A></H3>
+Daniel Heesch  <em> Multimedia Tools and Applications</em> 40:2, 2008,
+261-284.
+
+<p> <b> Advantages to browsing: </b>
+<UL>
+<LI> User has something in mind that is hard to formulate as a query.
+<LI> User's ideas develop while browsing
+<LI> "Put the human in the loop"
+<LI> Responsiveness. Structure computed offline; just link following 
+at query time.
+</UL>
+
+<p><b> Structures </b>
+<UL>
+<LI> Hierarchy (tree). Formulated using hierarchical clustering. (This author
+is of the opinion that agglomerative clustering produces substantially better
+results than K-means.) Pro: Overall structure is easily interpreted. Con:
+Restrictive browsing model.
+
+<LI> Neighbor graphs of with various definitions of "neighbor". Pro: 
+Flexible browsing structure.
+Con: With no overall view, easy to get lost. Depending on definition of
+"neigbor"
+
+<LI> Dynamic structure. This is just iterated querying disguised in terms of
+a browsing structure rather than as a results page.
+
+<LI> Dimension reduction. Project K-dimensional structure of images to 2-D,
+provide hoverable thumbnails, zoom in/out. <br>
+E.g. <A 
+href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4035765&tag=1">
+Semantic Image Browser: Bridging Information Visualization with Automated 
+Intelligent Image Analysis </A>
+J.Fan et al., IEEE Symposium on Visual Analytics Science and Technology,
+2006.
+</UL>
+However you do this you are limited by the semantic gap; the features that the
+program can detect are not the ones the user is interested in.
+
+<H3>
+<A href="http://dl.acm.org/citation.cfm?id=2484144">
+What Can Pictures Tell Us About Web Pages? Improving Document Search
+Using Images. </A></H3>
+S. Rodriguez-Vaamonde, L. Torresani, A. Fitzgibbon. SIGIR 2013.
+
+<UL>
+<LI> A.  Query is issued to a document search engine. Result: A ranked list R
+of documents.
+<LI> B. Same query is issued to image search engine. Result: A collection
+of images. This is used as the positive examples to train an image classifier.
+(You need a classifier that is trainable in interactive time; these exist.)
+<LI> C. The classifier is use to rerank the documents in R, favoring
+documents with pictures of the query.
+</UL>
+
+<p><b>Features </b>
+<UL>
+<LI>
+Text features: Relevance of document to query and rank of document in R. <br>
+<LI> Visual metadata: Number of linked images and number of images that are
+"valid" in the sense of being at least 100x100 pixels.
+<LI> Query visualness features. Accuracy of the classifier for the query 
+(document independent).
+<LI> Visual content features 
+<UL>
+<LI> Output of classifiers
+<LI> Conditional probability that the document is relevant given the 
+classifier output.
+</UL>
+</UL>
+
+<H3>
+<A href="
+http://www.micansinfotech.com/IEEE-CSEIT-BASEPAPER/IEEE-PROJECT-2014-2015-Web-Image-Re-Ranking-UsingQuery-Specific-Semantic-Signatures.pdf">
+Web Image Reranking Using Query-Specific Semantic Signatures </A> </H3>
+X. Wang, K. Liu, X. Tang, PAMI 2014.
+
+<center>
+<img width="600" src="WangLiuTangFig1.gif">
+</center>
+
+<center>
+<img width="1200" src="WangLiuTangFig2.gif">
+</center>
+
+
+<H3> 
+<A href="http://www.cs.cmu.edu/~xinleic/papers/iccv13.pdf">
+NEIL: Extracting Visual Knowledge from Web Data, </A></H3>
+X. Chen, A. Shrivastava, A. Gupta, ICCV13
+
+<p>Extends NELL (Never-Ending Language Learner) to images. Rather difficult
+reading.
+
+<UL>
+<LI> For a set of categories, issue Google queries and get images.
+<LI> Complex system for removing outliers and clustering.
+<LI> Extract relationships:
+<UL>
+<LI> Partof(X,Y) e.g. PartOf(Eye,Baby). Bounding box for X is often a subset
+of bounding box for Y.
+<LI> IsA(X,Y) (taxonomy) e.g. IsA(BMW320, Car). 
+<LI> Similarity relations. E.g. Similar(Swan,Goose).
+(Exceptionally unclear about how IsA, Similarity are computed.)
+<LI> Object-Attribute Relations e.g. "Pizza has Round Shape," "Sunflower
+is Yellow". Cooccurence of an identified object with an image feature.
+<LI> Scene-Object relation e.g. "Bus is found in Bus depot". 
+Cooccurrence of object with scene.
+<LI> Scene-Attribute e.g. "Ocean is Blue". Same as object-attribute. 
+</UL>
+</UL>
+
+<p>
+Then the whole thing cycles (to justify "Never-Ending"). Not clear to me how
+that works.
+
+<p>
+Use noun phrases from NELL to grow NEIL's vocabulary. 
+<p>
+As of 10/10/13, 1152 object categories, 1034 scene categories, and 87
+attributes, 1073 commonsense relations. 2 million images downloaded. 
+400K visual instances labelled.
+
+
+<H3> Music retrieval </H3>
+<A href="http://www.nowpublishers.com/product.aspx?product=INR&doi=1500000002">
+Music Retrieval: A Tutorial and Review,</A> Nicola Orio,
+<em> Foundations and Trends in Information Retrieval </em> 1:1, 2006.
+Elementary introduction.
+
+
+
+<p>
+<A 
+href="http://web.cs.swarthmore.edu/~turnbull/Papers/Turnbull_FiveTag_ISMIR08.pdf"> Five Approaches to Collecting Tags for Music </A>
+Douglas Turnbull, Luke Barrington, and Gert Lanckriet, <em>ISMIR</em> 2008.
+
+<p>
+"Cold start" problem: An item that is not annotated cannot be retrieved.
+<p>
+"Strong labelling": each item is labelled with each feature. If a feature
+is missing, the item reliably lacks it. "Weak labelling": missing labels
+are nulls. 
+<p>
+"Popularity bias": Popular items (the "short head") are more thoroughly
+annotated than unpopular ones (the "long tail").
+
+<p>
+Largely applies to any kind of tagging of media.
+
+<p><p>
+
+<center>
+<table border=1>
+<th>Approach</th> <th>Strengths</th><th>Weaknesses</th>
+<tr>
+<th rowspan="3"> Survey </th> 
+<td> custom-tailored vocabulary</td> 
+<td> small, predetermined vocabulary</td>
+</tr>
+<tr><td> high-quality annotations </td>
+<td> human-labor intensive </td> </tr>
+<tr> <td> strong labelling </td>
+<td> unscalable </td> </tr>
+
+<tr>
+<th rowspan="4"> Social tags</th> 
+<td> collective wisdom of crowds </td> 
+<td> create and maintain popular social network </td>
+</tr>
+<tr><td> open vocabulary </td>
+<td> ad-hoc annotation, weak labelling</td> </tr>
+<tr><td> provides social context (?)</td>
+<td> cold start, popularity bias</td> </tr>
+<tr> <td></td> <td>spammable </td> </tr>
+
+
+<tr>
+<th rowspan="3"> Game</th> 
+<td> collective wisdom of crowds </td> 
+<td> "gaming" the system </td>
+</tr>
+<tr><td> incentive for high-quality annotation</td>
+<td> difficult to create a successful game </td> </tr>
+<tr><td> fast paced, rapid data collection</td>
+<td> listen to clips rather than whole song</td> </tr>
+
+<tr>
+<th rowspan="3"> Web </th> 
+<td> large publicly available corpus </td> 
+<td> noisy annotations </td>
+</tr>
+<tr><td> no direct human involvement </td>
+<td> missing long tail </td> </tr>
+<tr><td> provides social context </td>
+<td> weak labelling </td> </tr>
+
+<tr>
+<th rowspan="3"> Content based</th> 
+<td> no cold-start, popularity bias</td> 
+<td> computationally difficult </td>
+</tr>
+<tr><td> no direct human involvement </td>
+<td> limited by training data </td> </tr>
+<tr><td> strong labelling </td>
+<td> solely audio content </td> </tr>
+</table>
+</center>
+
+<p>
+Note: Gaming as a method of collecting annotation
+tags was invented by Luis von Ahn
+in  
+<A href="http://en.wikipedia.org/wiki/ESP_game">
+The ESP game </A> for labelling images. This was extremely successful,
+and von Ahn got a job at CMU, a MacArthur fellowship, etc. 
+
+<p>
+<A href="http:///ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4472077">
+Content-Based Music Information Retrieval: Current Directions and Future 
+Challenges </A> M.A. Casey et al., <em> Proceedings of the IEEE </em>
+96:4, 2008.
+
+
+
+<p> <b> Tasks and applications </b>:  <br>
+<UL>
+<LI>
+Exact or near-exact matches: Copyright violation, plagiarism, duplicate
+elimination.
+(<A href="http://www.newyorker.com/reporting/2007/09/17/070917fa_fact_singer">
+Notorious case</A> of a record producer producing slightly modified versions
+of all kinds of pianists, sometimes making some very slight audial distortions,
+and publishing them under the name of his wife Joyce Hatto. 
+One of the ways it was detected
+was that the "Gracenote" internet music database indexes CD's by the duration
+of the tracks.)
+<LI> 
+User search:
+<UL>
+<LI> "Name that tune:" Search by humming.
+<LI> Find similar music.
+<LI> Textual metadata: Composer, performer, etc.
+<LI> Search by musicological features: "The song is in F lydian, with guitars
+mainly playing suspended chords ..." 
+</UL>
+<LI> Recommendation.
+<LI> Identify composer, performer, orchestration ...
+</UL>
+
+<p> <b> Low-level features:</b> See Carey et al. 672-674.
+Most are very technical. One that is interesting is "onset detection"; i.e.
+marking when a note begins. One would think this would be obvious in the
+audio signal but apparently not. 
+
+
+<p> <b> High-level features: </b> Timbre, Melody, Bass, Rhythm, Pitch,
+Harmony (chord sequence extraction), Key, Structure (segmentation), Lyrics.
+The analysis of non-Western music introduces a substantially different
+collection of issues.
+
+<p>
+<A href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.72.5299&rep=rep1&type=pdf">
+Query by Humming: A Survey </A> Eugene Weinstein. People actually hum
+very badly. 
+
+<p>
+<A href="http://www.cp.jku.at/research/papers/schedl_flexer_ismir_2012.pdf">
+Putting the User in the center of Music Information Retrieval </A>
+Using personal and contextual information to drive music retrieval. Vague,
+but an interesting survey of the state of the arts. Bottom line: Most 
+MIR systems are systems-based, trying to achieve some functionality defined
+in terms of the user. Few are user-based. Surprisingly few user studies.
+
+
+<H4> Snippets </h4>
+Significant features: 
+<LI> Repeated segment
+<LI> Singing (identified by variation between high-frequency consonant
+and low frequency vowel). 
+<LI> 
+
+<A href="http://portal.acm.org/citation.cfm?id=957043">
+Automated extraction of music snippets</A> Lie Lu, and Hong-Jiang Zhang,
+Multimedia '03.
+
+<p>
+<A href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4284628">
+Automatic Generation of Music Thumbnails,</A> Tony Zhang and R. Samadani,
+<em>2007 IEEE Intl. Conf. on Multimedia and Expo </em>
+

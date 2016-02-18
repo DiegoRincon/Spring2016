@@ -1,0 +1,852 @@
+
+<TITLE> Web Structure and Evolution</TITLE>
+<H2> Web Structure and Evolution</H2>
+
+<H3> Required Reading </H3>
+<p>
+<A href="http://www9.org/w9cdrom/160/160.html"> 
+Graph Structure in the Web </A> Andrei Broder et al. 2000 <br>
+
+<p>
+<A href="http://dl.acm.org/citation.cfm?id=1255438.1255442">
+Decoding the structure of the WWW: A comparative analysis of Web crawls</A>
+Serrano et al. ACM Trans. Web 2007. 
+
+<H3> Suggested Reading </H3>
+<p>
+Pierre Baldi, Paolo Frasconi, and Padhraic Smyth, <em> Modeling the
+Internet and the Web, </em>, chap. 3.
+<p>
+<A href="http://citeseer.ist.psu.edu/dill01selfsimilarity.html">
+Self-Similarity in the Web  </A>
+Stephen Dill et al. 2001.
+
+<p>
+<A href="http://citeseer.ist.psu.com/kumar99trawling.html">
+Trawling the web for emerging cyber-communities </A>
+Ravi Kumar et al. 1999.
+
+<p>
+Steve Piantadosi, 
+<A href="http://colala.bcs.rochester.edu/papers/piantadosi2014zipfs.pdf">
+Zipf's word frequency law in natural language: A critical review and future
+directions, </A>
+<em>Psychonomic Bulletin and Review</em> 2014.
+<H3> Graph structure in the Web </H3> 
+Broder's paper is very famous (3000+ refs in Google Scholar). <br>
+<p>
+A later study by Serrano et al showed that the results are highly unstable.
+Much less famous (52 citations).
+
+<p>
+Main points:
+
+
+<H4> Structure: (AltaVista, May 1999).</H4>
+Total: 203.5 million <br>
+WCC (large weakly connected component. That is, there is a path from any
+page in WCC to any other following outlinks and inlink): 186.7 million <br>
+SCC (large strongly connected component. That is, there is a path from
+any page in SCC to any other following outlinks): 56.5 million <br>
+IN (there is a path following outlinks from any page in IN to SCC): 
+43.3 million <br>
+OUT: (there is a path following outlinks from SCC to any page in OUT)
+43.1 million <br>
+TENDRILS (= WCC-(SCC union IN union OUT): 43.7 million <br>
+DISC (pages not in WCC): 16.8 million <br>
+Links: 1466 million = 7.2 per page.
+<p>
+10 million WCC's (weakly connected components) almost all of size 1
+(isolated page with no inlinks or outlinks.) 
+
+<p>
+Two interesting points:
+1. The seed set for AltaVista must be at least 10 million (actually, 
+presumably, much larger). Creating a huge seed set almost as important
+as crawling.
+<br>
+2. How on earth does AltaVista find URLs for 10 million isolated pages?
+<UL>
+<LI> Acquired from service supplying server.
+<LI> Server logs 
+<LI> Links from now dead pages
+<LI> Mentioned in text or other non-HTML indices.
+<LI> Readable directories
+<LI> Initial part of path names
+<LI> ???
+</UL>
+Still mysterious. <br>
+
+<H4>
+Other interesting measurements </H4>
+The diameter of the SCC is at least 28. <br>
+The depth of IN is about 475? The depth of OUT is about 430? Very few
+pages are anywhere near these depths. 
+The probability that there is a directed path from page U to page V is about 
+24%. <br>
+The probability that there is a undirected path from page U to page V is about 
+82%. <br>
+If there is a path from U to V, the average directed distance is about 16.15;
+the average undirected distance is 6.83.
+
+<p>
+The connectivity of the WCC is not dependent on the existence of pages
+of high in-degree.
+
+<p>
+If all pages of indegree =&gt k are removed, the WCC still has size W
+<PRE>
+k             1000    100    10   5   4   3
+W million      177    165   105  59  41  15
+</PRE>
+
+
+<H3> Inverse power distribution on the Web </H3>
+f(X) = C/(X+D)<sup>&\alpha;</sup>
+
+<p>
+The following Web quantities follow an inverse power distribution:
+<UL>
+<LI> Number of pages with K inlinks vs K.  <br>
+Exponent = -2.1, very stably
+over many significant subsets of Web, over wide range of K. 
+Same whether consider all inlinks or only remote inlinks.
+<LI> Number of pages with K outlinks vs K. (At the low end. Predicts too
+many pages with immense numbers of outlinks at the high end.)
+<LI> Number of strong connected components of size K vs K (except for the
+large SCC, which is off the charts larger than this curve would predict).
+<LI> Number of weak connected components of size K vs K (again except
+for the large WCC). 
+<LI> PageRank
+</UL>
+
+
+
+<H3> Digression on inverse power distributions </H3>
+
+Further reading:
+<p>
+Baldi et al. sec. 1.7.
+
+<p>
+<A href="http://citeseer.ist.psu.com/mitzenmacher01brief.html">
+A Brief History of Generative Models for Power Law and Lognormal 
+Distributions </A> Michael Mitzenmacher, 2001.
+
+<p>
+<A href="http://linkage.rockefeller.edu/wli/zipf/"> References on Zipf's
+Law </A> Wentian Li.   Large bibliography.
+
+<p>
+<A href="http://www.cut-the-knot.com/do_you_know/zipfLaw.shtml"> 
+Zipf's Law, Benford's Law </A> Readable discussion. Benford's Law is
+the even stranger observation that the first digit of numbers that
+come up in practice is distributed with frequences log<sub>10</sub>(1+1/D).
+
+<p>
+For an argument that true inverse power distributions are rarer than claimed
+see "Strong, Weak, and False Inverse Power Laws," by Richard Perline,
+Statistical Science, vol. 20, 2005, pp. 68-99.
+
+
+<p>
+X is a random variable. <br>
+X.f is a property of X whose value is a positive integer. <br>
+In a <em> inverse power distribution </em> 
+Prob(X.f = i) = C / i<sup>&alpha;</sup> for &alpha; &gt 1.  <br>
+(C is a constant equal to 1 over the sum from k=1 to infinity of 
+1/k<sup>&alpha;</sup>).
+
+<p>
+If &alpha; =&lt 1, then the above sum diverges. Have to give an upper
+bound M.
+
+<p>
+If a collection O of N items is chosen according to the above distribution
+the expected number of items Q such that Q.f=i is N*C/i<sup>&alpha;</sup>.
+Conversely, O fits the inverse power distribution, if the above condition
+holds over O.
+
+<p>
+Inverse power law is self-similar  (scale invariant) <br>
+P(X <= ka | X >= a) = 1 - 1/k<sup>&alpha;-1</sup> independent of a. <br>
+More generally, the distribution conditioned on X >= a has the same shape
+independent of a.
+<H4> Zipf distribution </H4>
+Let O be a bag of items of size N over a space W. For w in W, let count(w,O)
+be the number of times w occurs in O. Let w<sub>1</sub>, 
+w<sub>2</sub> ... be the
+items in W sorted by decreasing value of count(w,O) (break ties arbitrarily).
+We define the <em> rank </em> of w<sub>i</sub> in O to be <em>i</em>. That
+is, the most common item has rank 1; the second most common has rank 2;
+etc. O follows the Zipf distribution if <br>
+count(w<sub>i</sub>,O) = N*C/rank(w,O)<sup>&alpha;</sup> for some &alpha; &gt 1.
+
+<p>
+As before if &alpha;  =&lt 1, then W has to be finite, of size L.
+
+<p>
+Note: The power distribution is often called the "power law" and
+the Zipf distribution generally called "Zipf's law", but the only
+"law" is that a lot of things follow this distribution. They are 
+also called "long tail" or "fat tail" distributions because the 
+probability of extreme
+values decreases much more slowly than with other distributions such
+as the exponential or the normal.
+
+<H4> Two features of the inverse power law </H4>
+First: A small number of top ranked instances have large fraction of
+the total stuff. <br>
+Second: There are a large number of instances with 1 unit of stuff.
+
+<p>
+For example: Suppose there are 1,000,000,000 web pages, an average of 7 links
+per page, and the distribution of inlinks goes like  1/(N+4)<sup>2</sup>.
+(4 is the offset).
+Then 
+<UL>
+<LI> 50% of the inlinks are to the top 5 pages; 80% of inlinks are 
+to the top 19 pages; 95% to the top hundred. 
+The top page has 280,000,000 inlinks.
+<LI> The model predicts that there are about 300,000 pages with one inlink.
+about 63,000 pages with more than one inlink, 
+and about 999,637,000 pages with no inlinks. (I won't swear to this; it's not
+clear to me how to handle the discretization.)
+</UL>
+The higher the exponent A and the lower the offset, the more the wealth is 
+concentrated in the head, and the less long the tail.
+
+<p>
+By contrast, 2 different stochastic models leading to very different
+distributions. 
+<p>
+Method 1
+<PRE>
+for I := 1 to L {
+  choose a random page U;
+  choose a random page V;
+  place a link from U to V;
+}
+</PRE>
+
+Number of inlinks follows a binomial distribution. 
+Then there is
+probably no page with more than 30 inlinks, and the expected number of
+pages with no inlinks is about 9 million. The probability that there exists
+a page with 100 inlinks is about 10<sup>-63</sup>. 
+The probability that there exists
+a page with 280,000,000 inlinks is about 10^{- 2 billion}. 
+
+
+<p>
+Method 2
+<PRE>
+for each page V do {
+  flip a coin with weight 7 for heads, 1 for tails;
+  if tails exitloop;
+  choose a random page U;
+  place a link from U to V
+}
+</PRE>
+
+Total number of links will be very nearly 7 billion, to within about 0.0002%.
+Number of inlinks follows an exponential distribution. Expected number of
+pages with 100 inlinks = about 28. Probability that there exists any
+page with 280,000,000 inlinks is about 10^{- 18 million}
+
+<H4> Another feature of inverse power law: The continued likelihood of finding
+new objects. </H4>
+Suppose that you have a vocabulary of 1,000,000 words, and the frequency of
+the Kth most frequent word is 1/14.39K. The following table shows for various
+corpus sizes, the number of different words in the corpus, the success rate, o
+i.e.the probability
+that the next word you will see is one you have seen already; and the failure
+rate. (This calculation
+is not exact, but I'm pretty sure it is quite close.)
+<p>
+<center>
+<table border=1>
+<th> Corpus size <th> Number of distinct words 
+<th> Success rate <th> Error rate
+<tr> <td> 10,000 <td> 5700 <td> 0.64  <td> 0.36
+<tr> <td> 20,000 <td> 13,000 <td> 0.68 <td> 0.32
+<tr> <td> 50,000 <td> 23,000 <td> 0.73 <td> 0.27
+<tr> <td> 100,000 <td> 41,000 <td> 0.77 <td> 0.23
+<tr> <td> 200,000 <td> 73,000 <td> 0.81 <td> 0.19
+<tr> <td> 500,000 <td> 150,000 <td> 0.86 <td> 0.14
+<tr> <td> 1,000,000 <td> 260,000 <td> 0.90 <td> 0.10
+</table>
+</center>
+<!--- Exact values for W: 5747, 12,775, 23,145, 41,454, 73,316, 151,460
+and 255,177) ---> 
+<p>
+Thus, over this range doubling the corpus size increases the success rate
+by 4%. With larger vocabularies, the effect is even starker.
+
+<p>
+(Formula: The harmonic function H(n) = sum<sub>k</sub> 1/k = (approximately)
+ln(n) + Euler's constant 0.5772.  Let V be the size of the vocabulary. 
+The Kth most common word occurs with frequency 1/K*H(V).
+Assume, for simplicity, that an N word corpus is filled with the W most 
+frequent words, appearing according to the specified frequency.  All of
+the words of rank less than W0=N/H(V) appear at least once. These account
+for N0=N*H(W0)/H(V) words in the corpus.  The remainder of the corpus is filled
+in with less frequent words that occur exactly once; there are N-N0 of these.
+Thus, the total number of different words in the corpus W=W0+(N-N0). The
+probability that the next word will have already been seen is H(W)/H(V).)
+
+<p>
+This is one of the major reasons that promising prototypes in intelligent 
+systems often cannot be extended to high-quality systems; it is just much
+more work to get a 90% success rate than a 70% success rage. (Another major
+reason is combinatorial explosion.) 
+
+<H4> Things that follow the Zipf distribution </H4>
+
+<UL>
+<LI> Frequency of words in a corpus of text. This is one of the main reasons
+that learning from corpora is so hard. Having seen a training corpus
+of N words, the probability that the next word you see will be new to
+you goes up only like log(N).
+<LI> Population of cities.
+<LI> Incomes (at the high end -- predicts too many people living on $1 a year
+at the low end).
+<LI> Numbers of papers published by scientists
+<LI> Distribution of species among genera
+<LI> Access statistics for web pages.
+<LI> Number of times users at a single site access particular pages.
+</UL>
+
+For most distributions e.g. wealth, city population, network parameters,
+the exponent &alpha; tends to be around 2. There is a class of distributions
+e.g. word frequencies where &alpha; is a little more than 1. 
+
+<p>
+If &alpha; <= 2 in an inverse power distribution, then the mean is infinite.
+If &alpha; <= 3, then the variance and the standard deviation
+are infinite. Conversely, if you're doing statistical analysis of something
+and you find that as you take more and more samples your estimate of the mean
+or the standard deviation keeps getting bigger and bigger, 
+you might consider
+whether you're looking at an inverse power distribution. 
+
+
+<p>
+To find the optimal inverse power distribution matching a data set,
+plot the data set on a log-log graph.  If y = C/(x+D)<sup>&alpha;</sup> then
+log(y) = log C - &alpha; log(x+D). So if you graph log(y) against log(x+D)
+you a straight line with slope = -&alpha; and y-intercept = C. The value of
+D of course affects the graph only for small values of x, 
+so find &alpha; and C
+by fitting the curve over large values of x
+by doing any standard linear regression (e.g. least
+squares), then with that fixed value of &alpha; and C do binary search to find the
+value of D that best fits the small values of x.
+
+<center>
+<img src="Inlinks.gif">
+</center>
+<center>
+Number of inlinks vs. frequency. From (Broder et al. 2002)
+</center>
+
+<H4> Connection between the inverse power and the Zipf distribution. </H4>
+If X.f follows the inverse power distribution, then 
+count(X.f) follows the Zipf distribution. Argument: count(X.f=i) is 
+(characteristically) a decreasing function of i; hence, the rank of the
+value X.f=i is just i, so it's the same distribution.  In fact, the
+fit to the Zipf distribution of count as a function of rank is often
+better than the fit to the power law distribution, because
+<UL>
+<LI> by definition, count is a non-increasing function of rank;
+<LI> tends to be true even beyond that effect.
+</UL>
+
+(If you plot count against X.f, you can turn this into a plot of
+count against rank by (a) reordering the points on the x-axis so
+as to go in decreasing order by count; (b) packing the point to the
+left to eliminate gaps.)
+
+<H4> Two directions for inverse power distribution </H4>
+The inverse power law can apply over a collection of sets in either of two
+directions:
+<UL>
+<LI> 1. The size of the Kth largest set is about C/K<sup>&alpha;</sup>.
+<LI> 2. Let Q(K) be the number of sets of size K
+Then |Q(K)| is about D/K<sup>&beta;</sup>.
+</UL>
+E.g. with (1) we would plot the Kth largest indegree vs. K; with (2)
+we would plot the number of nodes of indegree K against K.  
+
+
+<p>
+The two directions
+are actually the same rule (under reasonable smoothness and monotonicity 
+assumptions); if a distribution satisfies (1) with exponent
+&alpha; then it satisfies (2) with exponent &beta;=1+1/&alpha;.
+However, with approximate data (i.e. any actual data)
+<UL>
+<LI> the quality of fit may not be the same;
+<LI> the best fit exponents to the two graphs may not exactly satisfy the
+above relation
+<LI> power laws, like other distributions, often break down at one or both
+extremes. 
+</UL>
+
+
+
+<H4> Why do you get power law distributions? </H4>
+Stochastic model. Suppose that at every time step, a new page and a new link is
+created. With probability P, the link points to a page chosen at random 
+uniformly; with probability 1-P the link points to a page chosen by random
+choice weighted by the number of inlinks.  Then for large values of
+I, the distribution of nodes with I inlinks follows a power-law distribution
+with exponent (2-P)/(1-P)  (Herbert Simon). Since the observed exponent is
+2.1, P=0.09.
+
+
+<p>
+Of course this is not a plausible model of the Web, (only one outlink per page)
+so there's a small
+cottage industry in constructing more plausible stochastic models of the Web.
+See Baldi et al. chap. 3 for a very extensive discussion. See Piantadosi
+for a discussion of explanations of why Zipf's law holds for word frequencies
+in text, none of which he finds convincing.
+
+
+
+<p>
+Multiplicative model.  If you have a large collection of identically distributed
+independent random variables, and you multiply them, then you are just
+adding the logs, so the sum of the logs follows a normal curve, so you
+get what's called a log-normal distribution, which looks a lot like a power 
+law in the middle range.
+
+<p>
+Information theoretic model (Mandelbrot).  Can show that a power-law
+distribution of word frequencies maximizes information over cost.
+
+<H4> Significance of these Web measurements</H4>
+One implication for crawlers;
+you can get 50% of the web (SCC+OUT) with a single seed; getting all the
+web requires an immense number of seeds.
+
+<UL>
+<LI> Support for efficient algorithm, or explanation of why algorithms
+such as PageRank  run as rapidly as they do. Problems that would be
+intractable on a random graph (e.g. finding small cliques) may be 
+tractable due to structure.
+<LI> Evidence as to how the web develops.
+<LI> Improved characterization for browsing and ranking.
+<LI> Data compression.  Whenever you understand structure, you can
+use that to compress.
+<LI> Data mining.
+</UL>
+
+
+<H3> Self-Similarity </H3>
+Made measurements over various subsets of the Web. Generally, the
+results were that many structural properties of the Web apply
+to significant subsets as well.
+
+<H4> Subsets </H4>
+
+<UL>
+<LI> <b> Keyword sets: </b> All pages that include specified keyword(s).
+<UL>
+<LI> Baseball
+<LI> Golf
+<LI> Math
+<LI> MP3
+<LI> Restaurant
+<LI> Baseball Yankees
+<LI> Golf Tiger Woods
+<LI> Math Geometry
+<LI> MP3 Napster
+<LI> Restaunant Sushi.
+</UL>
+
+<LI> IBM INTRANET 
+<LI> 100 web sites
+<LI> Geographic location: Web sites that have references to geographic
+locations between Denver on east, Nilolski Alaska on west, Vancouver
+on north, and Brownsville Texas on south.
+<LI> 7 random collections of websites: STREAM1 ... STREAM7, each with
+about 6 million pages.
+</UL>
+Some others, but these are the most interesting.
+
+
+<H4> Some Results </H4>
+Different measurements for different subgraphs: Why?
+
+<p>
+STREAM1 ... 7: <br>
+Remarkable consistency as regards:
+<UL>
+<LI> Links per node.
+<LI> Expansion factor (between 2.01 and 2.06).
+<LI> Indegree exponent (between 2.06 and 2.13)
+<LI> Outdegree exponent (between 2.12 and 2.32)
+<LI> SCC exponent (between 2.11 and 2.16)
+<LI> WCC exponent (between 2.25 and 2.32)
+<LI> WCC/nodes (between 0.69 and 0.72)
+<LI> SCC/WCC (betweeen 0.22 and 0.24)
+<LI> IN/WCC (between 0.19 and 0.23)
+<LI> OUT/WCC (between 0.23 and 0.24) 
+<LI> K<sub>5,7</sub> factor (ratio of size of set divided by number of nodes
+that are in a bipartite K<sub>5,7</sub> graph. (between 43.5 and 50.1)
+</UL>
+
+<p>
+Single keyword sets: Sizes between 336,500 (baseball) and 831.7 (math).
+<UL>
+<LI>Arcs/node: between 4.55 (MATH) to 14.54 (MP3)
+<LI>Indegree exp: between 2.06 and 2.33 except MATH at 2.85
+<LI> SCC exp: between 2.06 and 2.66
+<LI> WCC exp. between 2.18 and 2.73.
+<LI> WCC/nodes: between 0.013 (RESTAURANT) and 0.10 (BASEBALL)
+<LI> SCC/WCC: between 0.12 and 0.31.
+<LI> K<sub>5,7</sub> factor: between 44.48 (BASEBALL) and 148.7 (MATH)
+</UL>
+
+<p> Double keyword sets: Sizes between 7400 and 44,000 show great variation.
+(e.g. Arcs/node vary from 1.98 (Math Geometry) to 13.33 (BASEBALL YANKEES)
+
+<H3> Failure of Self-Similarity </H3>
+You might think that IN and OUT would each be a structure similar to the 
+overall web, with one large SCC in the middle. However this is not the case
+according to Donato et al.,
+<A href="http://www.cs.helsinki.fi/u/tsaparas/publications/WebDB.pdf">
+Mining the inner structure of the Web graph.</A> They report that in the
+Stanford Web Base, though OUT has 53M pages, the largest SCC in OUT is
+9,349. Some other crawls have relatively larger SCCs e.g. 19,000 SCC out
+of 11M for a crawl through Italian web sites, but none of them are anything
+like the relative size of the large SCC in the overall crawl. The largest
+WCC is around 30% of OUT as contrasted with the WCC for the overall graph
+which is 90% of the size of the graph.  90% of all nodes in OUT are within
+five links of the large SCC.
+
+
+
+
+
+
+<H3> Maybe not </H3>
+<A href="http://portal.acm.org/citation.cfm?id=1255438.1255442">
+Serrano et al.</A> report that many of the results reported by Broder
+et al are highly unstable depending on the crawl.
+
+Four crawls: Two general crawls, one of UK sites, on of Italian sites:
+<center>
+<table border=1>
+<tr> <td> Data set <th> WBGC01 <th> WGUK02 <th> WBGC03 <th> WGIT04
+<tr> <td> # nodes <td> 80.5M <td> 18.5M <td> 49.3M <td> 41.3M
+<tr> <td> # links <td> 752M <td> 292M. <td> 1185M <td> 1136M
+</table>
+</center>
+
+<p>
+Sizes of the "bow-tie" components
+<center>
+<table border=1>
+<tr> <th> Nodes <th> WBGC01 <th> WGUK02 <th> WBGC03 <th> WGIT04 
+<tr> <td> IN <td> 17.24% <td> 1.69% <td> 2.28% <td>  0.03%
+<tr> <td> SCC <td> 56.46% <td> 65.28% <td> 85.87% <td> 72.30%
+<tr> <td> OUT <td> 17.94% <td> 31.88% <td> 11.26% <td> 27.64%
+</table>
+</center>
+
+<p>
+That IN is very variable is not surprising, but note that 
+|SCC|/|OUT| ranges from 2.04 to 7.6.
+
+<p><b> Distribution over links </b>
+<center>
+<table border=1>
+<tr> <th> Data set <th> WBGC01 <th> WGUK02 <th>WBGC03 <th> WGIT04
+<tr> <td> <em>< k ><sub>in</sub></em> <td> 9.3 <td> 15.8 <td> 24.1 <td> 27.5
+<tr> <td> <em>k<sub>in</sub><sup>max</sup> </em> 
+<td> 789K <td> 195K <td> 379K <td> 1326K
+<tr> <td> <em> &sigma;<sub>in</sub></em> <td> 200.2 <td> 143.3 <td>
+421.6 <td> 881.4
+<tr> <td><em> &kappa;<sub>in</sub></em> <td> 4300 <td> 1300 <td> 7400
+<td> 28200
+<tr> <td><em> &gamma;<sub>in</sub></em> <td> 1.9 <td> 1.7 <td> 2.2 
+<td> 1.6
+<tr> <th>          <th> WBGC01 <th> WGUK02 <th>WBGC03 <th> WGIT04
+<tr> <td> <em>< k ><sub>out</sub></em> <td> 9.3 <td> 15.8 <td> 24.1 <td> 27.5
+<tr> <td> <em>k<sub>out</sub><sup>max</sup> </em> 
+<td> 552 <td> 2449 <td> 629 <td> 9964
+<tr> <td> <em> &sigma;<sub>out</sub></em> <td> 13.1  <td> 27.4  <td>
+29.5 <td> 67.1
+<tr> <td><em> &kappa;<sub>out</sub></em> <td> 27.7 <td> 63.4 <td> 60.3
+<td> 191
+<tr> <td><em> &gamma;<sub>out</sub></em> <td> &infin; <td> &infin; 
+<td> &infin; <td> &infin;
+</table>
+</center>
+<BLOCKQUOTE>
+<em>< k ></em> --- Average number of links per node <br>
+<em> k<sup>max</em> </em> --- Maximum number of links at a node <br>
+<em> &sigma;</em> --- Standard deviation. <br>
+<em> &kappa;</em> --- Heterogeneity parameter: 
+< k<sup>2</sup> > /(< k >)<sup>2</sup>. <br>
+<em> &gamma;</em> --- Exponent of power law. Infinite for outlinks, because
+these do not follow an inverse power law distribution.
+</BLOCKQUOTE>
+
+<p>
+<b> Morals:</b>
+<p>
+1. Big data does not ensure unbiased sampling; and if you have biased 
+sampling, the statistics you collect will probably be worthless and
+quite likely unreproducible.
+<p>
+2. Certain kinds of statistics are in principle hard to get for 
+inverse power law distributions. E.g. one would not expect the
+standard deviation to be stable.
+<p>
+3. Crawling is not a good way to get an unbiased sample of the web, or a sample
+with reproducible features.
+
+
+
+<H3> Bipartite graphs (hubs and authorities) in the Web </H3>
+
+<p>
+<A href="http://citeseer.ist.psu.com/kumar99trawling.html">
+Trawling the web for emerging cyber-communities </A>
+Ravi Kumar et al. 1999.
+
+<p>
+Look for small complete bipartite graphs on Web: K<sub>i,j</sub>, for i=3..6, 
+j=3,5,7,9. Infer cyber-communities.
+
+<p>
+Technical issues: Exclude aliases, copies, near-copies, nepotistic cores
+(hubs from same website).  There are lots of copies of Yahoo pages.
+
+<p>
+Algorithmics: 
+
+<UL>
+<LI> 1. Prune all potential hubs with out-degree &lt i and all
+authorities with indegree &lt j. Iterate.  (As we have seen, eliminates
+most of the pages on Web.)
+
+<LI> 2.  "Inclusion/exclusion:" To check whether a hub H of out-degree exactly
+i is in a K<sub>i,j</sub>, you (a) collect all the i authorities it
+points to; (b) compute the intersection of all their sets of tails of
+inlinks.  If this intersection has q elements then H is in a K<sub>i,q</sub>
+graph, which can be pruned. If q &lt j, then prune H and propagate.
+This step finds most of the bipartite graphs.
+
+
+<LI> 3. The remaining graph is now small enough for a search for the remaining
+graphs to be tractable.
+
+</UL>
+
+<p>
+Results:
+
+About 200,000 bipartite graph; almost all are coherent in terms of
+topics.  Many unknown to Yahoo. Hubs in a community last longer than 
+average Web pages.
+
+
+
+<H2> The Dynamic Web </H2>
+
+<H3> Change in the Web </H3>
+Anecdotal remark: A significant fractions of the links from my class notes
+for this course in 2002 were dead by 2007. These are, of course,
+links to published scientific papers, which ought to be extremely stable.
+(This is mostly migration, of course; most of these papers are available
+<em> somewhere </em> on the web and can be found using Google.)
+
+<p>
+Things are certainly more stable now, at least for scientific papers,
+because of standard, stable depository. Still a large problem, though.
+See 
+<A href="http://www.newyorker.com/magazine/2015/01/26/cobweb">
+The Cobweb: Can the Internet be archived?</A>
+Jill Lepore, <em> The New Yorker,</em> Jan. 26, 2015.
+<p>
+Types of change:
+<UL>
+<LI> Growth: (a) in number of sites; (b) in number of pages at each site;
+(c) in size of page  (d) in linkages.
+<LI> URL-centered viewpoint:
+<UL>
+<LI> Death.
+<LI> Change of content.
+<LI> Replacement by forward pointer.
+</UL>
+<LI> Content-centered viewpoint
+<UL>
+<LI> Deletion
+<LI> Modification 
+<LI> Migration: With or without forward pointer.
+</UL> 
+<LI>Link structure
+</UL>
+
+
+
+<A href="http://www.nature.com/nature/journal/v400/n6740/pdf/400107.pdf">
+Accessibility of information on the web, </A>
+Steve Lawrence and C. Lee Giles, Nature, July 8, 1999. 
+
+<p> December 1997: Estimate at least 320 million pages on the Web.
+<p> Feb. 1999. Estimate at least 800 million pages on the web. 
+Test random IP addresses. Attempted to exhaustively search web site. 
+Extrapolate. 2.8 million servers.  Avg. of 289 pages per site =
+800 million pages.  Avg of 18.7 KBytes per page / 7.3 KBytes of
+textual content per page = 15 Terabytes / 6 TBytes of textual content.
+Avg. of 62.8 images per server, mean image size of  15.2 KBytes per image
+= 180 million images, 3 TBytes 
+
+<p>
+<A href="http://newdbpubs.stanford.edu/pub/1999-22"> The Evolution of
+the Web and Implications for an Incremental Crawler </A> 
+Junghoo Cho and Hector Garcia-Molina.
+
+
+<p>
+Method: Once a day, for four months, 
+crawl 3000 pages at each of 270 "popular" sites
+(that gave permission out of 400 asked) using a breadth-first crawler
+from the root page.
+fixed seed set.  Thus, not a stable set either of content or of URL's.
+
+<p>
+Results:
+<UL>
+<LI> 20% of pages had an average change interval of less than 1 day. <br>
+30% did not change over the 4 months of the experiment.
+<LI> Highly dependent on domain. In .com, 40% of pages changed every day,
+and 10% lasted more than 4 months. In .edu and .gov, 1 or 2 percent changed
+every day, and 50% lasted more than 4 months.
+<LI> 50% of the web changes in 50 days.  11 days for .com.
+</UL>
+
+
+
+<A href="http://www3.interscience.wiley.com/cgi-bin/fulltext/107063482/PDFSTART"> 
+A large scale study of the evolution of Web pages </A> <br>
+Dennis Fetterly et al. <em> Software -- Practice and Experience </em>,
+vol. 34, 2004, pp. 213-237.  
+
+<p>
+Method: Fix a set of 151 million HTML Web pages + 62 million non-HTML
+pages.  Download once a week for 11 weeks. (Thus, strictly a URL-based
+perspective.)
+
+<p>
+Note that this method <em> cannot </em> detect the creation of a Web page
+during the experimental period, but reliably detects its deletion (except
+if the server fails to deliver it for some other reason.) By contrast
+the method of Cho and  Garcia-Molina can detect appearance, but both
+its reports of appearance and disappearance are subject to many false
+positives, as the page may simply have come into or gone out of the
+3000 page crawler window.
+
+<p>
+(Lots of technical detail on how you manage such a huge dataset effectively.)
+
+<p>
+Results:
+
+<p>
+Avg length of HTML page = 16KB. "Looks like" a Log-normal curve.
+66.3% of documents have length between 4 and 32KB. .com pages a little
+longer, .edu pages a little shorter. Closer if you measure word length
+suggesting that the difference is that .edu pages have less HTML markup.
+
+
+<p>
+85% of URL's are downloadable over the entire 11 week experiment.
+(.edu better than .com, .net). An increasing number become unavailable
+due to robot.txt exclusions, probably a result of the experiment itself.
+
+<p>
+Web pages in .cn (China), .com, and .net expire sooner than average.
+
+<p>
+Similarity measure: Let U and V be two pages.  Let S(U) and S(V) be the
+set of all 5-word shingles in text of U and V.  Then similarity is
+measured as (I think) |S(U) intersect S(V)| / |S(U) union S(V)|.
+For efficiency, this is calculated using the random function fingerprinting
+method discussed earlier.
+
+<p>
+Considering all pairs of successive downloads of the same page (1 week apart):
+65.2% are identical.  9.2% differ only in HTML elements.  3% have similarity
+less than 1/3. 0.8% have 0 similarity. 
+
+<p>
+Among pages that changed only in markup: 62% are changes to an attribute.
+48% are changes to an attribute that follows ? or ;.  Most of these
+are just changes to a session ID.  
+<BLOCKQUOTE>
+Observing link evolution of this type may help a crawler in spotting session
+identifiers.  If a crawler were able to recognize embedded session identifiers
+and remove them, then it could avoid recrawling the same content
+multiple times.  In our experience, such unwarranted recrawling accounts
+for a non-negligible fraction of total crawl activity.
+</BLOCKQUOTE>
+
+A smaller fraction are advertisements, chosen by embedding some 
+identifier in the query portion of a URL. etc.
+
+<p>
+Pages in .com change more frequently than in .gov or .edu.
+
+<p>
+Fastest changes were in .de (Germany). 27% of pages underwent a large or
+complete change every week, compared with 3% for Web. Why? 
+
+<BLOCKQUOTE>
+Of the first half dozen pages we examined, all but one contained
+disjoint, but perfectly grammatical phrases of an adult nature
+together with a redirection to an adult Web site.  It soon became clear that
+the phrases were automatically generated on the fly, for the purpose
+of ``stuffing'' search engines such as Google with topical keywords surrounded
+by sensible-looking context, in order to draw visitors to the adult
+Web site.  Upon further investigation, we discovered that our data set
+contains 1.03 million URLs drawn from 116,654 hosts (4745 of them outside
+the .de domain) which all resolved to a single IP address.  This machine
+provided over 15% of the .de URL's in our data set!
+</BLOCKQUOTE>
+
+<p>
+Point: (1) to circumvent politeness policy of search engine in not downloading
+too many pages from a server at once.
+(2) to trick Google, by making links between these pages look non-nepotistic.
+
+<p> Large documents tend to change much more frequently than small ones.
+
+<H4> <A href="http://vigna.di.unimi.it/ftp/papers/GraphStructureRevisited.pdf">
+Graph Structure in the Web --- Revisited; 
+or A Trick of the Heavy Tail</A></H4>
+R. Meusel, S. Vigna, and O. Lehmbert.
+
+<p>
+Over the last 13 years:
+<UL>
+<LI> Ratio of links to pages has increased by a factor of 5.
+<LI> Percentage of connected pairs has doubled. Average distance
+between pages has decreased (same thing has been observed in Facebook).
+<LI> Large strongly connected component is the only structural feature
+that can be asserted with confidence.
+<LI> Neither in-degree nor out-degree seems to be a power-law. Their
+distributions are not very similar.
+</UL>
+<p>
+Memorable quote: "previous work in the late 90's to find power laws 
+just by noting an approximate linear shape in log-log plots; unfortunately
+almost all distributions (even, sometimes, non-monotone ones) look like
+a line on a log-log plot."
+

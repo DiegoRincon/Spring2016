@@ -1,0 +1,632 @@
+<TITLE> Lecture 6: Clustering</TITLE>
+<H2> Lecture 6: Clustering </H2>
+
+<H3> Required Reading </H3>
+CM&S section 6.3.3 and 9.2
+
+<H3> Further Reading </H3>
+MR&S, chaps. 16 and 17. <br>
+<A href="http://portal.acm.org/citation.cfm?id=1541880.1541884">
+A Survey of Web clustering engines, </A> Claudio Carpineto et al. 
+ACM Computing Surveys, 41:3 2009.  <br>
+<A href="http://portal.acm.org/citation.cfm?id=1571941.1571967">
+Enhancing cluster labelling using Wikipedia, </A>
+David Carmel, Haggai Roitman, Naama Zwerdling, SIGIR '09. <br>
+<A href="http://www8.org/w8-papers/3a-search-query/dynamic/dynamic.html">
+Grouper: A Dynamic Clustering Interface to Web Search Results </A>
+Oren Zamir and Oren Etzioni  <br>
+<A href="http://glaros.dtc.umn.edu/gkhome/node/157">
+A Comparison of Document Clustering Techniques </A> by
+Michael Steinbach, George Karypis, and Vipin Kumar <br>
+<A href="http://www.springerlink.com/content/m21664041px15511/">
+Cluster Generation and Cluster Labelling for Web Snippets: A Fast and 
+Accurate Hierarchical Solution </A>
+Filippo Geraci, Marco Pellegrini, Marco Maggini, and Fabrizio Sebastiani.
+<A href="http://www.springerlink.com/content/y178h415jw50632q/fulltext.pdf">
+Evaluating Hierarchical Clustering of Search Results </A> 
+J. Cigarran et al., SPIRE 2005, LNCS 3772.
+
+
+<H2> Clustering: Introduction </H2>
+<p>
+A clustering search engine organizes its responses by topic.
+
+<p>
+Existing clustering search engines all seem to be pretty terrible, 
+E.g.
+The <A href="http://yippy.com/"> Yippy </A> 
+search engine organizes its responses by topic.  Example:
+<p>
+On 3/21/15
+the query "Jaguar" generated the following top-level clusters: 
+Land Rover; Jacksonville Jaguars; Parts; Club, Events; Jeep, Honda;
+Photos (all but 1 of the car); Classic, Cars; Sign, SportsNetwork;
+and so on. Of the top 20, 17 are the car, and 3 are the football team.
+The first cluster for the creature is #22, with the unrevealing name 
+"Dedicated to the Jaguar".
+<p>
+The query "Washington" gives clusters "Obama", "University", "Netanyahu"
+"Pictures", "White House", "Area", "Sale", "Game", "Watch", "Health, Care"
+and so on. Note also that the results pages are awful.
+
+ 
+<!--
+<p>
+(Curious though irrelevant observation: 
+With query "jaguar", 2011 1 and 2 are car, 3 is animal. Of top 10, 6 are car,
+3 are animal, 1 is the supercomputer at Oak Ridge. 11-20: 2 car, 4 cat,
+1 each football team, supercomputer, Mac OS, and quantum chemistry.
+21-30: restaurant in Miami, 5 car, 2 cat, 1 supercomputer, and 1 model company.
+
+<p>
+"Jaguars" 1-10: 6 for animal, 2 for car, 1 for team (but #1), 1 unclear.
+11-21: 6 for "Jacksonville Jaguars", 1 for U. South Alabama Jaguars, 3
+for cat. 21-30: 6 for Jacksonville, 1 for Indiana U. teams 1 for cat, 1 for 
+car.
+
+<p>
+"jaguar jaguars" 1-10: 5 cat, 3 car, 2 Jacksonville, but a quite different
+set. 11-20: 7 cat, 3 car. 21-30: 6 cat, 3 car, 1 Jacksonville.
+
+As of 2007, the top pages returned
+by Google for the query "jaguar" were the car and the animal. The top 3 were
+the car, #4 was the animal, and of the top 30, 10 were for the animal, 12
+were for the car, 2 for a quantum chemistry package, and 1 each for a model
+company; "USS Jaguar" a kid's Star Trek site; the Mac OS; Jaguar Computer
+Systems; Jaguar Wright, a pop singer; flickr, the Yahoo photo collection
+which among other things clusters photos.) The query "jaguars" gives mostly
+the football team and the animal; the first page for the car is #16.
+The query "jaguar jaguars" gives mostly the car and the animal, though
+a substantially different set of pages from the query "jaguar".
+
+<p>
+As of 2004, in Google,
+searching under "jaguar"
+gives first (mostly) the automobile, and to a lesser extent, the MAC OS
+version. The first page for the animal is #8, the second is #18.
+Searching under "jaguars" gives a mixture of the animal and football teams;
+the first page for the car is #25. 
+Searching under "jaguar jaguars" gives only pages for S-type Jaguars (the
+car) down through page 56; page 57 is the animal.
+
+<p>
+The results in 2002 were quite different. At that time,
+searching under "jaguar"
+gave first (mostly) the automobile; the animal turned up first at #15.
+Searching under "jaguars" gave football teams for at least the first 50.
+Searching under "jaguar jaguars" gives mostly pages for the
+animal. I have no idea to what extent this change reflects changes
+in Google versus changes in the Web.)
+--->
+
+
+<H3> Outline </H3>
+<UL>
+<LI> Why do web pages returned for a query tend to cluster?
+<LI> Motivation for computing clusters. 
+<LI> General issues
+<LI> Clustering algorithms
+<LI> Cluster evaluation metrics
+<LI> Cluster labelling algorithms
+<LI> Label evaluation metrics
+</UL>
+
+<H3> Why do the web pages returned for a query cluster? </H3>
+<UL>
+<LI> Multiple languages.
+<LI> Polysemy (lexical ambiguity): A word has multiple meanings (jaguar,
+Hepburn). The criterion for separating is usually clear --- that is,
+human evaluators will have a large degree of agreement. Actually carrying out
+the separation may be difficult (e.g. "President Bush").
+<LI> Different aspects of the same topic. E.g. for a query on a product,
+there are vendors, reviews, manuals, explanations, etc. Here the
+division is less clear-cut, and there will be much less agreement among
+human evaluators.
+</UL>
+These can be orthogonal, making the job that much harder. E.g.
+under "Hesse" you have articles on the German state and the author Hermann 
+Hesse and on each you have articles in English and in German.
+
+<p>
+<b> Cluster hypothesis:</b> Documents in the same cluster behave similarly
+with respect to relevance for information needs.
+
+
+<H3> Motivation </H3>
+1. Improve presentation of search results. User can find relevant pages faster.
+
+<p>
+2. Internal to search engine, in order to achieve diversity.
+
+
+ 
+
+<H3> General issues </H3>
+<UL>
+<LI> Structure collection offline vs. structure query results online.
+<LI> Cluster based on document vs. cluster based on snippet.
+<LI> Cluster structure:
+<UL>
+<LI> Flat disjoint
+<LI> Flat overlapping
+<LI> Tree: All documents at leaves.
+<LI> Tree: Documents both at leaves and at internal nodes (if more general).
+<LI> DAG
+<LI> (Orthogonally) multiple dimensions. E.g. language vs. meaning vs. usage.
+</UL>
+<LI> Exhaustive vs. non-exhaustive. <br> 
+Note difference between geometric point not part of any cluster (unclustered
+point) and document not part of any cluster (general subject matter).
+True analogy perhaps: document = region.
+<LI> Outliers: Singleton clusters vs. include in nearest cluster vs. 
+"Other".
+<LI> How many clusters? How large?
+<LI> Information source: text, link analysis, usage. (Not mutually 
+exclusive, of course). 
+</UL>
+
+
+<H3> Clustering algorithms </H3>
+<UL> 
+<LI> Decompositional (top-down)
+<LI> Agglomerative (bottom-up)
+<LI> Mixture model (statistical)
+</UL>
+
+
+
+
+<H3> K-means algorithm </H3>
+<PRE>
+K-means-cluster (in S : set of vectors : k : integer)
+{  let C[1] ... C[k] be a random partition of S into k parts;
+   repeat {
+            for i := 1 to k {
+               X[i] := centroid of C[i];
+               C[i] := empty 
+              } 
+            for j := 1 to N {
+               X[q] := the closest to S[j] of X[1] ... X[k]
+               add S[j] to C[q]
+              } }
+    until the change to C (or the change to X) is small enough.
+}
+
+
+</PRE>
+<p>
+<b> Example: </b> (Note: I have started here with random points rather than
+a random partition.)
+
+<p align=center>
+<img src="http://www.cs.nyu.edu/faculty/davise/ai/kMeans.gif">
+</p>
+
+<p>
+Features:
+<UL>
+<LI>
+Objective function: minimize the
+sum of the squared distance from each point to centroid of cluster.  <br>
+For unit vectors, this is equivalent to maximizing the average dot 
+product S[i] dot S[j} where S[i] and S[j] are in the same cluster.
+
+<p>
+Sum of the squared distance steadily decreases over the iterations. <br>
+Hill-climbing algorithm.
+
+
+<LI>
+Disjoint and exhaustive decomposition.
+<LI>
+For fixed number of iterations, linear in N.
+Clever optimization reduces recomputation of X[q] if small change to S[j].
+Second loop much shorter than O(kN) after the first couple of iterations.
+<LI>
+"Anytime" algorithm: S[j] always a decomposition of S into convex subregions.
+<LI>
+Random starting point: Multiple runs may give different results, choose
+"best"
+</UL>
+
+<p>
+Problems:
+<UL>
+<LI> Have to guess K.
+<LI> Local minimum. Example: In diagram below, if K=2, and you start
+with centroids B and E, converges on the two clusters {A,B,C}, {D,E,F}
+<p align=center>
+<img src="lec6a.gif">
+</p>
+
+<LI> Disjoint and exhaustive decomposition.
+<LI> Starvation: Complete starvation of C[j], or starvation to single
+outlier.
+<LI> Assumes that clusters are spherical in vector space. Hence
+particularly sensitive to coordinate changes (e.g. changes in weighting)
+<LI> Worst-case running time is exponential: 2<sup>cn</sup>
+for some constant c>1 (see <A 
+href="http://cseweb.ucsd.edu/~avattani/papers/kmeans-journal.pdf">
+k-means Requires Exponentially Many Iterations Even in the Plane</A>
+Andrea Vattani, 2011,)
+However, (a) in practice it generally
+converges quickly; (b) if there are dubious points near the boundary between, 
+then it's not very important to get the assignment exactly right. 
+</UL>
+
+<p>
+Variant 1: Update centroids incrementally. Claims to give better results.
+
+<p>
+Variant 2: Bisecting K-means algorithm:
+
+<PRE>
+for I := 1 to K-1 do {
+    pick a leaf cluster C to split;
+    for (J := 1 to ITER) 
+        use 2-Means clustering to split C into two subclusters C1 and C2;
+    choose the best of the above splits and make it permanent
+}
+</PRE>
+
+Generates a binary clustering hierarchy. Works better (so claimed) than
+K-means.
+
+<p>
+Variant 3: Allow overlapping clusters: If distances from P to C1 and
+to C2 are close enough then put P in both clusters.
+
+
+
+<H3> Efficient implementation of K-means clustering</H3>
+As we wrote the algorithm before, on each iteration you have to compute
+the distance from every point to every centroid.
+If there are many points, and K is reasonably large, and the division into
+clusters has become fairly stable, then the update procedure can be
+made more efficient as follows:
+
+<p>
+First, the computation of the new centroid requires only the points
+added to the cluster, the points taken out of the cluster, and the
+number of points in the cluster.
+
+<p>
+Second, computing the change made to the cluster made by moving the centroid
+can be made more efficient as follows:
+
+
+<p>
+Let X<sub>J</sub>(T) be the centroid of the Jth cluster on the Tth iteration, 
+and let  V<sub>I</sub> be the Ith point. Note that <br>
+dist(V<sub>I</sub>,X<sub>J</sub>(T+1)) <=
+dist(V<sub>I</sub>,X<sub>J</sub>(T)) +
+dist(X<sub>J</sub>(T),X<sub>J</sub>(T+1).)  <br>
+
+<p>
+Therefore you can maintain two arrays: <br>
+
+<p>
+RADIUS(J) = an overestimate of the maximum value of 
+dist(V<sub>I</sub>,X<sub>J</sub>), where V<sub>I</sub> is in cluster J.
+
+<p>
+DIST(J,Z) = an underestimate of the minimum value of
+dist(V<sub>I</sub>,X<sub>Z</sub>), where V<sub>I</sub> is in cluster J.
+
+<p>
+which you update as follows:
+
+<p>
+RADIUS(J) := RADIUS(J) + dist(X<sub>J</sub>(T),X<sub>J</sub>(T+1)); <br>
+DIST(J,Z) := DIST(J,Z) - dist(X<sub>Z</sub>(T),X<sub>Z</sub>(T+1))
+- dist(X<sub>J</sub>(T),X<sub>J</sub>(T+1)); <br>
+
+then as long as RADIUS(J) < DIST(J,Z) you can be sure that none of
+the points in cluster J should be moved to cluster Z.  (You update these
+values more exactly whenever a point <em> is </em> moved.)
+
+<H4> Sparse centroids </H4>
+The centroid of a collection of documents contains a non-zero component
+corresponding to every term that appears in any of the documents. Therefore
+it is a much less sparse vector than the individual documents, which can
+incur computational costs.  One solution is to limit the number of non-zero
+terms, or threshhold them.  Another is to
+replace the centroid of a set C by the ``most central''
+point in U.  There are a number of ways to define this; for instance
+choose the point X that minimizes max<sub>V in C</sub> d(X,V) or
+that minimizes sum<sub>V in C</sub> d(X,V)<sup>2</sup>
+
+<p>
+This can be approximated in linear time as follows: 
+<PRE>
+medoid(C,X) {
+  U := the point in C furthest from X;
+  V :- the point in C furthest from U;
+  Y := the point in C that minimizes d(Y,U) + d(Y,V) + |d(Y,U)-d(Y,V)|
+return(Y)
+}
+</PRE>
+Note that 
+d(X,U)+d(X,V) is minimal, and equal to d(U,V) for points X on the line
+between U and V, and for points on that line |d(X,U)-d(X,V)| is minimal
+when X is at the center of the line. 
+[Geraci et al. 2006] call this the "medoid" of C.
+
+<H4> Finding the right value of K </H4>
+Let S be a system of clusters. <br>
+Let S[d] be the cluster containing document d. <br>
+Let m(C) be the median of cluster C. <br>
+For a system of clusters S, let 
+RSS(S) = &Sigma;<sub>d</sub> (d-m(S(d)))<sup>2</sup>
+
+<p>
+For K=1,2, ... compute S<sub>K</sub> = best system with K clusters. <br>
+Plot RSS(S<sub>K</sub>) vs. K (see MR&S figure 16.8 p. 337) <br>
+Look for a "knee" in plot. Choose that as value of K.  <br>
+Question to which I don't know the answer: Is this curve always concave
+upward?
+
+
+<H3> Furthest Point First (FPF) Algorithm </H3>
+[Geraci et al., 2006]
+<PRE>
+{ V := random point in S;
+  CENTERS := { V };
+  for (U in S) {
+    LEADER[U] := V;
+    D[U] = d(U,V);
+   }
+  for (I = 1 to K) {
+     X := the point in S-CENTERS with maximal value of D[X];
+     C := emptyset;
+     for (U in S-CENTERS) 
+         if (d(U,X) < D[U]) add X to C;
+     X := medoid(C,X); 
+     add X to CENTERS;
+     for (U in S-CENTERS) {
+        if (d(U,X) < D[U]) {
+          LEADER[U] := X;
+          D[U] := d(U,X)
+         }
+       }
+    }
+return(CENTERS)
+}
+
+</PRE>
+(I think this is right; it is not quite clear to me from the paper when the
+"medoids" are updated.)
+
+<p>
+The final value of CENTERS is the set of centers of clusters.  For any U in
+CENTERS, the cluster centered at U is the set of points X for which 
+LEADER[X]=U.
+
+<p>
+Features: <br>
+1. Time=O(nk). <br>
+2. Uses only sparse vectors <br>
+3. The "maximal radius measure" 
+max<sub>U in S</sub> min<sub>X in CENTERS</sub>d(U,X)
+is within a factor of 2 of optimal.
+
+
+
+   
+
+
+
+
+<H3> Agglomerative Hierarchical Clustering Technique </H3>
+<PRE>
+{ put every point in a cluster by itself
+  for I := 1 to N-1 do {
+     let C1,C2 be the most mergeable pair of clusters;
+     create C parent of C1, C2
+  } }
+</PRE>
+
+Various measures of "mergeable" used. Choose C1 != C2 so as to maximize:
+
+<UL>
+<LI> Maximum similarity between d1 in C1 and d2 in C2.
+Then this is basically Kruskal's algorithm for minimum spanning tree; 
+runs in almost linear time.
+However, not a good clustering measure.
+<LI> Minimum similarity between d1 in C1 and d2 in C2 (= diameter
+of C1 and C2)
+<LI> Similarity of centroids of C1 and C2 =
+average similarity of d1 in C1 and d2 in C2.
+<LI> Average similarity of d1, d2 in C1 union C2.
+<!-- Quickly computable.-->
+</UL>
+
+<p> Characteristics 
+<UL>
+<LI> Creates complete binary tree of clusters
+<LI> Various ways to determine "mergeability".
+<LI> Deterministic
+<LI> O(N<sup>2</sup>) mergeability calculations.
+</UL>
+
+Conflicting claims about quality of agglomerative vs. K-means.
+
+<H3> One-pass Clustering </H3>
+<PRE>
+pick a starting  point D in S;
+CC = { { D } } } /* Set of clusters: Initially 1 cluster containing D */
+for Di in S do {
+    C := the cluster in CC "closest" to Di
+    if similarity(C,Di) &gt threshhold 
+      then add Di to C;
+      else add { Di } to CC;
+}
+</PRE>
+Features:
+<UL> 
+<LI>Running time: O(KN) (K = number of clusters)
+<LI>Fixed threshhold
+<LI>Order dependent. Can rerun with different order.
+<LI>Disjoint, exhaustive clusters
+<LI>Low precision
+</UL> 
+
+<H3> Mixture Models Clustering </H3>
+Assert that data is generated by a weighted combination of parameterized
+random processes.  Find the weights, parameter values that best fit the data.
+In particular a cluster is a distribution (e.g. Gaussian) around a center. 
+
+<p>
+Features: <br>
+1. "Soft" assignment to clusters.  That is, if a point U fits two models M1,
+M2 fairly well, then it has a reasonable probability of being in either.
+Viewed the other way, U provides some degree of "evidentiary support" to
+both M1 and M2. 
+<p>
+2. Allows overlapping models of different degrees of precision. In particular
+there can be particular narrow-diameter models against a broad background.
+
+
+<p>
+Applying this to documents requires a stochastic model of document generation.
+Even for quite simple documents, the statistics become quite hairy.
+See Chakrabarti.
+
+
+<H3> Clustering using query log </H3>
+(Beeferman and Berger, 2000)
+Log records query, links that were clicked through. <br>
+Create bipartite graph where query terms connect to links. <br>
+Cluster of pages = connected component. <br>
+Also gives cluster of query terms -- useful to suggest alternative queries
+to user.
+
+
+
+<H3> Evaluating Clusters </H3>
+
+<H4>Overall internal measures</H4>
+Measure quality of the algorithm and structure of the point set, not
+the reasonableness of the measure.
+<UL>
+<LI> Minimize average diameter of clusters.
+(Diameter of cluster C = max distance between two points in C)
+<LI> Minimize max diameter of clusters
+<LI> Minimize average radius of cluster (max distance from point to center)
+<LI> Minimize average distance between points in cluster. 
+<LI> Minimize means-squared distance from point to center.
+Maximum likelihood estimate if clusters generated by normal distribution
+around center with fixed variance.
+</UL>
+
+<p>
+Variable number of clusters:
+Any of the above + suitable penalty for more clusters. Note: Without penalty,
+these are all optimized if each point is a cluster by itself.
+
+<p>
+Minimum description length. Incorporates penalty for large K and works
+for hierarchy.
+
+<p> Formal measures test adequacy of clustering algorithm, but not
+relevance of measures to actual significance.
+
+<H4> Relative to an informational need </H4>
+Compare the cost (i.e. user time) of browsing a clustered structure for 
+relevant documents to cost of browsing the list. A cluster is relevant
+if it contains a relevant document.
+Assume that the labels on the clusters allow the user to judge
+which clusters are relevant. A cluster appears if it is a sibling of
+a relevant cluster. A document appears if it is a sibling of a relevant
+document or cluster. Charge A for each cluster that appears and B
+for each document that appears. Overall generalized precision is <br>
+B* (number of relevant docs retrieved)/
+(A * (number of clusters that appear) + B * (number of docs that appear)) 
+
+<p>
+Problem: If one document is put into an irrelevant cluster, then that can
+have a large cost in precision, because now all the sibling and clusters
+come along. More reasonable to incur a small cost in recall.  Another problem:
+clusters are given in ranked order (usually by number of docs, but still).
+
+<p>
+Alternative solutions that gives a precision/recall curve: 
+<p>
+1. Assume that
+whenever a list of clusters appears, the user goes through clusters
+that appear in order, going down each relevant cluster. Plot the amount
+of effort spent by the time he reaches the Kth relevant document.
+
+<p>
+2. Assume instead that the labels on the clusters are good enough that
+the user can carry out an <em> optimal</em> depth first search, relative
+to, say, overall weighted precision. If weights are geometrically decreasing,
+this is easily computed; if not, determining the optimal is probably NP-hard.
+
+
+on the clusters allow perfect browsing, relative to the clusters; that is
+that the user can judge which clusters do and do not contain relevant 
+
+
+<H4> Comparison to Gold Standard </H4>
+You have a "gold standard" set of documents with clusters.
+
+<UL>
+<LI> Purity: For each computed cluster C, let M(C) the true cluster that
+best matches C. For document d, let C(d) be the computed cluster containing
+d and let T(d) be the true cluster containing d. Then 
+Purity = fraction of d for which M(C(d)) = T(d). <br>
+<b> Problem:</b> Reaches an optimum value of 1 when each document is in
+a singleton cluster. <br>
+<b> Solution:</b> Penalize for large values of K. <br>
+<b> Question:</b> How much to penalize?
+
+<LI> Normalized mutual information: Information theoretic measure of
+how well the computed clusters and the true clusters predict one another,
+normalized by the amount of information inherent in the two clustering
+systems.
+
+<LI> Precision-recall. Consider the two clustering systems (true and computed)
+as categorizations of pairs of documents: D1 and D2 are in the same cluster
+vs. in different clusters. Then treat this as a retrieval evaluation problem
+as in lecture 4. 
+<p>
+E.g. Precision = fraction of pairs of documents that are actually in the
+same category out of those that are computed to be. <br>
+Recall = fraction of pairs of documents that are computed to be in the
+same category out of those that are actually in the same category.
+<p>
+Note that oversplitting gains precision at the cost of recall. Strict
+monotonicity of both precision and recall with respect to splitting.
+</UL>
+
+<H3> Assigning labels to clusters </H3>
+<H4> Statistics based </H4>
+Choose most frequent / most highly weighted / most discriminative terms
+in each cluster. Often gives highly unsuggestive results.
+
+<H4> Best document based </H4>
+Find document in the cluster closest to the centroid; use the title, or the
+snippet for the query. Very hit and miss.
+
+<H4> Wikipedia based </H4>
+Find most similar Wikipedia article. Use title.
+
+<H3> Evaluating label assignments </H3>
+Criteria:
+<UL>
+<LI> How well does the label describe the documents in the cluster,
+relative to the query? (I.e. if the query is "jaguar" then the 
+label "jaguar" may be a good one for some cluster, just looking at the 
+documents, but not in the context of the query. Whereas the label
+may be perfectly reasonable for the same documents for some other query 
+e.g. "feline species")
+<LI> How well does the set of labels partition the space of results?
+</UL>
+
+1. Run label assignment algorithm over gold standard clustering. Accept if
+assigned label is marked as a synonym for true label in WordNet. 
+
+<p>
+2. Human evaluation, of the kinds discussed in lecture 4.
+

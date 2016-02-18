@@ -1,0 +1,563 @@
+<TITLE> Searching for Software </TITLE>
+<H2> Searching for Software </H2>
+
+<p>
+The best thing, of course, is to go to
+<A href="http://stackoverflow.com/"> Stack Overflow </A> or a similar site.
+
+<p>
+Programmers spend 19% of their time searching the web (Brandt et al.,
+discussed below). 
+
+<H3> Code Search Engines </H3>
+<UL>
+<LI> <A href="https://github.com/google/codesearch">
+Google CodeSearch.</A> (Abandoned by Google, now on GitHub).
+Regular expression matching over a large code library.
+<LI> <A href="http://code.openhub.net/"> 
+BlackDuck Open Hub </A> "A free public code search engine for 21 billion
+lines of open source code". <br>
+Keyword search with filter by
+definition (i.e. function, method, class etc.), project, language, and
+file extension.
+<LI> <A href="http://opensearch.krugle.org"> Krugle OpenSearch </A>
+Keyword search plus metadata.
+<LI> <A href="http://opengrok.github.io/OpenGrok/"> Open Grok (GitHub).
+</A> Tool for internal software search.
+</UL>
+
+<p>
+Most of the research work I have found on web-based
+code search is Java-based. (One exception is Blueprint, below.)
+Much of the general characteristics could presumably be generalized to 
+any language with type declarations, though the details are obviously 
+language-specific.
+
+<p>
+General problem, often acknowledged: The field needs 
+an accepted set of benchmark problems. Instead, people tend to test
+their code on a dozen problems of their own choosing --- quite likely,
+the same problems they had in mind when they wrote their system;
+almost certainly problems of the same flavor --- so, not surprisingly
+their own system works well. Many of these systems are evaluated in 
+a way that does not support statistically significant conclusions (e.g.
+a half-dozen programmers are each asked to write four programs.) It
+is a particularly difficult area in which to do evaluation.
+
+
+<p>
+***********************************************************
+
+<!--
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1176617.1176671">
+Sourcerer: A Search Engine for Open Source Code Supporting 
+Structure-Based Search </A>
+Sushil Bajracharya, <em>OOPSLA</em> 2006. 
+
+<p>
+<A href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5070010&tag=1">
+Sourcerer: An internet-scale software repository
+</A>
+<em>SUITE</em> 2009.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1882316">
+Leveraging usage similarity for effective retrieval of examples in code 
+repositories, </A>
+Sushil Bajracharya, Joel Ossher, and Cristina Lopes, 
+<em> ACM SIGSOFT </em> 2010.
+
+-->
+
+<p>
+<A href="http://www.info.fundp.ac.be/wasdett2010/wp-content/uploads/2010/08/BOL-WASDeTT3.pdf">
+Sourcerer --- An Infrastructure for Large-scale Collection and Analysis
+of Open-source Code, </A>
+Sushil Bajracharya, Joel Ossher, and Cristina Lopes,
+<em> Workshop on Academic Software Development Tools and Techniques </em>
+2010.
+
+
+<p>
+<A href="http://sourcerer.ics.uci.edu/">
+Sourcerer Project Home Page </A>
+
+
+
+<p>
+Collects and analyzes large repository of open-source code and supports
+applications.
+
+<p>
+<b> Crawler: </b> Crawls a large number of known open-source repositories.
+
+
+<p>
+<b> Relational model: </b> 
+Project, file, entity, comment, relation. <br>
+<b>Entity:</b> package, class, interface, enum, annotation, initializer,
+field, enum constant, constructor, method, annotation element, parameter,
+local variable, primitive, array, type variable, wildcard, parameterized
+type, unknown. <br>
+<b> Relations: </b> inside, extends, implements, holds, receives, calls,
+throws, returns, accesses.
+
+<p>
+<b> Keywords:</b> Text asssociated with entities. Extracted from 
+FQNs (fully qualified names) and comments. ComputerDeutch identifiers
+are split; e.g. "QuickSort" gives rise to two keywords, "Quick" and 
+"Sort".  Words in comments are associated with nearby entities.
+
+<p>
+<b> Fingerprints:</b> Quantifiable features associated with entities.
+<UL>
+<LI> Control structure fingerprint
+<LI> Type fingerprint. E.g. number of declared methods, number of fields.
+<LI> Micropattern fingerprints.  LOOK THIS UP.
+</UL>
+
+
+
+<p>
+<b> Services: </b>
+<UL>
+<LI> Relational query
+<LI> Dependency sharing. Given an entity, retrieve all the 
+entities on which it depends.
+<LI> Code search. Standard IR model of search.
+<LI> Similarity calculation -- specify an entity, return all similar
+entities.
+</UL>
+
+<p> <b> Other applications:</b> Data mining, Inter-project structural
+analysis.
+
+<p> <b> Sample queries: </b> (from OOPSLA '06 paper)
+<UL>
+<LI> Find an XML parser.
+<LI> Find code that uses an XML parser.
+<LI> Find an implementation of Depth First Search
+<LI> Find a use of Depth First Search.
+<LI> Find code that creates a ZIP file.
+<LI> Find an implementation of the Newton-Raphson method.
+<LI> Find code that uses the Newton-Raphson method.
+<LI> Find an implementation of semaphores.
+<LI> Find code that uses semaphores.
+<LI> Find methods containing more than 50 switch statements.
+<LI> Find methods containing 1 switch statement, 1 if statement and
+no memory allocations.
+<LI> Find private entities that have fields of their own typ and do
+not have any declared methods. 
+</UL> 
+
+<p>
+Multiple pages of results for all. In all cases the top result was relevant.
+
+
+<p>
+<A href="http://www.isr.uci.edu/tech_reports/UCI-ISR-07-8.pdf">
+A Study of Ranking Schemes in Internet-Scale Code Search, </A>
+Bajracharya et al., ISR Tech. Report, #UCI-ISR-07-8, 2007.
+
+<UL>
+<LI> 1. (Baseline) TF-IDF of full code text with query.
+<LI> 2.  Match only package, class, and method name.
+<LI> 3. Rank match on right-hand side of FQN higher than match on
+left-hand side.
+<LI> 4. Code rank: Construct graph whose nodes are classes and whose
+arcs U -> V means that U uses V. Compute PageRank.
+</UL>
+
+
+
+
+<p>
+**************************************************************
+
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1065018">
+Jungloid mining: helping to navigate the API jungle </A>
+David Mandelin et al. <em> ACM SIGPLAN Notices </em> 2005.
+
+<BLOCKQUOTE>
+Consider the programming task of parsing a Java source code file using the
+Eclipse IDE framework version 2.1, assuming the file is represented by an
+IFile object. Two of the authors encountered this problem independently,
+and in each case it took several hours to arrive at the desired code, which
+is shown here:
+<PRE>
+    Ifile file = ...;
+    IComplilationUnit cu = JavaCore.createCompilationUnitFrom(file);
+    ASTNote ast - AST.parseCompilationUnit(cu,false);
+</PRE>
+
+<p>
+This example illustrates some of the difficulties programmers often 
+encounter. First, a programmer unfamiliar with the framework would not
+think to look at class JavaCore, yet JavaCore is a crucial link; one
+of its static methods converts one type of file handle, IFile, to
+another, ICompilationUnit that can be used by the parser.
+Second, the programmer may look for clues using the class browsing
+features provided by object-oriented IDEs, but that will not help here:
+the IDE can easily show members of IFile, but the first step is a static
+method of a different class. Finally, although a programmer might
+know that the result of parsing is an ASTNote and might
+therefore grep for methods returning ASTNode, the method 
+parseCompilationUnit would not be found because its return type is
+actually CompilationUnit, a subclass of ASTNode. 
+</BLOCKQUOTE>
+
+<p>
+PROSPECTOR:  <br>
+Input to Prospector is a pair [InClass, OutClass]. <br>
+Output: A list of <em> jungloids</em>. Each jungloid is a short
+sequence of essentially unary operations that converts an object of
+InClass into one of OutClass. (The name is because of a metaphor to
+a monkey swinging from vine to vine in the jungle.) 
+
+<p>
+Problem of finding the correct InClass, OutClass not addressed.
+
+<p>
+<b> Easy case: No downcasts. </b>
+Signature graph. Vertices are classes. Arcs are 
+<UL>
+<LI> Field access
+<LI> Static method. U(m ... T a ...) maps T->U.
+<LI> Dynamic method U T.m(...) maps T->U.
+<LI> Superclass links. If T is a subclass of U then T->U.
+</UL>
+
+<p> Ranking. Prefer jungloids that (a) have few instructions; 
+(b) cross fewer package boundaries; (c) return as unspecific a subclass
+of OutClass as possible.
+
+
+<p>
+<b> Hard case: Downcasts. </b>
+If S is a superclass of U, then you can write
+<PRE>
+    S s = ...
+    U u = (U) s;
+</PRE>
+downcasting S to U. A run-time test is done to make sure that object S 
+is actually of type U; otherwise, an error is thrown. Static analysis
+can't tell you whether this code is reasonable to insert in yours, because
+you have to know whether object s is actually a U.
+
+
+<p>
+To incorporate downcasts, PROSPECTOR does <em>jungloid mining</em>. That
+is:
+<UL>
+<LI>  Look for actual jungloids in the corpus that converts InClass to
+OutClass.
+<LI> If the jungloid involves a downcast, then use heuristics to extract
+enough of the code to ensure that the downcast will succeed. The details
+are hairy.
+</UL>
+
+<p>
+<b> Experiments:</b>
+<UL>
+<LI> Query processing: See paper p. 59.
+<LI> User study.
+Users were assigned four problems:
+<UL>
+<LI> Convert Enumeration type to Iterator. Query: (Enumeration, Iterator).
+<LI> Play a sound clip at a given URL. Query: (String, AudioClip).
+<LI> In Eclipse, extract the currently active editor from the
+entire user interface object. Query: (IWorkbench, EditorPart).
+<LI> Get an image from the shared image cache. 
+Query:(IWorkbench, ImageRegistry).
+</UL>
+In all cases, the user was given the input class. For some of the problems
+the user was not given the output class. Result: Most of the users
+worked faster with Prospector than without it.
+</UL>
+
+<p>
+General comment: The semantics of a programming problem is being squeezed
+down to an input class and an output class. It is remarkable that this
+should be sufficient to determine what the task to be carried out is. 
+(Of course that depends on the domain; it would probably not be sufficient in 
+numerical computing.) So what does this say about programming problems and
+classes?
+
+<UL>
+<LI> Optimistic: Classes carry a lot of implicit semantics.
+<LI> Neutral: Programming subtasks follow an inverse power law. 
+Everybody is doing the same thing.
+<LI> Pessimistic: The package and class structure in typical libraries are
+such a horror that programmers spend a significant amount of time navigating
+their way through them.
+</UL>
+
+
+<p>
+<p>
+********************************************************
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1555040">
+Semantics-based code search</A> Steven P. Reiss, <em>ICSE</em> 2009.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1556994">
+Specifying what to search for</A>, Steven P. Reiss, <em> SUITE</em> 
+2009.
+
+<p>
+<A href="http://conifer.cs.brown.edu/s6"> S<sup>6</sup> Semantics-Based
+Code Search</A>
+
+<P>
+Static specifications: Keywords, signature.
+
+<p>
+Dynamic specification: Test cases. Contracts: preconditions and 
+postconditions expressed in JML (Java modelling language).
+
+<p>
+Other: Security constraints. 
+
+<p>
+Issue query to general code search engine. Collect pages. Collect
+candidate method.
+
+<p>
+Transformations of method to fit query specs:
+<UL>
+<LI> <b>Signature transformations.</b> 
+<UL>
+<LI>Replace classes with compatible classes.
+<LI>Reorder parameters. 
+<LI>Deal with exception. 
+<LI>Convert method to a static method.
+</UL>
+<LI> <b>Generative transforms.</b>
+<UL> 
+<LI>Extract a snippet. 
+<LI> Bind extra parameters. Booleans try true and false. Numbers try 1 and 0.
+Objects try null.
+<LI> Generalize the code from a subclass to a superclass, see if it still
+works.
+</UL>
+<LI> <b> Compilation transforms </b>
+<UL>
+<LI> Remove unneeded "implements" clauses.
+<LI> Remove statements that access undefined entities
+<LI> Static class, throw.
+</UL>
+<LI> <b> Testing transforms:</b> If the output of the test is not correct,
+but there is a simple transform that makes it correct, then add
+that transform. E.g. invert boolean results, change case of string results,
+add constant to numeric results. 
+</UL>
+
+<p>
+<b> Testing </b> Run tests, check correctness of answer. Run jmlc, see
+if contract can be authenticated.
+
+<p>
+Examples: See paper pps. 249-250.
+
+<p>
+Interesting but unconvincing examples in SUITE 2009 paper.
+
+<p>
+Find an HTML parser that preserves white space. Comment: You're not going to
+find it. The best you can do is to find a well-written HTML parser, and then
+unless you're really lucky you've got a lot of work, because white space
+deletion is done by a low-level tokenizer.
+
+<p>
+Find code to do a topological sort of my own graph structure. Comment: Why
+would you suppose that it's easier to find this and adapt it than to
+write topological sort (10 lines of code) from scratch?
+
+
+<p>
+Least squares solution to a system of linear equation, with the additional
+constraint that resultant values are non-negative. This becomes 
+quadratic programming (I don't know why, rather than linear programming)
+and Reiss had to write significant code to translate the linear equations
+into a form that the quadratic programming solver could accept. Comment:
+Again, what do you expect?
+
+
+<p>
+********************************************************
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1753402">
+Example-Centric Programming: Integrating Web Search into the 
+Development Environment,</A> Joel Brandt et al., <em> CHI</em> 2010.
+
+<p>
+<b> Blueprint. </b> 
+
+<p>
+Integrates code search into an IDE (to be exact it is a plugin for
+Adobe Flex Builder which in turn is a plugin for Eclipse 
+Development Environment). 
+<p>
+Functionality:
+<UL>
+<LI> User interface for initiating queries and displaying results.
+<LI> Send contextual information (programming language, framework version)
+with each user query.
+<LI> Automatically comments code with URL source, timestamp.
+<LI> Notifies user when the adapted code has been updated (e.g.
+bug fixed) on source web page.
+</UL>
+
+<p>
+Uses both code pages and other pages (tutorials, help pages, forums,
+etc.) For other pages, makes sure that the code is complete and is not
+posted as an example of buggy code.
+
+<P>
+Maintains cache of code examples.
+
+<p>
+On receiving user query:
+<UL>
+<LI> Augments query with contextual information
+<LI> Checks cache to see if there are solutions. If not:
+<UL> 
+<LI> Issues query on general code search engine.
+<LI> Extract code examples from results pages, and indexes them in the cache
+</UL>
+</UL>
+
+<p>
+(Similar project: 
+<A href="http://www.cs.cmu.edu/~euklas/"> Euklas</A> from CMU.
+
+
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1518944">
+Two studies of opportunistic programming: interleaving web foraging, 
+learning, and writing code,</A> Joel Brandt et al., <em>CHI</em> 2009.
+
+<p>
+User study of the ways web is used in programming: 
+
+<UL>
+<LI> Learning: Just-in-time learning of unfamiliar concepts.
+<UL>
+<LI> Search for tutorial
+<LI> Select a tutorial (often on the basis of cosmetic features).
+<LI> Use tutorials by experimenting with code samples.
+</UL>
+<LI> Clarification: Connect high-level knowledge to implementation
+details. E.g. finding the syntax for HTML forms. 
+<UL>
+<LI>
+Search with synonyms,
+and with PL terminology, often from other languages.
+<LI> Often copy code without testing or adequately modifying.
+<LI> Use web to debug; e.g. search for cryptic error message.
+</UL>
+<LI> Reminder about forgotten details e.g. exact syntax.  Users know
+exactly what information they need, often exactly where it is located.
+<UL>
+<LI> Often snippets are enough.
+<LI> Web as external memory aid; programmers don't bother to remember
+details because they can always look them up.
+</UL>
+</UL>
+
+
+<center> 
+<img src="BrandtCHIFig2.gif" width=1100>
+</center>
+
+
+<p>
+********************************************************
+<p>
+<A href="http://www.csa.iisc.ernet.in/~cplse/papers/AK-tosem14.pdf">
+Mining Unit Tests for Discovery and Migration of Math API's, </A>
+Anirudh Santhiar, Omesh Pandita, Aditya Kanade, ACM Trans. Software
+Engineering and Methodology, 24:1 (2014).
+
+<p>
+The basic idea here is simple. You're trying to match a mathematical
+function in one language or library with the identical function in another
+language or library. If they give the same results over some large
+collection of test examples, then they're almost certainly the same function.
+
+<p>
+Two kinds of applications:
+<UL>
+<LI> A. Finding an existing API for a new program. 
+<LI> B. Migrating code to a new library.
+</UL>
+
+<p>
+Domain: Matrix operations (the limits on these noted below).
+
+<p>
+For (A) the starting point is the code written in Scilab (free clone of 
+Matlab), which the authors think of as pure abstract mathematics.
+<p>
+For (B), the starting point is the code that uses the functions from 
+the old library and the goal is to find the corresponding functions
+from the new library.
+<p>
+In either case, correspondence between data structures has to be given and
+code has to be given to translate one data structure into the other. For
+matrices, this is generally somewhere between very easy and trivial.
+
+<p>
+Case study: Migrating the WEKA library of machine learning routines from
+Jama (Java math library, no longer supported and outdated) to EJML, JBlas, 
+and Colt (more recent).
+
+<p><b> Problems encountered:</b> (in general, not just for the Weka test).
+The identification of the matching routine almost always worked correctly,
+except for:
+<UL>
+<LI> One particular Weka class did a lot of direct access of data structure
+fields (rather than just manipulating the data structures through
+Jama functions). Sometimes this is substantially hard to translate 
+automatically, e.g. "During
+migration to JBlas, a 2D array had to be translated to access into a
+column-major 1D array". (Of course, this translation is always done 
+automatically by a compiler; but that's a completely different kind of
+enterprise.)
+<LI> The difference between "clone" and "copy" and simple assignment is
+not something their methods can detect.
+<LI> Two results were considered "the same" if they differ by less than 0.1,
+to allow for round-off error. Therefore functions like "round", "floor",
+and "ceiling" looked like the identity a significant fraction of the time.
+<LI> Too few arguments. "Where recall is concerned, if a relevant method
+is included in our index, then it is always retrieved. The only exception
+proved to be the method eyes from JBlas ... for generating identity matrices. 
+This method takes only one argument ... whereas the eyes operator in Scilab
+takes two."
+<LI>
+Functions with mathematically indeterminate values. E.g. any scalar multiple
+of an eigenvector is an eigenvector, and different correct implementations
+of the eigenvector function may give you different results.
+</UL>
+
+<p>
+<b> Extensibility </b> My main question is, to what extent does this extend
+beyond matrices? Matrix libraries would seem to be ideal for this since
+(a) the data structure is very standard; (b) there are a lot of very
+standard "black box" functions; complicated algorithms that take a few
+arguments and return a value in a side-effect free way (c) "closeness"
+of the answer is easy to evaluate. Special functions
+from real/complex analysis (gamma function, beta function, Bessel function,
+etc.) and statistical packages have similar properties. By contrast,
+ODE libraries, PDE libraries, symbolic algebra libraries, and especially 
+geometry libraries seem to me a lot less promising: a variety of different
+data structure can be used; the collection of functions is less standard;
+functions with multiple parameters are common; there can be multiple notions
+of closeness and even calculating closeness can be difficult. Monte Carlo
+functions seem pretty hopeless to do this way.

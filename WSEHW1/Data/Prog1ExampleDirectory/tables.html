@@ -1,0 +1,362 @@
+
+<TITLE> Tables </TITLE>
+<H2> Tables </H2>
+
+<H3> Required reading </H3>
+<A href="http://dl.acm.org/citation.cfm?id=1935904">
+Web-scale table census and classification, </A>
+E. Crestan and P. Pantel, WSDM 2011. <br>
+<p>
+<A href="http://yz.mit.edu/papers/webtables-vldb08.pdf">
+WebTables: Exploring the Power of Tables on the Web,</A>
+Michael Cafarella et al., VLDB 2008
+
+<H3> More Reading </H3>
+
+<A href="http://dl.acm.org/citation.cfm?id=2336665">
+Answering table queries on the web using column keywords</A>
+R. Pimplicar, S. Sarawagi, VLDB 2012. Read pp 908-911.<br>
+
+<A href="http://webdatacommons.org/webtables/">
+Web Data Commons -- Web Tables </A> P. Ristoski et al. Web site. <br>
+<A href="http://dl.acm.org/citation.cfm?id=736657">
+Understanding Tables on the Web,</A> J. Wang et al. ER 2012 <br>
+<A href="http://dl.acm.org/citation.cfm?id=1687750">
+Data Integration for the Relational Web</A>
+M.J. Cafarella, A. Halevy, N. Khoussainov VLDB 2009.
+
+<H3> Idea </h3>
+There's a lot of data in the form of tables on the web. Since it's
+structured, it seems like automated information extraction should be
+a lot more powerful than for free text.
+
+<H3> Bottom line </H3>
+A lot harder than one might guess. There are interesting systems, but 
+apparently nothing quite ready for prime time.
+
+<H3> Issues </H3>
+<UL>
+<lI> Scale
+<LI> Extracting genuine tables from HTML, and categorizing their
+structure.
+<LI> Functionalities
+<LI> Identifying subject matter 
+<LI> Identifying attributes.
+<LI> Match query to table
+<LI> Merging tables. Similar to data merging in database theory, but even
+less clear-cut.
+</UL>
+
+<H3> Scale </H3>
+Crestan and Pantel processed 1.2B high quality English documents (after spam
+filter, and page quality metric). 896M had tables. After filtering
+out tables with embedded tables (see below) there were 8.2B tables, 2.6B
+unique tables.
+
+<H3> Extracting and categorizing tables </H3>
+(Everyone deals with this; the most careful analysis is Crestan and Pantel.)
+
+<p>
+Sad fact: Only a small fraction of the uses of HTML tag < table > on the Web 
+are anything like a "table" in the database sense. Less than 10% according to 
+Crestan and Pantel, combining their categories "Vertical Listing", 
+"Horizontal Listing", "Attribute/Value", "Matrix" and "Calendar" (figure
+3, which lists the percentages, is defective). 76% are purely formatting; 
+12% are navigational, and 5% are forms for the user to fill in. 
+
+<p>
+Other papers are much more pessimistic; e.g. Web Data Commons says 1.3% are
+relational tables.
+
+<H4> Categories of informational tables (Crestan and Pantel) </H4>
+<p>
+<b> Vertical tables </b>
+Columns are attributes, rows are instances.
+<center>
+<table border=1>
+<b> <tr> <th> Name <th> Party <th> Years in office </th> </b>
+<tr> <td> Barack Obama <td> Democrat <td> 2009-2017 
+<tr> <td> George W. Bush <td> Republican  <td> 2001-2009
+</table>
+</center>
+
+
+<p>
+<b> Horizontal tables </b>
+Rows are attributes, columns are instances.
+<center>
+<table border=1>
+<tr> <td> <b> Name </b> <td> Barack Obama <td> George W. Bush 
+<tr> <td> <b> Party </b> <td> Democrat <td> Republican
+<tr> <td> <b> Years in office </b> <td> 2009-2017<td> 2001-2009
+</table>
+</center>
+<b> Attribute/value</b>
+Same as above, except that these are with reference to some particularly
+object, often mentioned elsewhere in the web page rather than  in the table
+itself.
+
+<p>
+E.g. On a page for some electronic device
+ 
+<center>
+<table border=1>
+<b> <tr> <th> Seller <th> Price <th> In stock</th> </b>
+<tr> <td> Best Buy <td> $40.00 <td> Yes
+<tr> <td> amazon.com <td> $35.00<td> Yes
+<tr> <td> Radio Shack <td> $50.00<td> No
+</table>
+</center>
+Note that these are useless unless you know the subject.
+
+<p>
+<b> Matrix </b>
+All cells are of same type, a value which is a function of the row
+and column entity. Again, the attribute name is often not included
+in the table itself.
+
+<center>
+<table border=1>
+<tr><b> Population in millions</b>  <td> <td> 1990 <td> 2000 <td> 2010
+<tr> <td> USA <td align="right"> 249 <td align="right"> 281 
+<td align="right"> 309
+<tr> <td> China <td> 1133 <td> 1266 <td> 1340
+<tr> <td> India <td align="right"> 846 <td> 1029 <td> 1211
+</table>
+</center>
+(Figures for India are actually 1991, 2001, 2011).
+
+<p>
+<b> Calendar </b>
+Same as matrix, except that the cells correspond to some kind of time element,
+arranged rectangularly.
+
+<center>
+<table border="1">
+<tr> <th> <th> 3/30 <th> 3/31 <th> 4/1 <th> 4/2 <th> 4/3
+<tr> <td> 10:00-10:30 <td> Prepare WSE <td> Prepare AI <td> Office hours <td>
+&nbsp <td> &nbsp
+<tr> <td> 10:30-11:00 <td> Prepare WSE <td> Dentist <td> Office hours <td>
+&nbsp <td> &nbsp
+<tr> <td> 11:00-11:30 <td> Prepare WSE <td> Dentist <td> Office hours <td>
+&nbsp <td> &nbsp
+<tr> <td> 11:30-12:00 <td> Mickens colloquium<td> Dentist <td> Office hours
+<td> &nbsp <td> Solomon colloquium
+</tr>
+</table>
+</center>
+
+<H4> Filtering </H4>
+Crestan and Pantel: 
+
+<p>
+First pass filtering: Exclude tables that include other tables (but use
+the innermost tables). The above figures on number of tables is after this
+first pass is done. 
+
+<p>
+Second pass filtering:
+Require tables to have (a) at least 2 columns; 
+(b) at least 2 rows; (c) No cell with more than 100 characters. Eliminates
+80% of tables, mostly formatting. After filtering 50% are still formatting,
+almost 50% are informational.
+
+<p>
+WDC rules out (a) any tables with imbedded tables (b) any tables
+with fewer than 5 cells or 3 rows. Then uses features such as 
+column count, row count, cell length, length consistency, cell
+content (digit, text, link, image, etc.) to distinguish informational
+from non-informational tables.
+
+<H4> Categorization (Crestan and Pantel) </H4>
+Features: Number of rows, columns, maximum cell length, average cell
+length, variance of cell length, use of "colspan" feature, use of
+HTML inside cells (e.g. drop down select suggests that it's a form to be filled
+out by a user), content. 75% overall accuracy.
+
+<H3> Functionalities </H3>
+<p> 
+<b>Google Web Tables:</b> 
+Search query of the ordinary kind, returns a ranked list
+of tables.
+
+<p>
+<b>Crestan and Pantel:</b> Extracting semantic triples 
+< relation, subject, value >.
+E.g. < Price, Angels &amp; Demons dvd, $22.99 >. Long term goal, not 
+implemented.
+
+<p> <b>Wang et al</b> 
+is similar but the new relations are fed into ProBase, 
+which is one of the inputs to the table understander.
+
+<p>
+<b>Pimplikar, Sarawagi.</b> 
+User gives the attributes for a table, system fills it in from tables on
+the web.
+
+<center>
+<img src="PimplikarSarawagi.png" width=1000>
+</center>
+<p align=center>
+From (Pimplikar and Sarawagi, 2012)
+</p>
+
+<p>
+<b>  Cafarella, Halevy, &amp; Khoussainova </b> OCTOPUS system has three
+major modules:
+<UL>
+<LI> SEARCH finds tables relevant to a user query in the usual sense, clusteredbby structure. All tables in a cluster have (nearly) the same database schema.
+<LI> CONTEXT finds the context for the table.
+<LI> EXTEND allows a user to add a column to a table using information
+from other tables. 
+</UL>
+
+
+<H3> Finding a context </H3>
+(Crestan &amp; Pantel)  call this the "protagonist".
+Baseline: Text in anchors of page inlinks. Precision of top-rank: 40%.
+
+<p>
+Additionally extract all k-grams k=1 to 12 from the 
+document, rank by frequency, position, font, etc. Precision of top-rank: 65%
+ 
+<p>
+Similar method in Pimplikar and Sarawagi, but with more emphasis on HTML
+structure.
+
+
+<H3> WebTables </H3>
+Experimental version at this
+<A href="https://research.google.com/tables">
+rather drab web site </A>
+
+<p>
+<b> Objective: </b> Get useful information out of vast number of relational
+tables on Web.
+
+<p>
+14.1 billion HTML tables in English documents in Google index (2008). <br>
+About 154 Million of these are actually relational tables (rest are for 
+formatting etc.)
+<H4> Offline </H4>
+<UL>
+<LI> Extract true relational tables out of HTML tables using features. <br>
+e.g. 1 column or 1 row -- No good. <br>
+columns heterogeneous in type -- probably no good. <br>
+Use ML techniques to build classification filter over similar structural
+features.
+
+<LI>
+Extract metadata: name of attributes. Test on features to determine whether
+first row is list of attributes.
+
+<LI> 
+Construct ACSDb (Attribute Correlation Statistics Database): list of all
+sets of attributes.
+
+<LI>
+Compute absolute probabilities P(a) and conditional probabilities P(a|b) that
+an attribute will appear in a table. 
+
+</UL>
+
+
+<H4> Applications </H4>
+<p>
+<b> Table Search Engine. </b>
+Give high rank to tables that match query in top row and in leftmost column. 
+Give query-indendent high rank to tables with high "Schema coherency"
+of the attributes, based on the ACSDb.
+
+<p>
+<b> Schema Auto-Complete. </b> A web designer enters some of the attributes of
+a table. Auto-complete suggests some more, based on high conditional 
+probability.
+
+<p>
+<b> Attribute synonymy.</b>
+Attribute A is a synonym for attribute B if 
+<UL>
+<LI>
+A and B never appear together in the same schema.
+<LI> 
+For most other attributes C, P(C|A) and P(C|B) are approximately equal.
+</UL>
+
+<p>
+<A href="http://people.cs.kuleuven.be/~bettina.berendt/teaching/2010-11-2ndsemester/ctdb/Mini-workshops/H12_Bittremieux.pdf">
+Notes on Web Tables by Wout Bittremieux and Sibren Polders </A>
+
+<p>
+<H3> Pimplikar and Sarawagi</H3>
+
+
+<H4> Identify header </H4>
+<p>
+Assume:
+<UL>
+<LI> Tables are vertical.
+<LI> Zero or more title rows, followed by zero or more header rows, followed
+by body rows.
+<LI> Title and header rows are different from body (e.g. content, font, 
+capitalization etc.)
+<LI> In a title row, all but the first column is empty.
+</UL>
+Heuristic worked in 99.75% of cases.
+
+<H4> Match query to relevant table, query words to table columns </h4>
+<p> <b> Matching criteria </b>
+<UL>
+<LI> Match query word to context, header, contents of table
+<LI> Match a query word to a column C in table U
+if the query word matches the header 
+of some column D in another table V, and the elements of C are 
+strongly correlated with the elements of D. 
+</UL>
+<p> <b> Constraints </b>
+<UL>
+<LI> A query word matches only one column in a table (if it matches 2, 
+pick the best one).
+<LI> If the table is irrelevant, then all the columns are irrelevant.
+<LI> There has to be a match for the first query column (it is presumed
+that the first column in the query is the entity, and the rest are features).
+<LI> If the query has more than one column, then more than one column
+must match. (If the query has only one column, then the user is just looking
+for a list; if it has more than one, then he is looking for values of
+attributes.)
+</UL>
+
+Combine all these together in a horrendously complicated objective function,
+(graphical model) and use a complex technique for approximating an optimum.
+
+<H4> Evaluation </H4>
+Set of 59 queries from the literature. Translated into 1-, 2-, or 3-column
+table queries. Ran over a corpus of 25 million tables collected from the 
+web. Then ran algorithm. 60% of tables matched were relevant (precision
+at table level.)
+
+<H3> Wang et al. </H3>
+Integrated with the construction of Probase, a large taxonomy constructed
+automatically from the web.
+
+<p>
+Probase originally constructed using "SUCH AS" patterns (Hearst patterns) on
+the web. E.g. if you see the sentence "politicians such as Barack Obama"
+you can pretty safely conclude that Obama is a politician.
+
+<p>
+Use Probase to guess the header on table columns with no header, by
+looking for a category that contains a lot of the instances.
+
+<p>
+Use Probase to guess features given the key and the values. E.g.
+tables keyed by people often have a date-of-birth field. So if there
+is a people column and a columns of date, then this may be their 
+date of birth, particularly if the date in the table matches the known
+dob for some of the people.
+
+<p>
+Augment Probase with data gleaned from the table.
+
+

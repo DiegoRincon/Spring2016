@@ -1,0 +1,495 @@
+<TITLE> The Politics and Ethics of Search Engines </TITLE>
+Among computer technologies,  the Internet gives rise to a remarkable array
+of ethical, political, legal, and social issues. (There would not be much
+to say about the politics of compilers).
+
+<UL>
+<LI> Copyright vs. Downloading
+<LI> Copyright vs. Google Books
+<LI> Free source vs. open source vs. proprietary software.
+<LI> Distribution of domain names
+<LI> Authoritarian government vs. search engines
+<LI> Social network sites vs. authoritarian govt.
+<LI> Bullying, cruelty, etc. on social network sites.
+<LI> Privacy issues of all kinds
+<LI> Erasing ones own foolishness from the web
+<LI> What is the criminal/civil liability of the web server / search engine /
+ISP on illegal forms of publication?
+<LI> Discrimination in online tools
+</UL>
+<H2> The Politics of Search Engines </H2>
+
+<A href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=816269&tag=1">
+Defining the Web: The Politics of Search Engines</A>
+Lucas Introna and Helen Nissenbaum, <em>Computer </em> 2000.
+
+<BLOCKQUOTE>
+The tools that navigate the astronomical number of pages ... favor
+popular, wealthy, and powerful sites at the expense of others.
+</BLOCKQUOTE>
+
+
+<p> 
+<A href="http://www.springerlink.com/content/w82586k8264p4v76/">
+Through the Google Goggles: Sociopolitical Bias in Search Engine 
+Design</A>, Alejandro Diaz, 
+in A. Spink and M. Zimmer (eds.) 
+<em> Web Search: Multidisciplinary Perspectives</em>, Springer, 2008.
+
+<p>
+The web is a public resource, and the search engine is profiting from
+the use of this resource which it has not paid to build. Moreover, at this
+point the search engines substantially control the access of the public
+to the resource. (Of course, unlike a mining company on public land,
+they don't <em> consume</em> the resource or block anyone from finding
+other forms of access.) Still, the public has a legitimate interest
+in how they are operating.
+
+<H4> Suppression of unpopular views </H4>
+<p>
+Unpopular views get low ranking, in part because of PageRank. <br>
+Crawlers may be using PageRank, so sites linked from unpopular sites
+may not even get indexed (or may get indexed rarely).
+
+<p>
+Bias against new pages. "Entrenchment effect".
+
+
+<p>
+Caveat: "Small players still matter", in part because the correlation between
+rank order and page rank in any given query is not large (query specific
+criteria are dominant).
+
+<H4> Advertising  </H4>
+Most users don't distinguish between the sponsored links and the organic
+results. 
+
+<p>
+Policy on what ads to accept are arbitrary and unfair. Wine is OK, beer is not;
+pornography is OK but guns are not. "When the nonprofit environmental 
+advocacy group Oceana tried to run ads on google they were rejected
+because the organizations site was critical of Royal Carribean Cruise Lines,
+a Google advertiser."
+
+<H4> Search Oligopoly</H4>
+The eternal answer of doctinaire free-market enthusiasts: "If Google is 
+doing something wrong, then whoever can do it better can make a lot of
+money"  was largely true in 1998, but much less true now that the costs of 
+building a competitive new general search engine are prohibitive.
+
+<H4> Web site design </H4>
+(Discussed by Introna and Nissenbaum, but curiously not by Diaz).
+Rich players are able to hire web site designers to organize web sites
+in such a way that the search engines will rank them higher.
+
+<p>
+Introna and Nissenbaum proposal
+<BLOCKQUOTE>
+We would demand full and truthful disclosure
+of the underlying algorithms that govern indexing, searching, and prioritizing,
+stated in a way meaningful to most Web users. Although such information
+might help spammers, we argue otherwise. Would not the impact of spammer's
+unethical practices be severely dampened if both seekers and those wishing
+to be found became aware of the particular biases inherent in any given
+search engine?
+</BLOCKQUOTE>
+
+<P>
+****************************************************************
+
+<P>
+<A href="http://firstmonday.org/htbin/cgiwrap/bin/ojs/index.php/fm/article/view/1111/1031">
+Do Web search engines suppress controversy </A> Susan Gerhart, <em>
+First Monday </em> 9:1 2004.
+<p>
+Five controversial subjects:
+<UL>
+<LI> Is "Distance Learning" effective?
+<LI> Did Mileva Maric, Einstein's first wife, make substantive contributions 
+to his early work?
+<LI> Did the space program discriminate against women astronauts?
+<LI> Is St. John's Wort effective for depression and mood improvement?
+<LI> Who is in the right in Belize's border dispute with Guatemala?
+</UL>
+
+Will a search engine user who is serching for general information
+find out about the controversy in the course of searching?
+Yes for St. John's Wort and female astronauts, no for distance
+learning, Einstein, and Belize. Explanations: Organizational clout
+and sheer volume of the conventional wisdom (particularly Einstein).
+
+<p>
+Conclusions:
+<UL>
+<LI> The Organizational Web dominates the Analytic Web.
+<LI> Controversial subtopics are widely distributed,  poorly defined, and
+weakly organized. 
+<LI> Revisionism takes time.
+<LI> It's not technology but social factors suppressing controversy.
+</UL>
+
+<p>
+Recommendations:
+<UL>
+<LI> Web authors of content should make more of an effort to link to
+dissenting/controversial opinions.
+<LI> Search engines should give more weight to the "analytic" web as 
+opposed to the "organizational" web
+<LI> Searchers should make an effort.
+</UL>
+</BLOCKQUOTE>
+
+
+<P>
+****************************************************************
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1083683">
+Shuffling a stacked deck: the case for partially randomized search
+engine results, </A> Pandey et al., <em>VLDB</em> 2005.
+
+<p>
+<A href="http://oak.cs.ucla.edu/~cho/papers/cho-quality-long.pdf">
+Page Quality: In Search of an Unbiased Web </A>
+Junghoo Cho, Souras Roy, Robert Adams, <em> SIGMOD </em> 2005.
+
+<p>
+Entrenchment effect:
+<BLOCKQUOTE>
+Heavy reliance on a search engine that ranks results according to popularity
+can delay widespread awareness of a high-quality page by a factor of
+over 60, compared with a simulated world without a search engine in
+which pages are accessed through browsing alone. 
+</BLOCKQUOTE>
+
+(Caveat: All results of this kind are necessarily based on models that are
+necessarily highly idealized, since you can't create an alternate world
+in which there are no search engines.)
+
+<p>
+Essentially the same as the cold start problem in recommender systems,
+but more acute because search engines are the main way in which users
+finds web pages, whereas recommender systems are not the main way
+in which buyers choose items.
+
+<p>
+Let P be a page; 
+Define:  
+<BLOCKQUOTE>
+Relevant users for P = users interested in general topic of P. <br>
+Quality of P, denoted Q(P) = 
+fraction of relevant users who would potentially like P (i.e.
+once they have found it)
+<br>
+Popularity of P = fraction of relevant users who have seen P and liked it.
+<br>
+R(P,T) = PageRank of P at time T.
+</BLOCKQUOTE>
+
+
+<p> Dynamic model. Assume that:
+<UL>
+<LI> The number of relevant users who visit P around time T is
+proportional to the PageRank R(P,T).
+(true if relevant users are following a random browsing model, because that is
+the definition of PageRank. Hard to know what is true if visitors are
+getting there via a search engine.)
+<LI> The number of relevant users who visit P at time T and like it is
+Q(P) times the number of relevant users who visit P. (I.e.
+the event that U likes P is probalistically independent of the event
+that U visits P, over the space of relevant users U.)
+<LI> The rate at which inlinks to P are created at time T is proportional
+to the number of new relevant users who visit P and like it. (I.e. when
+a relevant user sees P for the first time, if he likes it, then with 
+probability alpha he creates an inlink to P from somewhere.)
+<LI> The PageRank of P is a linear function of the number of inlinks to P: <br>
+&nbsp  &nbsp
+R(P) = B + C*#Inlinks(P)  <br>
+(true if the web is large, the rest of the web is static, the source
+of the inlinks is random, and the number of inlinks is much smaller than
+the size of the web.) B here is the "basic" PageRank of a page; the PageRank
+of a page with no inlinks.
+</UL>
+
+Then the PageRank of P satisfies the differential equation
+<center>
+dR(P,T)/dT = A * (R(P,T)-B) * Q(P) * (|U|-D*R(P,T))
+</center>
+(B is the same constant as above; A and D are two other constants) <br>
+which has the solution
+<center>
+R(P,T) = B +  E * Q(P) / (1+F exp(-T))
+</center>
+(E and F are two more constants.)
+
+<p>
+As T goes to infinity, this converges to B + E*Q(P); so eventually the
+PageRank becomes a linear function of the quality, which is what is wanted.
+As T goes to minus infinity it converges to B. If R is much smaller than
+the eventual value B+E*Q(P) at time T0, then R is growing exponentially
+at time T0. This is thus a sigmoid curve with a sharp ascent. (It stays
+near B for a long time growing slowly, then climbs rapidly to close 
+to  B+ E*Q(P), then converges slowly toward B+E*Q(P). Classic 
+sigmoid curve, symmetric around the half-way point.
+
+<p>
+Based on this, there are two proposals for getting the true quality
+of new pages recognized more quickly.
+<p>
+
+Proposal 1: Randomized rank promotion. From time to time put a page with
+low PageRank but high query relevance to a high rank in the results page.
+Obviously you can't do a lot of this, because you'll degrade the search
+results, but a little goes a long way, because of the positive feedback.
+
+
+<p>
+Proposal 2: Use the quantity
+<center>
+R(P,T) + C*[d R(P,T)/dt]/R(P,T)
+</center>
+as the measure of query-independent quality. Ideally, this is a linear
+function of the quality Q(P).  Estimate the derivative by tracking the
+PageRank.
+
+<p>
+Proposal 1 degrades individual results pages in the short term, but 
+presumably increases them over the long term. Proposal 2 should increase
+the value of individual results pages even in the short term, though
+it probably increases the variance (the probability of including a 
+very low quality page). 
+
+
+<p>
+Estimate the derivative by tracking the PageRank over time.
+
+<!--
+<A href="http://www.springerlink.com/content/v3505876727m01v2/fulltext.pdf">
+Search engines and the public use of reason</A> Dag Engelsem,
+<em> Ethics and Information Technology </em> 2008.
+-->
+
+<p>
+
+<p>
+***********************************************************
+
+<p>
+<A href="http://www.springerlink.com/content/h7v4221x3v873w48/">
+The Democratizing Effects of Search Engine Use: On Chance Exposures
+and Organizational Hubs ,</A> A. Lev-On, 
+in A. Spink and M. Zimmer (eds.) 
+<em> Web Search: Multidisciplinary Perspectives</em>, Springer, 2008.
+
+<p>
+Panglossian view. Search engines are democratizing in two ways:
+<UL>
+<LI> Users interested in a controversial topic are exposed to the opposite
+point of view because of the crudeness of the search technology. E.g.
+searching for "arguments in favor of XYZ" are likely to turn up a significant
+number of pages that are actually arguments opposed to it. (From this point
+of view, imprecision in search engines is a good thing.)
+<LI> Users are able to find organizations for political action they value.
+</UL>
+
+<p>
+***********************************************************
+<H3> Hate speech </H3>
+
+<A 
+href="http://www3.interscience.wiley.com/cgi-bin/abstract/112749917/ABSTRACT">
+Web links and search engine ranking: The case of Google and the query "jew"
+</A> Judit Bar-Ilan
+
+<P>
+At one point the top Google page returned on
+query "jew" was JewWatch.com, an anti-semitic site.  When this was noticed,
+it led to intense Google bombing on the part of both camps (the pro-Jew
+camp created links to the Wikipedia article).  Google posted an explanation.
+
+<UL>
+<LI> What, if anything, is Google's social/legal responsibility here?
+<LI> Does this kind of incident shed doubt on the reasonableness of
+link analysis for ranking?
+</UL>
+
+<p>
+***********************************************************
+
+<H3> 
+<A href="http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2208240">
+Discrimination in Online Ad Delivery </A> </h3>
+Latanya Sweeney, Social Science Research Network, 2013.
+
+<BLOCKQUOTE>
+Google search for a person's name, such as "Trevon Jones", may yield a 
+personalized ad for public records about Trevon that may be neutral, such 
+as "Looking for Trevon Jones? ..." or may be suggestive of an arrest 
+record, such as "Trevon Jones, Arrested?...". This writing investigates 
+the delivery of these kinds of ads by Google AdSense using a sample of 
+racially associated names and finds statistically significant 
+discrimination in ad delivery based on searches of 2184 racially 
+associated personal names across two websites. First names, previously 
+identified by others as being assigned at birth to more black or white 
+babies, are found predictive of race (88% black, 96% white), and those 
+assigned primarily to black babies, such as DeShawn, Darnell and Jermaine, 
+generated ads suggestive of an arrest in 81 to 86 percent of name searches 
+on one website and 92 to 95 percent on the other, while those assigned at 
+birth primarily to whites, such as Geoffrey, Jill and Emma, generated more 
+neutral copy: the word "arrest" appeared in 23 to 29 percent of name 
+searches on one site and 0 to 60 percent on the other. On the more ad 
+trafficked website, a black-identifying name was 25% more likely to get an 
+ad suggestive of an arrest record.
+</BLOCKQUOTE>
+
+<H3> Breaking Privacy </h3>
+
+<H4> <A href="http://papers.ssrn.com/sol3/papers.cfm?abstract_id=2257732">
+Identifying Participants in the Personal Genome Project by Name </A> </H4>
+Latanya Sweeney, Akua Abu, Julia Winn, <em>SSRN</em> 2013.
+
+<BLOCKQUOTE>
+We linked names and contact information to publicly available profiles 
+in the Personal Genome Project. These profiles contain medical and 
+genomic information, including details about medications, procedures 
+and diseases, and demographic information, such as date of birth, gender, 
+and postal code.
+</BLOCKQUOTE>
+
+<H4> Identifying anonymous individuals in the Netflix Prize database</h4>
+By comparing them to their ratings on IMDB. <br>
+<A href="https://www.cs.utexas.edu/~shmat/shmat_oak08netflix.pdf">
+Robust De-anonymization of Large Sparse Datasets</A> 
+A. Narayanan and V. Shmatikov. <em> Security and Privacy,</em> 2008.
+
+<BLOCKQUOTE>
+Let us summarize what our algorithm achieves. Given a user's <em>public
+</em> IMDb ratings, which the user posted voluntarily to reveal <em>some
+</em> of his movie likes and dislikes, we discover <em>all</em> ratings
+that he entered <em> privately</em> into the Netflix system. Why would
+someone who rates movies on IMDb --- often under his or her real name
+--- care about privacy of his Netflix ratings? Consider the information
+that we have been able to deduce by locating one of these users'
+entire moving viewing history in the Netflix Prize dataset and that
+<em> cannot </em> be deduced from his public IMDb ratings.
+<p>
+First, his political orientation may be revealed by his strong opinions
+about "Power and Terror: Noam Chomsky in Our Times" and "Farenheit 9/11"
+and his religious views by his ratings on "Jesus of Nazareth" and
+"The Gospel of John". Even though one should not make inferences solely
+from someone's movie preferences, in many workplaces and social settings, 
+opinions about movies with predominantly gay themes such as "Bent",and
+"Queer as folks" (both present and rated in this person's Netflix record)
+would be consider sensitive.
+</BLOCKQUOTE>
+
+<H4> 
+<A href="http://www.pnas.org/content/110/15/5802.short">
+Private traits and attributes are predictable from digital records of 
+human behavior</A> </H4>
+M. Kosinski, D. Stillwell, and T. Graepel, <em>PNAS</em> 2013.
+<BLOCKQUOTE>
+We show that easily accessible digital records of behavior, Facebook 
+Likes, can be used to automatically and accurately predict a range of 
+highly sensitive personal attributes including: sexual orientation, 
+ethnicity, religious and political views, personality traits, 
+intelligence, happiness, use of addictive substances, parental separation, 
+age, and gender. The analysis presented is based on a dataset of over 
+58,000 volunteers who provided their Facebook Likes, detailed demographic 
+profiles, and the results of several psychometric tests. The proposed 
+model uses dimensionality reduction for preprocessing the Likes data, 
+which are then entered into logistic/linear regression to predict 
+individual psychodemographic profiles from Likes. The model correctly 
+discriminates between homosexual and heterosexual men in 88% of cases, 
+African Americans and Caucasian Americans in 95% of cases, and between 
+Democrat and Republican in 85% of cases. 
+</BLOCKQUOTE>
+
+<H3> The general question </H3>
+The search engine serves a number of different communities:
+<UL> 
+<LI> The shareholders.
+<LI> The sponsors.
+<LI> The users.
+<LI> The authors of web content.
+<LI> Society at large.
+</UL>
+What are the ethical and political responsibilities of the search engine 
+toward each of these?
+
+
+<!--
+
+<p>
+<A href="http://www.informaworld.com/smpp/content~db=all~content=a927317720">
+The Politics of Search: A Decade Retrospective, </A>
+Laura Granka, <em>The Information Society: An International Journal,</em>
+26:5, 2010 
+
+
+<p>
+<A href="http://ocs.library.dal.ca/ojs/index.php/djim/article/viewArticle/78">
+"Don't be evil": Uncovering the implications of Google search,</A>
+Stephanie Winston, <em> Dalhousie Journal of Interdisciplinary
+Management,</em> 7(1), 2011.
+
+<p> <A href="http://arxiv.org/abs/cs/0511005">
+The Egalitarian Effect of Search Engines</A>
+S. Fortunato et al., <em> WWW </em> 2006.
+
+<p> <A href="http://onlinelibrary.wiley.com/doi/10.1002/bult.1720320211/full">
+The Value Implication of the Practice of Paid Search.</A>
+M. Zimmer, <em> Bulletin of the American Society for Information Science
+and Technology </em> 32(2), 2006.
+
+<p> <A href="
+http://www.pewinternet.org/~/media/Files/Reports/2005/PIP_Searchengine_users.pdf.pdf
+">
+Search engine users: Internet searchers are confident, satisfied, and trusting
+---  <!--- but they are also unaware and naive. </A>
+D. Fallows, <em> Pew Intenet and American Life Project. </em> 2008.
+
+<p>
+<A href="http://onlinelibrary.wiley.com/doi/10.1111/j.1083-6101.2007.00349.x/full">
+The Social, Political, Economic, and Cultural Dimension of Search Engines;
+An Introduction</A> Eszter Hargittai, 
+<em> Journal of Computer Mediated Communication,</em> 12:3 2007.
+
+<p>
+<A href="http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4292013">
+Sponsored Search: Is Money a Motivator for Providing Relevant Results?
+</A> B.J. Jansen and A. Spink, <em> Computer</em> 40:8 2007.
+
+<p>
+<A href="http://onlinelibrary.wiley.com/doi/10.1002/asi.20941/full">
+Presentation bias is significant in determining user preference for 
+search results --- <!-- A user study,</A>
+Judit Bar-Ilan et al., <em>Journal for the American Society
+for Information Science and Technology,</em> 60:1, 2009.
+
+Overall question: What are the search engine's ethical and social 
+responsibilities (beyond the stupid, unhelpful answer that the sole
+responsibility is to make as much money for the stockholders as possible).
+<p>
+<A href="http://oak.cs.ucla.edu/~cho/papers/WWW11.pdf">
+Diversity Search for Informational Queries,</A> 
+Michael Welch, Junghoo Cho, Christopher Olston, <em> WWW</em> 2011.
+
+
+<p>
+<A href="http://oak.cs.ucla.edu/~cho/papers/ntoulas-infocious.pdf">
+The Infocious Web Search Engine: Improving Web Searching through
+Linguistic Analysis </A> Alexandros Ntoulas, Gerald Chao, Junghoo Cho.
+<em> WWW</em> 2005.
+
+<p>
+
+<A href="http://www.kwicfinder.com/FletcherConcordancingWeb2005.pdf">
+Concordancing the Web: Promise and Problems, Tools and Techniques </A>
+William Fletcher. In Hundt, Nesselhauf and Biewer, <em> Corpus
+Linguistics and the Web</em> 2006.
+
+<p>
+<A href="http://www.nytimes.com/2011/01/31/business/media/31link.html">
+Define Gender Gap? Look up Wikipedia's Contributer List </A>
+Noam Cohen, New York Times, January 30 2011 -->

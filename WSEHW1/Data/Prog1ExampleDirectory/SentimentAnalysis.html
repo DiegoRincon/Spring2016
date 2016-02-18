@@ -1,0 +1,207 @@
+
+<TITLE> Sentiment Analysis </H2>
+</TITLE>
+<H2> Sentiment Analysis </H2>
+
+<H3> Reading </H3>
+<A href="http://portal.acm.org/citation.cfm?id=1454712>\">
+Opinion Mining and Sentiment Analysis</A>
+by Bo Pang and Lillian Lee,  Foundations and Trends in Information 
+Retrieval 2:1-2, 2008. (essentially a book on the subject). Excellent but long. 
+<p>
+<A href-"http://www.cs.uic.edu/~liub/FBS/NLP-handbook-sentiment-analysis.pdf">
+Sentiment Analysis and Subjectivity,</A> 
+Bing Liu, in  Handbook of Natural Language Processing 2nd edn. ed. 
+N. Indurkhya and F. J. Damerau. 
+
+
+<H3> Sentiment Analysis </H3>
+Lots of opinions about lots of things on the web.
+
+<p> <b> Level of analysis </b>
+<UL>
+<LI> Document-Level Sentiment Classification
+<LI> Sentence-Level Sentiment Classification
+<LI> Feature-Based Sentiment Analysis
+<LI> Opinion Search Engine
+</UL>
+
+<p> <b> Sub-tasks </b>
+<UL>
+<LI> Does the text express an opinion?
+<LI> Whose opinion?
+<LI> About what?
+<LI> Favorable or unfavorable?
+<LI> Spam detection
+</UL>
+
+<p> <b> 2 nice feature of document level classification </b> <br>
+1) There is an immense body of free labelled data, in the form of reviews 
+that have both a text and a number of stars.  <br>
+2) Unlike most natural language tasks, the output is a number between 1 and 5.
+
+<p> <b> Supervised classification learning </b> <br>
+Classification problem: A universe of instances. A finite set of categories,  
+a numerical measure. Given a new instance, predict which category it
+belongs to, or what is the value of the measure. <br>
+Supervised learning. You have 
+available a corpus of instances that are labelled correctly, or mostly 
+correctly. <br>
+Learning task: Learn a classifier from the labelled instances. Then do
+classification by applying the classifier to the new instance. 
+
+<p>
+I'm not going to teach techniques for supervised classification learning.
+We will simply assume that these techniques exist and work better or worse
+depending on the problem. For a little bit about this, take the AI class
+G22.2560; for a lot about it, take "Machine Learning" G22.2565. 
+<p>
+What I will discuss are the <em> features </em> that are used for 
+classification, and techniques that go beyond supervised classification.
+
+
+<H4> Depth of the Natural Language Analysis </H4>
+To do the problem with perfect accuracy would require a perfect natural
+language understander, which is not available. The question is what can you 
+actually accomplish.
+
+<p>
+I. Some words (mostly adjectives; to a lesser extent nouns, verbs,
+and adverbs) are favorable ("good", "amazing", "beautiful")
+and some are unfavorable ("bad", "dreadful", "junk").
+
+<p>
+So for a very crude analysis you use a classifier that does classification
+just based on 
+these words (e.g. by a weighted sum). Learn the classifier from
+the labelled corpus. "Applying machine learning techniques based on unigram
+[single word] models achieve over 80% in accuracy" (Pang and Lee p. 19)
+(for task of distinguishing positive from negative document). 
+
+<p>
+II.A.  Learn new words via synonyms/antonyms on WordNet. Learn word in foreign
+language from dictionary.
+
+<p>
+II.B. Learn new words via connectives. "U and V" -- probably same polarity.
+"U but V" --- probably opposite polarity.
+
+<p>
+III. Simple phrasal context can change the force of a word. Most notably
+"not W" has (generally) the reverse polarity from W. But you have to be 
+careful of phrases like "not only W but also U", for which W has its positive
+polarity. Note the contrast with topic relevance. Quite a few other words
+with a negative force e.g. "It avoids all cliches and predictability
+found in Hollywood movies" (example from Pang and Lee, p. 36).
+
+
+<p>
+IV. Feature analysis.
+<UL>
+<LI> The sentence may name the feature explicitly e.g. "the picture quality 
+is amazing" or implicitly e.g. "the camera is too expensive" where the
+implicit feature is price.
+<LI> Same feature may have multiple names. Try WordNet synonym.
+<LI> Figuring out which adjective goes with which feature can be done some
+percentage of the time by part-of-speech labelling, then matching 
+simple patterns. E.g. "< Noun > is < Adjective >". Doing this better gets
+into hard NLP problems such as parsing and coreference (pronouns). 
+<LI> Some characteristics are good for some features and bad for others.
+E.g. "terrifying" is a virtue in horror movies and a defect in power tools.
+"Short" is a virtue in booting times and a defect in battery life.
+So you can do this by discriminating more finely on your feature set, but 
+hard to attain a high degree of accuracy.
+</UL>
+
+<p>
+V. Discourse Analysis.
+"In newsgroups devoded to three distinct controversial topics (abortion,
+gun control, and immigration) Agrawal et al. observe that 
+the relationship between two individuals in the `responded to' network
+is more likely to be antagonistic --- overall 74% of the responses 
+examined were found to be antagonistic, whereas only 7% were found to
+be reinforcing." (Pang and Lee p. 48).
+
+<p>
+Cocitation --- two blogs that cite the same source -- tends to indicate
+agreement.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=775227">
+Mining Newsgroups Using Networks Arising from Social Behavior.
+</A> Rakesh Agrawal et al.
+
+<p>
+Observation: In a newsgroup, if X quotes Y, it is much more often to
+disagree than to agree (74% to disagree, 7% to agree, 19% off topic).
+
+<p>
+Therefore: Construct the graph whose nodes are posters and where
+there is an arc from X to Y if X quotes Y. Divide the set of posters
+into two disjoint classes F (for) and A (against) in such a way that
+the maximal number of arcs go from one class to the other.
+
+<p>
+This problem is known as "MAX-CUT" and is NP-complete, but there are
+approximation algorithms.
+
+<p> <b> Experiment: </b> Three newsgroups: abortion (2525 authors),
+gun control (2632 authors), and immigration (1648 authors).
+
+<p> Two versions of the algorithms: the pure version and the "constrained"
+version where 50 random authors were manually labelled, and the maximal
+cut respecting that labelling was returned.
+
+<p>
+Compare text-based SVM and Naive Bayes: both useless.
+
+<p align=center>
+<table border=1>
+<tr> <th> Algorithm <th> Abortion <th> Gun Control <th> Immigration
+<tr>  <td> Majority assignment <td> 57% <td> 72% <td> 54%
+<tr> <td> SVM <td> 55 <td> 42 <td> 55
+<tr> <td> Naive Bayes <td> 50 <td> 72 <td> 54
+<tr> <td> EV <td>  73 <td> 78 <td> 50 <td>
+<tr> <td> Constrained EV <td> 73 <td> 84 <td> 88
+</table>
+
+
+
+<p>
+VI. Discriminating opinions from other text. Direct statements of subjectivity
+("In my opinion") or strong presence of evaluative words is suggestive but
+not decisive in either direction. Odd fact: "<em>Hapax legomena</em> or words
+that appear a single time in a given corpus have been found to be 
+high-precision indicators of subjectivity" (Pang and Lee p. 33).
+
+<p>
+VII. Opinion search engine. Differs from the usual objective of a search engine
+in that 
+<UL>
+<LI> You need to extract documents that express an opinion about 
+a  given subject; not a category in a
+usual search engine.
+<LI> You would like to extract the polarity of the opinion and even to refine 
+it in terms of the feature.
+<LI> You are not looking for a single best document or a few best documents.
+You are looking for the count of positive vs. negative opinions or something
+of the kind. So ranking largely goes away, and therefore so do 
+query-independent measures of importance. The important measures are 
+recall of relevant opinionated documents and precision of the 
+categorization, both as opinionated and of polarity. This raises the obvious
+issue of:
+<LI> Presentation of results. If a large number of opinionated documents have
+been found, what is the best way to present a summary? Long discussion at
+Pang and Lee.
+<LI> Quality of review. Again, there is sometimes feedback from other reviewers\so this can be treated as a preference analysis problem at the metalevel.
+<LI> Two kinds of users: Purchasers and Marketers. Needs are a little different.
+</UL>
+<p>
+VIII. Spam, both positive and negative. Very hard to detect. Liu proposes as a 
+sufficient test cases (a) where the same review has multiple userid's and (b)
+where the same review applies to different items. But this gives a very limited
+corpus which may not be representative. Liu observes that spam seems to gather 
+<em> more </em> "this review was helpful" metacomments than non-spam, but of
+course these metacomments may also be spam.
+
+

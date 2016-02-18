@@ -1,0 +1,155 @@
+<TITLE> Web Search Engines: Lecture 1 </TITLE>
+
+<H2> Web Search Engines: Lecture 1 </H2>
+
+
+<H3> Required Reading </H3>
+<UL>
+CM&S chap 3.
+</UL>
+
+
+<H3> Suggested Further Reading </H3>
+<UL>
+<LI> MR&S, chap. 20 and section 2.2
+<LI> <A href="http://portal.acm.org/citation.cfm?id=598733">
+Mercator: A Scalable, Extensible Web Crawler </A>  by Allan Heydon and Marc
+Najork. First detailed write-up of a crawler.
+<LI> <A href="http://portal.acm.org/citation.cfm?id=297827">
+The Anatomy of a Large Scale Hypertextual Web Search Engine </A> 
+by Sergei Brin and Lawrence Page. The primordial Google paper.
+<LI> <A href="http://portal.acm.org/citation.cfm?id=958945">
+Effective Page Refresh Policies for Web Crawlers  </A> by 
+Junghoo Cho and Hector Garcia-Molina
+<LI>
+<A href="http://oak.cs.ucla.edu/~cho/papers/webbase-toit.pdf">
+Stanford WebBase Components and Applications </A> by Junghoo Cho et al.
+</UL>
+
+<H3> Structure of a Search Engine </H3>
+
+<p align=center>
+<img src="lec1.gif">
+</p>
+
+<H4> Google hit counts </H4>
+Parenthetically: 
+<A href="http://www.cs.nyu.edu/faculty/davise/papers/HitCount.pdf">
+Google hit counts are quite unreliable </A>
+and should never be used as a serious measure.
+
+<H3> Crawlers </H3>
+<H4> URL Normalization </H4>
+E.g. in this page the links "href=index.html", <br>
+"href=http://www.cs.nyu.edu/courses/spring15/CSCI-GA.2580-001/"<br>
+href="http://www.cs.nyu.edu/courses/spring15/CSCI-GA.2580-001/index.html"<br>
+all point to the same page.
+
+<H4> Courtesy toward server </H4>
+Don't overload servers.  1 query at a time.<br>
+<A href="http://www.robotstxt.org/wc/norobots.html"> Robot Exclusion
+Standard </A> <br>
+
+<H4>
+Parallelism in Crawling.</H4>
+<UL> 
+<LI> True parallelism: Multiple machines.  <br>
+We will discuss this later in the context of query handling.
+<LI> Pseudo-parallelism: Multiple threads (MERCATOR) or asynchronous 
+(non-blocking) I/O
+(Google). <br>
+
+<p>
+Thread:
+<PRE>
+loop {
+    get next URL U from URL queue;
+    resolve domain(U) to IP address I;
+    page P := download U from web server I; 
+    process P: add new URLs to URL queue;
+               index P on terms in P;
+ }
+</PRE>
+
+<p>
+Asynchronous I/O:
+<PRE>
+loop {
+  interrupt:
+     whenever a page P arrives at HTTP port, 
+       add P to the page queue;
+
+  interrupt:
+     whenever an IP address I arrives from DNS
+       find URL's U that needs I
+        add U,I to download queue;
+
+  main loop:
+   either { get URL U from URL queue;
+            if domain(U) known to be I, then add U,I to download queue;
+          }
+      or  { get U,I from download queue;
+            issue a request for URL U from web server I;
+      or  { get page P from the page queue;
+            process P: add new URL's in P to URL queue;
+                       index P on terms 
+          }
+}
+</PRE>
+
+Advantage of threads over asynchronous I/O: Much simpler coding.  The OS
+does all the hard work. <br>
+Disadvantage of threads: Overhead associated with thread management, 
+synchronization of URL queue.  Note that there is no logical
+need to associate arriving web page with request.
+</UL>
+
+<H4> Duplicate and Near-Duplicates Pages </H4>
+We will discuss in a later lecture.
+
+<H4> Refresh Strategies </H4>
+Crawling is an eternal process. New pages are added and pages change.
+How frequently should you download a given page? (In a different universe,
+the Web could be set up using a "push" method, where servers sent an
+announcement to Google when an indexed page changed. That would presumably
+make the whole thing more efficient. However, not the way it works.)
+<UL>
+<LI> <b>Page Modeling.</b> 
+Associate with each page a model of how often it changes, and
+tune the refresh strategy. Usually a Poisson process, based on (a) experience
+of this particular page; (b) characteristics of the page.
+<LI> <b> Web Modeling. </b> What is the distribution over the web of 
+different page models (perhaps as a function of importance)?
+<LI> <b>Objective function:</b> What are we trying to maximize?
+<UL>
+<LI> Probability that a given page is current. Problem (or maybe not): Pages
+that change very rapidly are hardly worth downloading at all, because they'll
+be outdated very soon. 
+<LI> Mean value of "out-of-dateness" meaning the length of time since the
+search engine's copy was replaced.
+<LI> Mean value of out-of-dateness times importance.
+</UL>
+Note that both of the above ignore the <em>amount</em> of change; a page is
+either current or outdated. In reality, most pages that change make small
+changes, so an outdated copy is not a disaster.
+<LI> <b>Strategy</b> Upside-down U. Pages that are rarely changed are rarely
+refreshed (because they haven't changed) and pages that are very frequently
+changed are rarely searched (because the search engine can't keep up anyway).
+</UL>
+<H4> What not to index </H4>
+<UL>
+<LI> Garbage. The web is full of it (files with megabytes of null characters
+etc. --- see paper by Brin and Page).
+<LI> Pages with no detectable index terms (however, note that index terms
+e.g. for images can come from anchors, from words near anchors, from URL etc.)
+<LI> Crawler traps. Dynamic pages with links that spawn more dynamic pages.
+<LI> Dynamic pages, even if legit, are in general problematic. How can the
+crawler be sure that the page will contain the same content when the
+user visits it?
+</UL>
+
+<H4> Other sources of URL's </H4>
+gmail, "Previous page information" from browser, whatever Google can get.
+At this point, the crawler is perhaps best viewed as just one 
+arm of Google's vast data collection process.
+

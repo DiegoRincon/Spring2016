@@ -1,0 +1,623 @@
+<TITLE> Information Extraction </TITLE>
+<H2> Information Extraction </H2>
+General idea: To leverage the redundancy of the web against the difficulty
+of natural language interpretation.  Somebody somewhere will have stated
+the fact you want in a form that your program can recognize.
+
+<UL>
+<LI> Entity extraction in targeted categories.
+<LI> Targeted relation extraction. 
+<LI> Open information extraction.
+<LI> Theory extraction
+<LI> Extracting verb relations
+<LI> Extracting synonyms
+</UL>
+
+<H3> NLP Tools </H3>
+<A href="http://incubator.apache.org/opennlp/index.html"> OpenNLP </A> 
+<UL>
+<LI> Tokenizing
+<LI> Sentence splitting
+<LI> Stemming/Lemmatizing
+<LI> Part of speech tagging
+<LI> Named-entity recognition.
+<LI> WordNet: Synonyms, hypernyms (supercategory) etc.
+<LI> Chunking: Identify groups such as noun groups, verb groups, etc. without
+internal structure.
+<LI> Syntactic parsing.
+<LI> Nominal analysis. 
+<LI> Coreference (anaphora) resolution.
+<LI> Temporal Analysis
+</UL>
+
+<p> The more sophisticated forms of analysis obviously give richer information.
+The downside using them is that they tend to be
+(a) computationally costly; 
+(b) ambiguous; (c) fragile under low-quality text; 
+(d) hard to integrate; (e) hard to probabilize; 
+(f) unavailable for minority languages and even
+for specialized subject matter.
+
+
+<p>
+*****************************************************************************
+
+<p>
+There has been an immense amount of work on this over the past 10 years. 
+Some further notes on other systems are 
+<A href="InformationExtraction.html"> here. </A>
+
+<H3> Hearst patterns </H3> 
+<A href="http://www.aclweb.org/anthology/C92-2082.pdf">
+Automatic acquisition of hyponyms from large text corpora.</A> &nbsp
+<A href="http://en.wikipedia.org/wiki/Marti_Hearst"> Marti Hearst </A>
+ACL 1992.
+
+<blockquote>
+NP such as NP* { or | and} NP <br>
+such NP as NP* { or | and} NP <br>
+NP,  including NP* { or | and} NP <br>
+NP {, NP}* and other NP <br>
+NP {, NP}* and other NP <br>
+</blockquote>
+
+E.g.
+"countries such as Spain, France ...";
+"such animals as dogs, cats,"
+"scientists, including physicists, chemists"
+"McCain, Reid, and other Senators".
+
+
+<h4> Difficult cases </h4>
+From ProBase paper (discussed below)
+<OL>
+<LI> animals other than dogs such as cats 
+<LI> classic movies such as Gone with the Wind
+<LI> companies such as IBM, Nokia, Proctor and Gamble 
+<LI> representatives in North America, Europe, the Middle East, Australia,
+Mexico, Brazil, Japan, China, and other countries
+</OL>
+
+My own example;
+<UL>
+<LI> dead animals, such as dogs (many hits for this exact phrase in Google)
+</UL>
+Is "dead animals" a category?  If so, "dogs" is certainly not a subcategory.
+
+
+<H3> KnowItAll (Etzioni et al.) </H3>
+<A href="http://portal.acm.org/citation.cfm?id=988687">
+Web-scale Information Extraction in KnowItAll (preliminary results) </A>
+Oren Etzioni et al., WWW 2004.
+
+<p>
+Task: To collect as many instances as possible of various categories.
+(cities, states, countries, actors, and films.)
+
+<p>
+General bootstrapping algorithm:
+<PRE>
+{ EXAMPLES := seed set of examples of the kind of thing you want to collect.
+  repeat { EXAMPLEPAGES := retrieve pages containing the examples in E;
+           PATTERNS := patterns of text surrounding the examples in E
+                         in EXAMPLEPAGES;
+           PATTERNPAGES := retrieve pages containing patterns in PATTERNS;
+           EXAMPLES := extract examples from PATTERNPAGES matching PATTERNS
+         }
+  until (some stopping condition: e.g. enough iterations, enough examples, 
+         some measure of accuracy too low, etc.)
+  return(EXAMPLES)
+}
+</PRE>
+
+Danger: Semantic drift (once some irrelevant example has been
+introduced, it builds on itself.) Positive feedback system.
+
+<p>
+Domain-independent extractor and assessor rules.
+
+<p>
+<b>Extractor rule:</b>
+<PRE>
+Predicate: Class1
+Pattern: NP1 "such as" NPList2 <br>
+Constraints: head(NP1)=plural(label(Class1))
+             properNoun(head(each(NPList2)))
+Bindings: Class1(head(each(NPList2)))
+</PRE>
+
+E.g. For the class "City" the pattern is "cities such as NPList2"
+"cities such as" can be used as a search string.
+The pattern would match "cities such as New York, London,
+and Paris" and would label each of New York, London, and Paris
+as cities.
+
+<p>
+
+<p>
+<b>Subclass extractors:</b>
+Look for instances of a subclass rather than the superclass.  E.g. it is
+easier to find people described as "physicists", "biologists",
+"chemists" etc. rather than "scientists."
+
+
+<p>
+<b>List extractor rules.</b>
+<UL>
+<LI> Take four instances of the category and search on them. (E.g.
+four known cities.)
+<LI> Find an HTML list containing all four.
+<LI> Predict that the other elements of the list are also instances
+of the category.
+</UL>
+
+<p> <b> Assessor </b> Collection of high-precision, searchable patterns.
+E.g. "[INSTANCE] is a [CATEGORY]" ("Kalamazoo is a city.") There will not
+be very many of these on the Web, but if there are a few, that is 
+sufficient evidence.
+
+<H4> Learning </H4>
+<p>
+<b> Learning synonyms for category names:</b>
+E.g. learn "town" as a synonym for "city"; "nation" as a synonym for
+"country" etc. <br>
+Method: Run the extractor rules in the opposite direction. E.g. Look
+for patterns of the form "[CLASS](pl.) such as [INST1], [INST2] ..."
+where some of the instances are known to be cities.
+
+<p> <b> Learning patterns </b> 
+<UL>
+<LI> 1. Start with a set I of seed instances (e.g. cities).
+<LI> 2. For each instance <em>i</em> in I; Issue a query to a Web 
+search engine for <em>i</em>, and, for each occurrence of <em>i</em> 
+in the returned documents, record a context string of the <em>w </em> 
+words before <em>i</em>, replace <em>i</em> by a place holder,
+and the <em>w</em> words after <em>i</em>.
+<LI> 3. Output the best patterns.  A pattern is a substring of a context
+string that contains the placeholder and at least one other word.
+Use patterns that (a) appear with more than one seed; (b) high precision.
+</UL>
+
+Some of the best patterns learned:
+<BLOCKQUOTE>
+the cities of [CITY] <br>
+headquartered in [CITY] <br>
+for the city of [CITY] <br>
+in the movie [FILM] <br>
+[FILM] the movie starring <br>
+movie review of [FILM] <br>
+and physicist [SCIENTIST] <br>
+physicist [SCIENTIST] <br>
+[SCIENTIST], a British scientist
+</BLOCKQUOTE>
+
+<H4>Learning Subclasses</H4>
+Subclass patterns:
+<BLOCKQUOTE>
+[SUPER] such as [SUB] <br>
+such [SUPER] as [SUB] <br>
+[SUB] and other [SUPER] <br>
+[SUPER] especially [SUB] <br>
+[SUB1] and [SUB2] (e.g. "physicists and chemists")
+</BLOCKQUOTE>
+
+<H4> Learning list-pattern extractors </H4>
+Looks for repeated substructures within an HTML subtree
+with many instances of the category in a particular place. <br>
+E.g. the pattern "<tr> <td> <a ...> CITY </A> </td>" will detect CITY
+as the first element of a row in a table. (Allows wildcards in the
+argument to an HTML tag.)
+Predict that the leaves of the subtree are all instances. <br>
+Hugely effective strategy; increases overall number retrieved by a factor of 7,
+and increases "extraction rate" (number retrieved per query) by a factor
+of 40.
+
+<p>
+Results:
+Found 151,016 cities of which 78,157 were correct: precision = 0.52.
+At precision = 0.8, found 33,000.  At precision = 0.9, found 20,000
+
+
+<p>
+*****************************************************************************
+<H3> Targeted Categories and Relations </H3>
+
+<p>
+<A href="http://www.computer.org/portal/web/csdl/doi/10.1109/ICDM.2007.104">
+Language-Independent Set Expansion of Named Entities Using the Web </A>
+Richard Wang and William Cohen, <em>IEEE ICDM</em> 2007.
+
+<p>
+<em> SEAL (Set Expander for Any Language)</em>
+Task: Given a few names from a category, find many names from that category.
+Do this in way that is independent of both the content language and of
+the markup system (e.g. don't assume HTML).
+<p>
+General method: Look for lists, tables, etc. containing the names. Extract
+other names from these.
+<p>
+Success: With 36 categories such as "Classic Disney Movies", "constellations"
+"countries", "Major league baseball teams" "Japanese emperor names" etc., 
+with docs in English, Chinese, and Japanese, retrieves with about 94% 
+precision. (All three langs for many categories; only one lang for certain
+categories such as "Japanese emperors").
+<p>
+Method: 
+<UL>
+<LI> Search for pages containing the seeds. (Seed list is not expanded.)
+<LI> Construct a wrapper for the occurrences of the seeds in this documents.
+(Different docs may have different wrappers.) The wrapper
+is defined by two character strings, which specify the left-context
+and right-context necessary for an entity to be extracted from a page.
+These strings are chosen to be maximally-long contexts that bracket
+at least one occurrence of every seed string on a page. (Note that the
+use of <em> character</em> strings makes this independent of tokenizer etc.)
+<LI> Use the wrapper to extract candidates.
+<LI> Rank the candidates. Construct a graph whose nodes are seeds, documents,
+wrappers, and candidates, with the obvious arcs. Imagine doing a random
+walk where you randomly follow outarcs or stay where you are (similar but
+not identical to the stochastic model of PageRank). The similarity of
+candidates C to the seeds is the probability that a random walk of length 10
+starting at a seed will go through C.
+</UL>
+
+
+<p>
+*****************************************************************************
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1699697">
+Character-level analysis of semi-structured documents for set expansion</A>
+Richard Wang and William Cohen, <em>EMNLP</em> 2009.
+
+<p>
+Expands the above to binary relations, using wrappers with left, right and
+middle contexts. 
+
+<p>
+Sample relations: Governor vs. US state; Mayor vs. city in Taiwan; US 
+federal agency acronym vs. full name. 
+
+<p>
+*****************************************************************************
+<p>
+<A href="http://rtw.ml.cmu.edu/papers/carlson-wsdm10.pdf">
+Coupled Semi-Supervised Learning for Information Extraction </A>
+Carlson et al., <em>WSDM-10</em>
+
+<p>
+Input: Initial "ontology" with
+<UL>
+<LI> Fixed set of categories and relations to be learned.
+<LI> Mutual exclusion relationships between categories/relations.
+<LI> Small number of seed instances.
+<LI> High precision patterns for identifying instances in text.
+<LI> Flag whether arguments are common nouns, proper nouns, or both.
+</UL>
+
+Basic bootstrapping algorithm:
+<PRE>
+Loop forever
+  Use patterns to extract new instances
+  Use instances to extract new patterns
+  Filter and rank
+  Add new elements to set (promote),
+</PRE>
+
+<p>
+<b> Coupled Pattern Learner (CPL):</b> Extracts patterns and instances
+similarly to KnowItAll. 
+<p>
+Filter using mutual exclusion and type-checking: An instance is
+rejected for a category C unless the number of times it co-occurs with a 
+promoted pattern is at least 3 time the number of times it appears with
+any pattern for a category inconsistent with D. Patterns are filtered
+comparably.
+<p>
+Instances are ranked by the number of patterns for C they occur with.
+
+<p>
+<b> CSEAL </b>: Coupled SEAL
+
+<p>
+<b> MBL </b> (Meta-Bootstrap Learner). 
+Combined together, combining the instances generated from each, and
+using the mutual exclusion and type-checking constraints to allow 
+information gathered from one to filter the other.
+
+<p> <b> Results: </b>
+<blockquote>
+MBL promoted 207 instances of countries with an estimated 
+precision
+of 93%. CSEAL promoted 130 instances, with an estimated precision of 97%. 
+[Why it is not possible to compute the exact precision, I do not understand.]
+Without coupling, Country preforms poorly, drifting into a more
+general Location category. 
+<p>
+The categories for which the couple algorithms still have the most
+difficulty (e.g. ProductType, SportsEquipment, Traits, Vehicles) tend to
+be common nouns.  ...
+<P>
+The coupled algorithms generally had high accuracies for relations but
+suffered from sparsity. SportUsesSportsEquipment performed poorly because
+the SportsEquipment category performed poorly, resulting in bad type checking.
+StateHasCapital and CompanyHeadquarteredInCiry drifted to the more 
+general relations of StateContainsCity and CompanyHasOperationsInCity.
+...
+<p>
+Our experiments included five relations for which no
+instances were promoted by any alorithms: CoachCoachesAthelete, 
+AthletePlaysInStadium, CoachWonAwardTrophyTournament, 
+SportPlayesGameInStadium and AthleteIsTeammateOfAthlete.
+</blockquote>
+
+
+<p>
+*****************************************************************************
+
+
+<p>
+<A href="http://rtw.ml.cmu.edu/papers/carlson-aaai10.pdf">
+Toward an Architecture for Never-Ending Language Learning, </A>
+Andrew Carlson et al., <em>AAAI-10</em> <br>
+<A href="http://www.cs.cmu.edu/~tom/pubs/NELL_aaai15.pdf">
+Never-Ending Learning</A> T. Mitchell et al. et al. AAAI-15.
+
+
+
+<p>
+NELL system. Four subsystems:
+
+<UL>
+<LI> CPL: Coupled Pattern Learning 
+<LI> CSEAL: Coupled SEAL 
+<LI> CMC: Coupled morphological classifier. Classify entities according to
+structural features of the name itself. E.g. the name of a mountain may
+end with "mountain" or "peak". The name of a music group may start with 
+"The".
+<LI> RL. Rule learner. Learn probabilistic implications,  infer facts. 
+RL was run after every batch of 10 iterations, and the proposed output
+rules were filtered by a human. E.g. <br>
+atheletePlaysSport(X,basketball) <= athleteInLeague(X,NBA)
+</UL>
+
+<p>
+Starting point: 123 categories each with 10-15 instances. 55 relations,
+each with 10-15 instances and 5 non-instances (obtained by permuting
+the arguments). 
+
+<p>
+Results: After running for 67 days, NELL completed 66 iterations of
+execution. 242,453 beliefs promoted: 95% are instances of categories and
+5% instances of relations. On a per-iteration basis, the promotion rate
+remained reasonably constant. Precision steadily declined, from 90% 
+in iterations 1-22 to 71% in iterations 23-44 to 57% in iterations 45-66.
+Overall precision 74%.
+</UL>
+
+
+<p>
+Most predicates had precision over 90% but two did badly:
+<UL>
+<LI> 
+CardGame: Confused by card game spam of various kinds.
+<LI>
+ProductType: Promoted more general nouns that do not actually name a 
+product type, e.g. "Microsoft Office".
+</UL>
+
+<blockquote>
+However, in looking at errors made by the system, it is clear that CPL and
+CMC are not perfectly uncorrelated in their errors. As an example, for the
+category BakedGood, CPL learns the pattern, "X are enabled in" bcause of the
+believed instance "cookies". This leads CPL to extract "persistent cookies"
+as a candidate BakedGood. CMC outputs high probability for phrases that
+end in "cookies", and so "persistent cookies" is promoted as believed 
+instance of BakedGood. 
+</blockquote>
+
+<p>
+*****************************************************************************
+
+<p>
+<A href="http://rtw.ml.cmu.edu/rtw/">
+Read The Web </A> 
+
+
+<p>
+Since January 2010, NELL has been learning continuously; 
+As of 4/20/11, 
+NELL has accumulated a knowledge base of 581,405 beliefs in
+287 iterations (about one every two days).
+Note that the "iterations per day" and "facts per iterations" are each
+about half what they were over the first 
+67 days.
+
+<p>
+The current (4/3/2015) "Recently Learned Facts" that I got off a first pass of 
+the "Read the Web" home page are: (number is confidence)
+<blockquote>
+arizona_house_of_representatives is a political organization that is not part of the government 97.3 <br>
+in_and_out is a song 99. <br>
+africa is a continent 	100. <br>
+notre_dame_college is a county 	100. <br>
+phillippi_church_of_christ is a religion 98. <br>
+amazon_com001 has acquired junglee 93. <br>
+augustine wrote the book enchiridion 	96. <br>
+tribune is a newspaper in the city home 100. <br>
+brandeis_university is a sports team that plays in the league international  <br>
+99.2
+peyton_manning and joseph_addai are teammates 100.
+</blockquote>
+
+
+<p>
+The facts on the second pass were rather better. 
+
+<p>
+
+
+<p>
+*****************************************************************************
+
+<H3> Extracting Verb Relations </H3>
+<A href="http://acl.ldc.upenn.edu/acl2004/emnlp/pdf/Chklovski.pdf">
+VERBOCEAN: Mining the Web for Fine-Grained Semantic Verb Relations
+</A> Timothy Chdlovski and Patrick Pantel
+
+
+<p>
+Relations to be found: (These examples were all actually extracted by the 
+system.)
+<UL>
+<LI> Similarity. E.g. maximize::enhance, produce::create, reduce::restrict.
+<LI> Strength. E.g. taint::poison, permit::authorize, surprise::startle,
+startle::shock.
+<LI> Antynomy (opposite).
+<UL>
+<LI> Switching thematic roles: buy::sell, lend::borrow.
+<LI> Stative verbs: live::die, differ::equal
+<LI> Sibling verbs that share a parent: walk::run.
+<LI> Sibling verbs that shae an entailed verb: succeed::fail both entail try.
+</UL>
+<LI> Undoing: damage::repair, wrap::unwrap.
+<LI> Enablement (V1 is accomplished by V2): assess::review, 
+accomplish::complete (??).
+<LI> Precedes: marry::divorce, detain::prosecute, enroll::graduate,
+schedule::reschedule.
+</UL>
+
+<p>
+Semantic patterns: (I omit tense variations)
+<p align=center>
+<table rules=groups>
+<tr> <td> SEMANTIC RELATION &nbsp &nbsp <td> Surface Pattern
+<tbody> 
+<tr> <td> narrow similarity <td> X i.e. Y
+</tbody>
+<tbody> <tr> <td> broad similarity <td> X and Y
+</tbody>
+<tbody>
+<tr> <td> strength <td> X even Y
+<tr> <td> <td> X and even Y
+<tr> <td> <td> Y or at least X
+<tr> <td> <td> not only X but Y
+<tr> <td> <td> not just X but Y
+</tbody>
+<tbody>
+<tr> <td> enablement <td> Xed * by Ying the
+<tr> <td> <td> Xed * by Ying or
+</tbody>
+<tbody>
+<tr> <td> antynomy <td> either X or Y
+<tr> <td> <td> whether to X or Y
+<tr> <td>  <td> X * but Y
+</tbody>
+<tbody>
+<tr> <td> precedes <td> X * and [then/later/subsequently/eventually] Y
+</tbody>
+</table>
+</p>
+
+<p>
+Accuracy: 68%.
+
+<H3> Probase </H3>
+<A href="http://research.microsoft.com/pubs/158737/paper.pdf">
+Probase: A Probabilistic Taxonomy for Text Understanding </A>
+W. Wu et al. SIGMOD 2012.
+
+<p>
+<A href="http://research.microsoft.com/en-us/projects/probase/">
+Probase website </A>
+
+<p>
+Collect taxonomic information from web: An entity is an instance of
+a category; one category is a subset of another.
+
+<p>
+Large scale: 2.6 million concepts (categories). 20.7 million isA pairs.
+92.8% accuracy.
+
+<p>
+Uses Hearst patterns to find candidates for categories, instances, 
+isA relations. Uses probabilistic reasoning over statistics to exclude 
+incorrect candidates.
+
+E.g. in 
+"animals other than dogs such as cats" either "animals" or "dogs" are 
+the hypernym for "cats". But there is lot of evidence from elsewhere
+in the corpus that "animal" is a hypernym for "cat" and very limited
+evidence that "dog" is. Therefore, the hypernym relation for this
+sentence is interpreted as "cat" --> "animal".
+
+<p>
+In "companies such as IBM, Nokia, Proctor and Gamble" initially
+"Proctor", "Gamble" and "Proctor and Gamble" are all proposed as
+candidate companies. However, since "Proctor and Gamble" is often
+a company name, and "Proctor" singly or "Gamble" singly are very rarely
+company names, assume that "Proctor and Gamble" is a company.
+
+<p>
+<b>General probabilistic assessments:</b>
+<p>
+The closer a candidate sub-concept is to the pattern keywords, the
+more likely it is valid sub-concept.
+<p>
+If we are certain that a candidate sub-concept at the <em>k</em>-th position
+is valid, then most likely candidate sub-concepts from position 1 to 
+position <em>k-1</em> are also valid.
+
+<p>
+<b>Polysemy:</b> A word may have multiple senses. <br>
+Probase distinguishes multiple meanings of category words (i.e. words
+that are the hypernym of some other word). It has no means to disambiguate
+instance words.
+
+<p>
+Let x,y be a pair of category words. Let x[i] (i=1 ...) and y[j] ... 
+be the multiple meanings of x and y and consider the possibility that
+some x[i] is a hypernym of some y[j]. Then there are three cases:
+
+<p>
+<b> Case 1:</b> There is one x[i] that is the hypernym of one y[j]. By
+far the most common case.
+<b> Case 2:</b> There is one x[i] that is the hypernym of multiple y[j].
+e.g. "object" is a hypernym of both senses of "plant".
+<b> Case 3:</b> There are several x[i] that is the hypernym of multiple
+y[j].  Wu et al. say this is "very rare". 
+
+<p>
+Wu et al. say that the fourth case --- there are several x[i] that
+are hypernyms of a single y[j] is "impossible". I'm sure it's extremely
+rare, though I'll bet that if you work hard you can come up with a plausible
+example (i.e. a word x that has two different senses that are clearly
+different but not actually disjoint.)
+
+<p>
+Properties used to disambiguate polysemy.
+
+<p>
+<b> Property 1:</b>
+In a single Hearst pattern, the hypernym will have only one sense. E.g.
+you will not have a phrase like "plants such as trees and boilers".
+
+<p>
+<b>Property 2:</b>
+In two sentences with the same word x and strongly overlapping lists of y's
+the sense of x is probably the same. E.g. if you have "plants such
+as trees, grasses, and flowers", and "plants such as grasses, cactuses,
+and trees" these are probably the same sense of "plant".
+
+<p>
+<b> Property 3: </b>
+If x appears as a hypernym of y, u1 ... uk in one pattern and y appears
+as a hypernym of v1 ... vm in another pattern, and the v's are similar
+to the u's then y probably has the same sense in both sentences.
+For instance, if you have the patterns "plants such as trees, grasses
+and cactuses," and "organisms such as plants, trees, and grasses"
+then these are the same sense of "plant".
+
+<p>
+So these three properties give rules for merging multiple occurrences of
+a word x into a single category. I would think that this would lead to
+over-splitting for words that in hypernym position.

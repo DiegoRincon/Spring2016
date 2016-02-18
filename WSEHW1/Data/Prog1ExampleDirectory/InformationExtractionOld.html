@@ -1,0 +1,1003 @@
+<TITLE> Information Extraction </TITLE>
+<H2> Information Extraction </H2>
+General idea: To leverage the redundancy of the web against the difficulty
+of natural language interpretation.  Somebody somewhere will have stated
+the fact you want in a form that your program can recognize.
+
+<UL>
+<LI> Entity extraction in targeted categories.
+<LI> Targeted relation extraction. 
+<LI> Open information extraction.
+<LI> Theory extraction
+<LI> Extracting verb relations
+<LI> Extracting synonyms
+</UL>
+
+<H3> NLP Tools </H3>
+<A href="http://incubator.apache.org/opennlp/index.html"> OpenNLP </A> 
+<UL>
+<LI> Tokenizing
+<LI> Sentence splitting
+<LI> Stemming/Lemmatizing
+<LI> Part of speech tagging
+<LI> Named-entity recognition.
+<LI> WordNet: Synonyms, hypernyms (supercategory) etc.
+<LI> Chunking: Identify groups such as noun groups, verb groups, etc. without
+internal structure.
+<LI> Syntactic parsing.
+<LI> Nominal analysis. 
+<LI> Coreference (anaphora) resolution.
+<LI> Temporal Analysis
+</UL>
+
+<p> The more sophisticated forms of analysis obviously give richer information.
+The downside using them is that they tend to be
+(a) computationally costly; 
+(b) ambiguous; (c) fragile under low-quality text; 
+(d) hard to integrate; (e) hard to probabilize; 
+(f) unavailable for minority languages and even
+for specialized subject matter.
+
+
+
+<p>
+*****************************************************************************
+
+<H3> KnowItAll (Etzioni et al.) </H3>
+<A href="http://portal.acm.org/citation.cfm?id=988687">
+Web-scale Information Extraction in KnowItAll (preliminary results) </A>
+Oren Etzioni et al., WWW 2004.
+
+<p>
+Task: To collect as many instances as possible of various categories.
+(cities, states, countries, actors, and films.)
+
+<p>
+General bootstrapping algorithm:
+<PRE>
+{ EXAMPLES := seed set of examples of the kind of thing you want to collect.
+  repeat { EXAMPLEPAGES := retrieve pages containing the examples in E;
+           PATTERNS := patterns of text surrounding the examples in E
+                         in EXAMPLEPAGES;
+           PATTERNPAGES := retrieve pages containing patterns in PATTERNS;
+           EXAMPLES := extract examples from PATTERNPAGES matching PATTERNS
+         }
+  until (some stopping condition: e.g. enough iterations, enough examples, 
+         some measure of accuracy too low, etc.)
+  return(EXAMPLES)
+}
+</PRE>
+
+Danger: Semantic drift (once some irrelevant example has been
+introduced, it builds on itself.) Positive feedback system.
+
+<p>
+Domain-independent extractor and assessor rules.
+
+<p>
+<b>Extractor rule:</b>
+<PRE>
+Predicate: Class1
+Pattern: NP1 "such as" NPList2 <br>
+Constraints: head(NP1)=plural(label(Class1))
+             properNoun(head(each(NPList2)))
+Bindings: Class1(head(each(NPList2)))
+</PRE>
+
+E.g. For the class "City" the pattern is "cities such as NPList2"
+"cities such as" can be used as a search string.
+The pattern would match "cities such as Providence, Pawtucket,
+and Cranston" and would label each of Providence, Pawtucket, and
+Cranston as cities.
+
+<p>
+These are known as "Hearst patterns" after 
+<A href="http://en.wikipedia.org/wiki/Marti_Hearst"> Marti Hearst </A>
+
+<p>
+<b>Subclass extractors:</b>
+Look for instances of a subclass rather than the superclass.  E.g. it is
+easier to find people described as "physicists", "biologists",
+"chemists" etc. rather than "scientists."
+
+
+<p>
+<b>List extractor rules.</b>
+<UL>
+<LI> Take four instances of the category and search on them. (E.g.
+four known cities.)
+<LI> Find an HTML list containing all four.
+<LI> Predict that the other elements of the list are also instances
+of the category.
+</UL>
+
+<p> <b> Assessor </b> Collection of high-precision, searchable patterns.
+E.g. "[INSTANCE] is a [CATEGORY]" ("Kalamazoo is a city.") There will not
+be very many of these on the Web, but if there are a few, that is 
+sufficient evidence.
+
+<H4> Learning </H4>
+<p>
+<b> Learning synonyms for category names:</b>
+E.g. learn "town" as a synonym for "city"; "nation" as a synonym for
+"country" etc. <br>
+Method: Run the extractor rules in the opposite direction. E.g. Look
+for patterns of the form "[CLASS](pl.) such as [INST1], [INST2] ..."
+where some of the instances are known to be cities.
+
+<p> <b> Learning patterns </b> 
+<UL>
+<LI> 1. Start with a set I of seed instances (e.g. cities).
+<LI> 2. For each instance <em>i</em> in I; Issue a query to a Web 
+search engine for <em>i</em>, and, for each occurrence of <em>i</em> 
+in the returned documents, record a context string of the <em>w </em> 
+words before <em>i</em>, replace <em>i</em> by a place holder,
+and the <em>w</em> words after <em>i</em>.
+<LI> 3. Output the best patterns.  A pattern is a substring of a context
+string that contains the placeholder and at least one other word.
+Use patterns that (a) appear with more than one seed; (b) high precision.
+</UL>
+
+Some of the best patterns learned:
+<BLOCKQUOTE>
+the cities of [CITY] <br>
+headquartered in [CITY] <br>
+for the city of [CITY] <br>
+in the movie [FILM] <br>
+[FILM] the movie starring <br>
+movie review of [FILM] <br>
+and physicist [SCIENTIST] <br>
+physicist [SCIENTIST] <br>
+[SCIENTIST], a British scientist
+</BLOCKQUOTE>
+
+<H4>Learning Subclasses</H4>
+Subclass patterns:
+<BLOCKQUOTE>
+[SUPER] such as [SUB] <br>
+such [SUPER] as [SUB] <br>
+[SUB] and other [SUPER] <br>
+[SUPER] especially [SUB] <br>
+[SUB1] and [SUB2] (e.g. "physicists and chemists")
+</BLOCKQUOTE>
+
+<H4> Learning list-pattern extractors </H4>
+Looks for repeated substructures within an HTML subtree
+with many instances of the category in a particular place. <br>
+E.g. the pattern "<tr> <td> <a ...> CITY </A> </td>" will detect CITY
+as the first element of a row in a table. (Allows wildcards in the
+argument to an HTML tag.)
+Predict that the leaves of the subtree are all instances. <br>
+Hugely effective strategy; increases overall number retrieved by a factor of 7,
+and increases "extraction rate" (number retrieved per query) by a factor
+of 40.
+
+<p>
+Results:
+Found 151,016 cities of which 78,157 were correct: precision = 0.52.
+At precision = 0.8, found 33,000.  At precision = 0.9, found 20,000
+
+
+<p>
+*****************************************************************************
+<H3> Targeted Categories and Relations </H3>
+
+<p>
+<A href="http://www.computer.org/portal/web/csdl/doi/10.1109/ICDM.2007.104">
+Language-Independent Set Expansion of Named Entities Using the Web </A>
+Richard Wang and William Cohen, <em>IEEE ICDM</em> 2007.
+
+<p>
+<em> SEAL (Set Expander for Any Language)</em>
+Task: Given a few names from a category, find many names from that category.
+Do this in way that is independent of both the content language and of
+the markup system (e.g. don't assume HTML).
+<p>
+General method: Look for lists, tables, etc. containing the names. Extract
+other names from these.
+<p>
+Success: With 36 categories such as "Classic Disney Movies", "constellations"
+"countries", "Major league baseball teams" "Japanese emperor names" etc., 
+with docs in English, Chinese, and Japanese, retrieves with about 94% 
+precision. (All three langs for many categories; only one lang for certain
+categories such as "Japanese emperors").
+<p>
+Method: 
+<UL>
+<LI> Search for pages containing the seeds. (Seed list is not expanded.)
+<LI> Construct a wrapper for the occurrences of the seeds in this documents.
+(Different docs may have different wrappers.) The wrapper
+is defined by two character strings, which specify the left-context
+and right-context necessary for an entity to be extracted from a page.
+These strings are chosen to be maximally-long contexts that bracket
+at least one occurrence of every seed string on a page. (Note that the
+use of <em> character</em> strings makes this independent of tokenizer etc.)
+<LI> Use the wrapper to extract candidates.
+<LI> Rank the candidates. Construct a graph whose nodes are seeds, documents,
+wrappers, and candidates, with the obvious arcs. Imagine doing a random
+walk where you randomly follow outarcs or stay where you are (similar but
+not identical to the stochastic model of PageRank). The similarity of
+candidates C to the seeds is the probability that a random walk of length 10
+starting at a seed will go through C.
+</UL>
+
+
+<p>
+*****************************************************************************
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1699697">
+Character-level analysis of semi-structured documents for set expansion</A>
+Richard Wang and William Cohen, <em>EMNLP</em> 2009.
+
+<p>
+Expands the above to binary relations, using wrappers with left, right and
+middle contexts. 
+
+<p>
+Sample relations: Governor vs. US state; Mayor vs. city in Taiwan; US 
+federal agency acronym vs. full name. 
+
+<p>
+*****************************************************************************
+<p>
+<A href="http://rtw.ml.cmu.edu/papers/carlson-wsdm10.pdf">
+Coupled Semi-Supervised Learning for Information Extraction </A>
+Carlson et al., <em>WSDM-10</em>
+
+<p>
+Input: Initial "ontology" with
+<UL>
+<LI> Fixed set of categories and relations to be learned.
+<LI> Mutual exclusion relationships between categories/relations.
+<LI> Small number of seed instances.
+<LI> High precision patterns for identifying instances in text.
+<LI> Flag whether arguments are common nouns, proper nouns, or both.
+</UL>
+
+Basic bootstrapping algorithm:
+<PRE>
+Loop forever
+  Use patterns to extract new instances
+  Use instances to extract new patterns
+  Filter and rank
+  Add new elements to set (promote),
+</PRE>
+
+<p>
+<b> Coupled Pattern Learner (CPL):</b> Extracts patterns and instances
+similarly to KnowItAll. 
+<p>
+Filter using mutual exclusion and type-checking: An instance is
+rejected for a category C unless the number of times it co-occurs with a 
+promoted pattern is at least 3 time the number of times it appears with
+any pattern for a category inconsistent with D. Patterns are filtered
+comparably.
+<p>
+Instances are ranked by the number of patterns for C they occur with.
+
+<p>
+<b> CSEAL </b>: Coupled SEAL
+
+<p>
+<b> MBL </b> (Meta-Bootstrap Learner). 
+Combined together, combining the instances generated from each, and
+using the mutual exclusion and type-checking constraints to allow 
+information gathered from one to filter the other.
+
+<p> <b> Results: </b>
+<blockquote>
+MBL promoted 207 instances of countries with an estimated 
+precision
+of 93%. CSEAL promoted 130 instances, with an estimated precision of 97%. 
+[Why it is not possible to compute the exact precision, I do not understand.]
+Without coupling, Country preforms poorly, drifting into a more
+general Location category. 
+<p>
+The categories for which the couple algorithms still have the most
+difficulty (e.g. ProductType, SportsEquipment, Traits, Vehicles) tend to
+be common nouns.  ...
+<P>
+The coupled algorithms generally had high accuracies for relations but
+suffered from sparsity. SportUsesSportsEquipment performed poorly because
+the SportsEquipment category performed poorly, resulting in bad type checking.
+StateHasCapital and CompanyHeadquarteredInCiry drifted to the more 
+general relations of StateContainsCity and CompanyHasOperationsInCity.
+...
+<p>
+Our experiments included five relations for which no
+instances were promoted by any alorithms: CoachCoachesAthelete, 
+AthletePlaysInStadium, CoachWonAwardTrophyTournament, 
+SportPlayesGameInStadium and AthleteIsTeammateOfAthlete.
+</blockquote>
+
+
+<p>
+*****************************************************************************
+
+
+<p>
+<A href="http://rtw.ml.cmu.edu/papers/carlson-aaai10.pdf">
+Toward an Architecture for Never-Ending Language Learning, </A>
+Andrew Carlson et al., <em>AAAI-10</em>
+
+<p>
+NELL system. Four subsystems:
+
+<UL>
+<LI> CPL: Coupled Pattern Learning 
+<LI> CSEAL: Coupled SEAL 
+<LI> CMC: Coupled morphological classifier. Classify entities according to
+structural features of the name itself. E.g. the name of a mountain may
+end with "mountain" or "peak". The name of a music group may start with 
+"The".
+<LI> RL. Rule learner. Learn probabilistic implications,  infer facts. 
+RL was run after every batch of 10 iterations, and the proposed output
+rules were filtered by a human. E.g. <br>
+atheletePlaysSport(X,basketball) <= athleteInLeague(X,NBA)
+</UL>
+
+<p>
+Starting point: 123 categories each with 10-15 instances. 55 relations,
+each with 10-15 instances and 5 non-instances (obtained by permuting
+the arguments). 
+
+<p>
+Results: After running for 67 days, NELL completed 66 iterations of
+execution. 242,453 beliefs promoted: 95% are instances of categories and
+5% instances of relations. On a per-iteration basis, the promotion rate
+remained reasonably constant. Precision steadily declined, from 90% 
+in iterations 1-22 to 71% in iterations 23-44 to 57% in iterations 45-66.
+Overall precision 74%.
+</UL>
+
+
+<p>
+Most predicates had precision over 90% but two did badly:
+<UL>
+<LI> 
+CardGame: Confused by card game spam of various kinds.
+<LI>
+ProductType: Promoted more general nouns that do not actually name a 
+product type, e.g. "Microsoft Office".
+</UL>
+
+<blockquote>
+However, in looking at errors made by the system, it is clear that CPL and
+CMC are not perfectly uncorrelated in their errors. As an example, for the
+category BakedGood, CPL learns the pattern, "X are enabled in" bcause of the
+believed instance "cookies". This leads CPL to extract "persistent cookies"
+as a candidate BakedGood. CMC outputs high probability for phrases that
+end in "cookies", and so "persistent cookies" is promoted as believed 
+instance of BakedGood. 
+</blockquote>
+
+<p>
+*****************************************************************************
+
+<p>
+<A href="http://rtw.ml.cmu.edu/rtw/">
+Read The Web </A> 
+
+
+<p>
+Since January 2010, NELL has been learning continuously; 
+As of 4/20/11, 
+NELL has accumulated a knowledge base of 581,405 beliefs in
+287 iterations (about one every two days).
+Note that the "iterations per day" and "facts per iterations" are each
+about half what they were over the first 
+67 days.
+
+<p>
+The current "Recently Learned Facts" that I got off a first pass of 
+the "Read the Web" home page are: (number is confidence)
+<blockquote>
+athletics_at_the_2004_summer_olympics is an instance of the olympics 	100.0
+<br>
+billy_holm is an Australian person 	93.8 <br>
+cell_phone_phone is a type of biological cell 	99.6 <br>
+larger_room is a kind of room 	100.0 <br>
+dartmouth_street is a street 	100.0 <br>
+rembrandt is a visual artist in the field of work 98.4 <br>	
+westinghouse is a company headquartered in the city pittsburgh 	99.8 <br>
+sonoma is a proxy for california 93.9 <br>
+l_a__dodgers is a sports team that played in series  100.0 <br>
+microsoft is a company that produces windows_server_2003 99.8 <br>
+</blockquote>
+
+This strikes me as unimpressive. The beliefs about Billy Holm (according to
+Wikipedia, a catcher for
+the Chicago Cubs and the Red Sox in the 40's; native of Chicago)  and
+about Westinghouse (actually headquartered in New York) are false.
+
+<p>
+The facts on the second pass were rather better. 
+
+<p>
+*****************************************************************************
+
+<H3> Open Information Extraction </H3>
+
+<p>
+<A href="http://turing.cs.washington.edu/papers/ijcai07.pdf">
+Open Information Extraction from the Web </A>, Michele Banko et al.,
+<em> IJCAI</em>, 2007.
+
+<p
+Overall: Extract binary relations between entities from web pages --
+relation R holds between entities X and Y.  No input domain or lexical
+knowledge (of open classes).
+<p>
+Specifically: From 9,000,000 Web pages, extract 60.5 million tuples. Exclude
+<UL>
+<LI> those judged to have probability less than 0.8
+<LI> those supported by fewer 10 sentences in the corpus
+<LI> those whose relation is in the top 0.1% of most common relations
+("is", "has") 
+</UL>
+Leaves 11.3 million tuples. Of these, estimate (by sampling) that
+9.3 million have a well-formed relation. Of these, 7.8 million have 
+well-formed entities.  Of these 6.8 million are relations between 
+"abstract" entities of which 80% are correct and 1 million of which 88
+are correct. (Discussion of evaluation below.)
+
+<H4> Implementation </H4>
+<b> Step 1: </b> Start with a high-powered syntactic parser, and rules to
+identify significant relations. Find pairs of 
+"base noun phrases" in the parse tree E<sub>I</sub>, E<sub>J</sub> 
+that are related by a relation R<sub>I,J</sub>
+
+<p>
+<b> Step 2: </b> Use the set of relations output step 1 as input for 
+a Naive Bayes classifier. The classification computed by the classifier
+is the 4-ary predicate
+"E<sub>I</sub> and E<sub>J</sub> are related by R<sub>I,J</sub> in sentence S".
+The features are things like "the presence of part-of-speech tag sequences
+in the relation R<sub>I,J</sub>, the number of tokens in R<sub>I,J</sub>,
+the number of stopwords in R<sub>I,J</sub>, whether or not an object
+E is found to be a proper noun" etc.
+
+<p>
+<b> Step 3: </b> Over the entire corpus, run a part of speech tagger and a
+"lightweight noun phrase chunker" plus a regularizer (e.g. standardize
+tense). Apply the Naive Bayes classifier to the sentence and extract all
+pertinent relations.
+
+<p>
+<b> Step 4: </b> Merge identical relations.
+
+<p>
+Major problem: Correctly finding the boundary of NPs. Titles of books and 
+movies are particularly difficult.
+
+
+<A href="http://portal.acm.org/citation.cfm?id=1409378">
+Open Information Extraction from the Web </A>, Oren Etzioni et al.,
+<em> CACM,</em> 2008
+
+<p>
+<A href="http://www.cs.washington.edu/research/textrunner/">
+TextRunner Search
+</A>
+
+<A href="http://turing.cs.washington.edu/papers/acl08.pdf">
+The Tradeoffs between Open and Traditional Relation Extraction </A>
+Michele Banko and Oren Etzioni, <em> ACL</em> 2008.
+
+<p>
+Considerably better results obtained using graphical models learning 
+(Conditional Random Fields) than with Naive Bayes, because of the more
+systematic use of word order.
+
+
+<H3> Theory Construction by Web Mining </H3>
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1298406.1298425">
+Strategies for lifelong knowledge extraction from the web
+</A> Michele Banko and Oren Etzioni
+
+Task: ALICE creates a theory for a specified domain: Nutrition.
+
+<p>
+Buzzword: "Lifelong Knowledge Extraction"
+
+<p>
+<b> Concept Discovery: </b> Import classes, IS-A (subclass) 
+relations from WordNet.
+Also as in KnowItAll, find classes and IS-A relations by matching patterns
+in Web text e.g. "frult such as < y >" "buckwheat is an < x >". In this
+way, determine that buckwheat is a <em> whole grain, gluten-free grain,
+fiber-rich food</em> and <em> nutritious food </em> where these are newly
+created categories.
+
+<p> <b> Generalization: </b> 
+Use KnowItAll to collect relations among individuals and small classes from
+Web test. <br>
+Generalize to larger classes. <br>
+E.g. KnowItAll collects "Oranges provide Vitamin C", "Bananas provide 
+a source of B vitamins", "An avocado provides niacin". Using the known facts
+that oranges, bananas, and avocados are fruit and that Vitamin C, B vitamins, 
+and niacin are vitamins, deduce PROVIDE(< FRUIT >, < VITAMIN >)).
+
+<p>
+(Of course, it's not clear how the quantifiers are supposed to work here.
+It is certainly not true that 
+<BLOCKQUOTE>
+forall(F,V) fruit(F) ^ vitamin(V) => provide(F,V).
+</BLOCKQUOTE>
+What is probably closest to the truth is
+<BLOCKQUOTE>
+forall(F) fruit(F) => exists(V)  vitamin(V) ^ provide(F,V).
+</BLOCKQUOTE>
+but there is no indication how ALICE would figure that out.)
+
+<p>
+Have to be careful to avoid over-generalization: e.g. 
+"Provide(< FOOD >, < SUBSTANCE >) or "Provide(< ENTITY >,  < ENTITY >)"
+
+<p> <b> Results </b>
+Constructed 696 new generalizations. <br>
+78% were meaningful, true, and relevant. <br>
+6% were off-topic e.g. "Cause(< Organism >, < Disease >)". <br>
+9.5% were vacuous e.g. "Provide(< Food >, < Substance >)". <br>
+3.% were incomplete e.g. "Provide(< Antioxidant >, < Body Part >) <br>
+3.5% were false e.g. "BeNot(< Fruit >, < Food >)".
+
+
+
+<p>
+*****************************************************************************
+
+<H3> Extracting Verb Relations </H3>
+<A href="http://acl.ldc.upenn.edu/acl2004/emnlp/pdf/Chklovski.pdf">
+VERBOCEAN: Mining the Web for Fine-Grained Semantic Verb Relations
+</A> Timothy Chdlovski and Patrick Pantel
+
+
+<p>
+Relations to be found: (These examples were all actually extracted by the 
+system.)
+<UL>
+<LI> Similarity. E.g. maximize::enhance, produce::create, reduce::restrict.
+<LI> Strength. E.g. taint::poison, permit::authorize, surprise::startle,
+startle::shock.
+<LI> Antynomy (opposite).
+<UL>
+<LI> Switching thematic roles: buy::sell, lend::borrow.
+<LI> Stative verbs: live::die, differ::equal
+<LI> Sibling verbs that share a parent: walk::run.
+<LI> Sibling verbs that shae an entailed verb: succeed::fail both entail try.
+</UL>
+<LI> Undoing: damage::repair, wrap::unwrap.
+<LI> Enablement (V1 is accomplished by V2): assess::review, 
+accomplish::complete (??).
+<LI> Precedes: marry::divorce, detain::prosecute, enroll::graduate,
+schedule::reschedule.
+</UL>
+
+<p>
+Semantic patterns: (I omit tense variations)
+<p align=center>
+<table rules=groups>
+<tr> <td> SEMANTIC RELATION &nbsp &nbsp <td> Surface Pattern
+<tbody> 
+<tr> <td> narrow similarity <td> X i.e. Y
+</tbody>
+<tbody> <tr> <td> broad similarity <td> X and Y
+</tbody>
+<tbody>
+<tr> <td> strength <td> X even Y
+<tr> <td> <td> X and even Y
+<tr> <td> <td> Y or at least X
+<tr> <td> <td> not only X but Y
+<tr> <td> <td> not just X but Y
+</tbody>
+<tbody>
+<tr> <td> enablement <td> Xed * by Ying the
+<tr> <td> <td> Xed * by Ying or
+</tbody>
+<tbody>
+<tr> <td> antynomy <td> either X or Y
+<tr> <td> <td> whether to X or Y
+<tr> <td>  <td> X * but Y
+</tbody>
+<tbody>
+<tr> <td> precedes <td> X * and [then/later/subsequently/eventually] Y
+</tbody>
+</table>
+</p>
+
+<p>
+Accuracy: 68%.
+
+<H3>
+<p>
+<A href=
+"http://www.iit-iti.nrc-cnrc.gc.ca/iit-publications-iti/docs/NRC-44893.pdf">
+Mining the Web for Synonyms: PMI-IR versus LSA on TOEFL
+</A>  Peter Turney
+</H3>
+
+<p>
+TOEFL synonym test problem: 
+<BLOCKQUOTE>
+Which of the following is a synonym for "adipose":
+<UL>
+<LI> A. arabesque
+<LI> B. barcarolle
+<LI> C. obese 
+<LI> D. varicose
+</UL>
+</BLOCKQUOTE>
+
+<p>
+Measure the score that X (a choice) is a synonym for P (problem word) as
+<p> <b> Score 1 </b>
+Score1(X,P) = hits(P AND X) / hits(X) <br>
+TOEFL Accuracy = 62.5%. ESL Accuracy = 48% 
+Note: Average TOEFL Accuracy of "Non-English US College Applicant" (presumably
+applicant to US College whose native language is not English) = 64.5%.
+
+<p> <b> Score 2 </b>
+Take proximity into account. <br>
+Score1(X,P) = hits(P NEAR X) / hits(X) <br>
+TOEFL Accuracy = 72.5%. ESL Accuracy = 62%
+
+<p> <b> Score 3 </b>
+Exclude antonyms. These tend to appear in the form "P but not X" or something
+similar.
+
+<PRE>
+HITS((p NEAR x) AND NOT ((p OR x) NEAR "not"))
+----------------------------------------------
+HITS(x AND NOT (x NEAR "not"))
+</PRE>
+where "HITS()" is the number of hits in AltaVista  <br>
+TOEFL Accuracy = 73.75%. ESL Accuracy = 66%
+
+<p> <b> Score 4 (ESL) </b>
+The ESL test asks for synonyms for a word as used in a particular context.
+E.g.
+<BLOCKQUOTE>
+Every year in the early spring, farmers <em> tap</em> maple syrup from
+their trees.
+</BLOCKQUOTE>
+<UL>
+<LI> A. drain
+<LI> B. boil
+<LI> C. knock
+<LI> D. rap
+</UL>
+
+Identify context c as the word in the sentence, other than the problem word,
+the choices and stop words, that maximizes <br>
+HITS(p AND c)/HITS(c) 
+(= Score1(p,c)).
+
+<p>
+Then set Score4(x) =
+
+<PRE>
+HITS((p NEAR x) AND c and NOT ((p OR x) NEAR "not"))
+----------------------------------------------
+HITS(x AND NOT (x NEAR "not"))
+</PRE>
+Accuracy = 74%
+
+<p>
+Why bother, given the existence of WordNet?
+<UL>
+<LI> Other languages.
+<LI> WordNet has poor coverage of technical and scientific terms.
+(Only 70% of keywords in scientific articles are in WordNet.)
+</UL>
+
+
+<p>
+*****************************************************************************
+
+<H3> Preemptive Information Extraction </H3>
+Yusuke Shinyama, NYU Ph.D. thesis. <br>
+<A href="http://portal.acm.org/citation.cfm?id=1220874">
+Preemptive information extraction using unrestricted relation discovery
+</A> Yusuke Shinyama and Satoshi Sekine
+
+
+<UL>
+<LI> Divide stream of news articles into clusters of articles on same topic.
+<LI> Apply named entity tagging (PERSON, ORGANIZATION, GPE, LOCATION, FACILITY,
+OTHER).
+<LI> Apply co-reference resolution. Within document, cross document.
+<LI> Weight important named entity by location of first mention and
+number of mentions.
+<LI> Existing
+program GLARF does a semantic analysis of sentences, enabling "Katrina
+hit New Orleans" to be extracted from
+<UL>
+<LI> Katrina hit New Orleans
+<LI> New Orleans was hit by Katrina.
+<LI> Satellites photographed Katrina hitting New Orleans.
+<LI> Katrina is expected to het New Orleans.
+<LI> Katrina and Rita hit New Orleans.
+</UL>
+Tag each entity with position in semantic structure.
+<LI> Global features: features of the class of events. Bag of stemmed words,
+not appearing in named entities, that appear in 30% of all articles.
+<LI> Generate mappings between tuples. E.g. map "Katrina hit New Orleans"
+to "Longwang hit Taiwan". <br>
+M(A,B) = { < A<sub>i</sub>, B<sub>j</sub>, features(A<sub>i</sub>) intersect
+features(B<sub>j</sub>) > }
+<LI> Score mappings by quality.
+<LI> Cluster mappings.  Tuples may belong to more than 1 cluster. E.g.
+< Yankees, Alex Rodriguez > belongs to both "player trading" and "game
+results".  Therefore cluster mappings rather than tuples. 
+<LI> Merge clusters
+</UL>
+
+<H4> Experiments </H4>
+Collected 1.1 million articles. Extracted 35,400 events, all significant;
+176,985 entities, of which 52,468 significant; 4,400,000 local features (type)
+500,000 significant. 49,000 mappings. 2,000 clusters of size greater than 4,
+containing total about 6,000 events.
+
+
+<H3>
+<A href="http://portal.acm.org/citation.cfm?id=1273159">
+URES: an unsupervised web relation extraction system
+</A> 
+Benjamin Rosenfeld and Ronen Feldman
+</H3>
+
+<p>
+Task: Given a target relation, collect instances of the relation with
+high precision.
+
+<p>
+Input: Seed set of instances, set of relevant keywords. Specification
+of whether relations are symmetric (merger) or anti-symmetric (acquisition).
+
+<p>
+<b> Step 1.</b> Widen keyword set using WordNet synonyms (e.g. "purchase").
+Download pages containing keywords. Extract sentences
+containing keywords.
+
+<P><b> Step 2. </b>
+Find sentences matching instances. Construct positive instances
+of good patterns by variabilizing the arguments.
+E.g. given the seed instance Acquisition(Oracle,PeopleSoft) and the text
+<p>
+"The Antitrust division of the US Department of Justice evaluated the likely
+competitive effects of Oracle's proposed acquisition of PeopleSoft"
+
+<p>
+extract the pattern
+
+<p>
+"The Antitrust division of the US Department of Justice evaluated the likely
+competitive effects of X's proposed acquisition of Y"
+
+<p>
+Construct negative instances of bad patterns by misinstantiating other
+entities in the sentence.
+
+<p>
+E.g. Create sentences of the form "The X of the Y evaluated ..." where
+X and Y are random NP's.
+
+<p>
+Optionally use named-entity recognizer to do this only to entities of the
+correct types.
+
+
+<p> <b> Step 3. </b>
+Generalize the patterns.  For each pair of variabilized sentences, find
+the best pattern that matches both.
+
+<p>
+Pattern: sequence of tokens (words), skips (*), limited skip (*?) and slots.
+Limited skip may not match terms of the same type as the slot.
+
+<p>
+E.g. Given the two sentences <br>
+"Toward this end, X  in July acquired Y." <br>
+and <br>
+"Earlier this year X acquired Y from Raytheon" <br>
+generate the pattern <br>
+*? this *? X acquired Y *
+
+<p>
+<b> Step 4. </b>
+Post-processing and filtering.
+
+<UL>
+<LI> Remove stop words surrounded by skips on both sides (e.g. "this" above).
+<LI> Delete all patterns that do not contain relevant words. 
+E.g. "* X * by Y *" will be removed; 
+"* X * purchased Y *" will be kept.
+<LI> Remove patterns with
+slots surrounded by skips on both sides. Reason: The boundaries
+for named entities are often badly misplaced, and using those with tokens
+on at least one side mitigates this effect.
+
+<LI> Score patterns according to the following
+<PRE>
+| {S \in PositiveSet | Pattern matches S }|
+----------------------------------------------
+| {S \in NegativeSet| Pattern matches S }| + 1
+</PRE>
+</UL>
+
+<p>
+<b> Step 5: </b> Remove sentences that do not match any of the patterns,
+replacing slots by skips.
+
+<p> <b> Step 6: </b> Extract instances by matching sentences to patterns.
+Problem: Finding entities in sentences. Tested with a couple of different
+kinds of parsers.
+
+<p> <b> Results </b> See paper.
+
+
+<p>
+*****************************************************************************
+
+<H3>
+<A href="http://www.cs.washington.edu/homes/weld/papers/wu-cikm07.pdf">
+Autonomously Semantifying Wikipedia 
+</A> Fei Wun and Daniel Weld.
+</H3>
+
+
+<p> <b> Task: </b> Construct infoboxes for Wikipedia articles.
+Example: <A href="http://en.wikipedia.org/wiki/Abbeville_County">
+Abbeville County </A>
+
+<p> <b> Challenges: </b>
+<UL>
+<LI> Incompleteness: Many articles have no infobox, many infoboxes are 
+incomplete.
+<LI> Inconsistency: In many cases, the information in the infobox is
+inconsistent with the text. Probable cause: the information was updated
+in one but not the other.
+<LI> Schema drift: Authors copy infobox format from one article to another,
+but modify attribute names etc. while doing so.
+<LI> Typefree system. Wikipedia does not, of course, impose any system of
+typing or constraints, leading to redundancy, inconsistency, and difficulty
+of extraction.  E.g. the infobox for "Kings County, Washington" has one
+slot for "land area" and another for "land area km".
+<LI> Irregular lists, quirky and inconsistent category tags.
+</UL>
+
+<p> <b> Schema collection and refinement: </b> Collect all infoboxes
+with the exact same template name. Collect the attributes used in at least
+15% of these infoboxes.
+
+<p> <b> Sentence matching: </b> 
+Match infobox attribute to sentence in text:
+<UL>
+<LI> Match exact attribute value.  Use Wikipedia to check for synonymy
+(e.g. USA=United State of America = United States)
+<LI> If value is matched by several sentence, use sentence with best
+match for attribute name. E.g. "TotalArea: 123" matches
+"It has a total area of 123 square miles."
+</UL>
+
+<p> <b> Document classifier </b>
+Classify Wikipedia articles as belonging to the correct class. Standard
+document classification problem.  Current technique:
+<UL>
+<LI> Find all list pages whose titles contain infobox class keywords.
+<LI> Retrieve all articles on list. Filter those that contain infobox class
+keywords.
+</UL>
+Precision: 98.5%. Recall 68.8%.  Future experiments with more sophisticated
+classifiers.
+
+<p> <b> Sentence classifier: </b>
+Maximum entropy model.
+
+<p> <b> Extractor: </b>
+Extract value of attribute from sentence.  This is a sequential data-labelling
+problem.  Conditional random fields.
+
+<p>
+Features: "First token", "In first half", "In second half", "Start with
+capital", "Start with capital, end with period", "Single capital",
+"All caps, end with period." "Contains digit", "2 digit", "4 digit",
+"contains dollar sign", "contains underscore", "contains percentage sign",
+"stop word", "numeric", "number type (e.g. "1,234"), "part of speech",
+"token itself", "NP chunking tag" "character normalization (upper, lower,
+digit, other)" "part of anchor text", "beginning of anchor text",
+"previous tokens (window size 5)" "following tokens (window size 5)",
+"previous/next anchored token".
+
+<p>
+Multiple values: Multiple values for a single attribute
+can occur either in error or because the attribute is set-valued.
+Check whether in known instances the attribute is single-valued. If
+so, choose best value; if not, return all values.
+
+<p> <b> Results for attribute extraction </b>
+<table border=1>
+<tr> <th> <th> People Prec. <th> People Rec. <th> KYLIN Prec. <th> KYLIN Rec.
+<tr> <td> County <td> 97.6 <td> 65.9 <td> 97.3 <td> 95.9
+<tr> <td> Airline <td> 92.3 <td> 86,7 <td> 87.2 <td> 63.7
+<tr> <td> Actor <td> 94.2 <td> 70.1 <td> 88.0 <td> 68.2
+<tr> <td> University <td> 97.2 <td>  90.5 <td> 73.9 <td> 60.5
+</table>
+
+<p>
+*****************************************************************************
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1870764">
+Learning First-Order Horn Clauses from Web Text </A>
+Stefan Schoenmakers et al., <em>EMNLP</em> 2010.
+
+<p>
+
+
+
+<!---
+<p>
+<A href="http://citeseer.ist.psu.edu/agrawal03mining.html">
+Mining Newsgroups Using Networks Arising From Social Behavior
+</A> R. Agrawal et al.
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1111480">
+Interactive multimedia summaries of evaluative text
+</A> G. Carenini, R. T. Ng, and A. Pauls
+
+<p>
+
+<p>
+<A href="http://www.cs.uic.edu/~liub/publications/aaai06-comp-relation.pdf">
+Mining Comparative Sentences and Relations
+</A>  Nitin Jindal and Bing Liu
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1220555">
+Determining the sentiment of opinions
+</A> Soo-Min Kim and Eduard Hovy
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=945658">
+Sentiment analysis: capturing favorability using natural language processing
+</A> T. Nasukawa and J. Yi
+
+<p>
+<A href="http://www.cs.utah.edu/~riloff/pdfs/emnlp03.pdf">
+Learning Extraction Patterns for Subjective Expressions
+</A> Ellen Riloff and Janyce Wiebe
+
+<p>
+<A href="http://cogprints.org/2497/1/ERB-1096.pdf">
+Mining the Web for Lexical Knowledge to Improve Keyphrase Extraction:
+Learning from Labeled and Unlabeled Data
+</A>  Peter Turney
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1298406.1298425">
+Strategies for lifelong knowledge extraction from the web
+</A> Michele Banko and Oren Etzioni
+
+<p>
+<A href="http://www.dse.nl/~gijsg/soia06Tagging.pdf">
+Tagging Artists using Co-Occurrences on the Web
+</A> 
+
+<p>
+<A href="http://portal.acm.org/citation.cfm?id=1242583">
+Towards domain-independent information extraction from web tables
+</A>  W. Gatterbauer et al.
+
+<p>
+<A href="
+
+</A> 
+
+<p>
+<A href="
+
+</A> 
+--->
