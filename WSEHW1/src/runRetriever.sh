@@ -8,4 +8,4 @@ fi
 indexerDir="$1"
 shift
 
-java -cp .:../Lucene/*:../HTMLParser/* Retriever "$1" "$@"
+java -cp .:../Lucene/*:../HTMLParser/* Retriever "$indexerDir" "$@"
