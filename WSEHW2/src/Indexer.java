@@ -49,6 +49,7 @@ public class Indexer {
 		return numIndex;
 	}
 	
+	
 	public void indexDirectory(IndexWriter writer, File dir) throws IOException {
 		if (!dir.isDirectory()) {
 			System.err.println("Input not a directory");
