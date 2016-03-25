@@ -38,12 +38,13 @@ public class Retriever {
 		IndexSearcher indexSearcher = new IndexSearcher(reader);
 		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser contentsParser = new QueryParser(Indexer.CONTENTS, analyzer);
-		QueryParser titleParser = new QueryParser(Indexer.TITLE, analyzer);
+//		QueryParser titleParser = new QueryParser(Indexer.TITLE, analyzer);
 		Query contentsQuery = contentsParser.parse(queryString);
-		Query titleQuery = titleParser.parse(queryString);
+//		Query titleQuery = titleParser.parse(queryString);
 		TopDocs contentsDocs = indexSearcher.search(contentsQuery, 10);
-		TopDocs titleDocs = indexSearcher.search(titleQuery, 10);
-		TopDocs[] docsArray = {contentsDocs, titleDocs};
+//		TopDocs titleDocs = indexSearcher.search(titleQuery, 10);
+//		TopDocs[] docsArray = {contentsDocs, titleDocs};
+		TopDocs[] docsArray = {contentsDocs};
 		TopDocs docs = TopDocs.merge(10, docsArray);
 		int resNum = 0;
 		StringBuffer result = new StringBuffer();
