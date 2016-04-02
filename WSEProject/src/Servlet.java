@@ -19,7 +19,8 @@ public class Servlet extends HttpServlet {
 			+ "<input type=\"submit\" value=\"search\" />"
 			+ "</form>";
 
-	public void doCrawl(HttpServletRequest request, HttpServletResponse response)
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 		//TODO: try to implement this asynchronously
 //		final AsyncContext context = request.startAsync();
@@ -62,15 +63,15 @@ public class Servlet extends HttpServlet {
 		}
 	}
 
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-		   throws IOException, ServletException {
-	   // Set the response message's MIME type
-	   response.setContentType("text/html;charset=UTF-8");
-	   // Allocate a output writer to write the response message into the network socket
+//	@Override
+//	public void doGet(HttpServletRequest request, HttpServletResponse response)
+//		   throws IOException, ServletException {
+//	   // Set the response message's MIME type
+//	   response.setContentType("text/html;charset=UTF-8");
+//	   // Allocate a output writer to write the response message into the network socket
 //	   PrintWriter out = response.getWriter();
-
-	   // Write the response message, in an HTML page
+//
+//	   // Write the response message, in an HTML page
 //	   try {
 //		   out.println("<!DOCTYPE html>");
 //		   out.println("<html><head>");
@@ -102,5 +103,5 @@ public class Servlet extends HttpServlet {
 //	   } finally {
 //		   out.close();  // Always close the output writer
 //	   }
-   }
+//   }
 }
