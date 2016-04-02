@@ -79,7 +79,7 @@ public class Crawler {
 		}
 		this.pageId = 0;
 		this.robotSafeHostsMap = new HashMap<String, List<String>>();
-		this.urlScoreQueue = new PriorityQueue<URLScore>(Collections.reverseOrder());
+		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
 		this.urlToURLScoreMap = new HashMap<String, URLScore>();
 		this.pageCollection = new HashSet<Page>();
 		this.indexer = new Indexer(this.indexPath);
