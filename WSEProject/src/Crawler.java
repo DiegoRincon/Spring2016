@@ -94,6 +94,30 @@ public class Crawler {
 		this.retriever = new Retriever();
 	}
 	
+	public Crawler(String url, String query, int maxNumPages, String indexerPath) {
+		this.trace = false;
+		this.indexPath = indexerPath;
+		this.maxNumOfPages = maxNumPages;
+		this.url = url;
+		this.query = query;
+		this.pageId = 0;
+		this.robotSafeHostsMap = new HashMap<String, List<String>>();
+		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
+		this.urlToURLScoreMap = new HashMap<String, URLScore>();
+		this.pageCollection = new HashSet<Page>();
+		this.indexer = new Indexer(this.indexPath);
+		this.indexerLock = new Object();
+		this.seen = new HashSet<String>();
+		this.robotSafeLock = new Object();
+		this.mapHeapLock = new Object();
+		this.seenLock = new Object();
+		this.numThreadsLock = new Object();
+		this.pageIdLock = new Object();
+		this.pageCollectionLock = new Object();
+		this.retriever = new Retriever();
+		
+	}
+
 	private void initOptions() {
 		this.options = new Options();
 		this.options.addOption("u", true, "URL argument");
@@ -102,7 +126,40 @@ public class Crawler {
 		this.options.addOption("m", true, "Max number of pages");
 		this.options.addOption("t", false, "Trace");
 	}
-	
+
+	private boolean checkArgs(String[] args) throws ParseException {
+		CommandLineParser parser = new DefaultParser();
+		CommandLine cmd = parser.parse(this.options, args);
+		HelpFormatter formatter = new HelpFormatter();
+		if (cmd.hasOption("u") && cmd.hasOption("q")) {
+			this.url = cmd.getOptionValue("u");
+			this.query = cmd.getOptionValue("q");
+			if (cmd.hasOption("i")) {
+				this.indexPath = cmd.getOptionValue("i");
+			} else {
+				this.indexPath = System.getProperty("user.dir");
+			}
+			if (this.indexPath.charAt(this.indexPath.length()-1) != '/') {
+				this.indexPath += "/indexer/";
+			}
+			if (cmd.hasOption("m")) {
+				try {
+					this.maxNumOfPages = Integer.parseInt(cmd.getOptionValue("m"));
+				} catch (NumberFormatException e) {
+					//print usage
+					formatter.printHelp("Crawler", this.options);
+					return false;
+				}
+			}
+			if (cmd.hasOption("t")) {
+				this.trace = true;
+			}
+		} else {
+			formatter.printHelp("Crawler", this.options);
+			return false;
+		}
+		return true;
+	}
 	private void deleteDirectory(File directoryFile) {
 		File[] contents = directoryFile.listFiles();
 		if (contents != null) {
@@ -112,19 +169,18 @@ public class Crawler {
 		}
 		directoryFile.delete();
 	}
-	
+
 	private void removeIndexerContents() {
 		File indDir = new File(this.indexPath);
 		if (indDir.exists())
 			deleteDirectory(indDir);
 	}
-	
+
 	public void run() {
 		long start = System.nanoTime();
 		//TODO: remove when going online
 //		removeIndexerContents();
 		startCrawlerConcurrent();
-		this.indexer.closeWriter();
 		try {
 			this.retriever.go(this.indexPath, this.query);
 		} catch (IOException e) {
@@ -135,6 +191,17 @@ public class Crawler {
 		this.indexer.serializeIndexerMap();
 		System.out.println((System.nanoTime() - start)/1000000000.0);
 //		System.out.println(this.pageCollection.size());
+	}
+	
+	/**
+	 * Crawls
+	 * @return the time it took
+	 */
+	public double crawl() {
+		long start = System.nanoTime();
+		startCrawlerConcurrent();
+		this.indexer.serializeIndexerMap();
+		return (System.nanoTime() - start)/1000000000.0;
 	}
 	
 	private boolean hasReachedMaxCapacitySynchronized() {
@@ -253,6 +320,7 @@ public class Crawler {
 			}
 		}		
 		executor.shutdown();
+		this.indexer.closeWriter();
 	}
 	
 	private boolean addToPageCollectionSynchronized(Page page) {
@@ -605,40 +673,7 @@ public class Crawler {
 		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
 				
 	}
-		
-	private boolean checkArgs(String[] args) throws ParseException {
-		CommandLineParser parser = new DefaultParser();
-		CommandLine cmd = parser.parse(this.options, args);
-		HelpFormatter formatter = new HelpFormatter();
-		if (cmd.hasOption("u") && cmd.hasOption("q")) {
-			this.url = cmd.getOptionValue("u");
-			this.query = cmd.getOptionValue("q");
-			if (cmd.hasOption("i")) {
-				this.indexPath = cmd.getOptionValue("i");
-			} else {
-				this.indexPath = System.getProperty("user.dir");
-			}
-			if (this.indexPath.charAt(this.indexPath.length()-1) != '/') {
-				this.indexPath += "/indexer/";
-			}
-			if (cmd.hasOption("m")) {
-				try {
-					this.maxNumOfPages = Integer.parseInt(cmd.getOptionValue("m"));
-				} catch (NumberFormatException e) {
-					//print usage
-					formatter.printHelp("Crawler", this.options);
-					return false;
-				}
-			}
-			if (cmd.hasOption("t")) {
-				this.trace = true;
-			}
-		} else {
-			formatter.printHelp("Crawler", this.options);
-			return false;
-		}
-		return true;
-	}
+
 		
 	public static void main(String[] args) {
 		new Crawler(args).run();
