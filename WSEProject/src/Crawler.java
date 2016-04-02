@@ -208,7 +208,7 @@ public class Crawler {
 		while (keepRunning) {
 			while (isQueueEmptySynchronized() && areThereThreadsOngoing()) {
 				try {
-					System.out.println("waiting... num threads: " + this.numThreads);
+//					System.out.println("waiting... num threads: " + this.numThreads);
 					Thread.sleep(20);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -317,7 +317,6 @@ public class Crawler {
 					System.out.println("Received: " + this.bestURL.getLink().getAbsUrl());
 				Set<Link> links = page.getOutLinks();
 				for (Link link : links) {
-//					System.out.println("adding link: " + link.getAbsUrl());
 					double score = score(link, page, Crawler.this.query);
 					if (!hasBeenVisitedSynchronized(link.getAbsUrl())) {
 						if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
@@ -356,7 +355,17 @@ public class Crawler {
 	}
 	
 	private String getBaseFromURL(String url) {
+		int indexOfProtocol = url.indexOf("http://");
+		if (indexOfProtocol == -1)
+			indexOfProtocol = 0;
+		else
+			indexOfProtocol += "http://".length();
+		if (indexOfProtocol >= url.length())
+			indexOfProtocol = url.length();
+		url = url.substring(indexOfProtocol);
 		int lastIndexOfForwardSlash = url.lastIndexOf('/');
+		if (lastIndexOfForwardSlash == -1)
+			lastIndexOfForwardSlash = url.length()-1;
 		return url.substring(0, lastIndexOfForwardSlash+1);
 	}
 		
@@ -373,6 +382,8 @@ public class Crawler {
 				return;
 		}
 		String strRobot = "http://" + host + "/robots.txt";
+		if (strRobot.equals("http:///robots.txt"))
+			System.out.println("dude!!!");
 		if (this.trace)
 			System.out.println("Processing robot for: " + strRobot);
 		String robotContent = null;
@@ -476,11 +487,10 @@ public class Crawler {
 			if (!absUrl.endsWith("html")) {
 				continue;
 			}
-			String normalized = normalizeURL(absUrl);
-			if (normalized != null) {
-				absUrl = normalized;
-			}
-			
+//			String normalized = normalizeURL(absUrl);
+//			if (normalized != null) {
+//				absUrl = normalized;
+//			}
 			String anchor = link.text();
 			linkList.add(new Link(url, anchor, absUrl));
 		}
@@ -507,7 +517,7 @@ public class Crawler {
 	}
 		
 	private Document request(String url) throws IOException {
-		Document doc = Jsoup.connect(url).get();
+		Document doc = Jsoup.connect(url).followRedirects(true).get();
 		return doc;
 	}
 		
@@ -534,6 +544,9 @@ public class Crawler {
 		
 	public int findStringsInArray(String[] array, String words) {
 		String[] wordsArray = words.split(" ");
+		if (wordsArray.length == 0) {
+			return -1;
+		}
 		for (int i=0; i<array.length; i++) {
 			if (!array[i].equals(wordsArray[0])) {
 				continue;

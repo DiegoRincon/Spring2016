@@ -83,18 +83,20 @@ public class Tests {
 //		System.out.println("Host Address:" + inetAddress.getHostAddress());
 	}
 	
-//	@Test
+	@Test
 	public void testUrlRequest() throws IOException {
-		String urlString = "http://www.reddit.com/";
-		Connection cn = Jsoup.connect(urlString);
-		Request rq = cn.request();
-		URL url = rq.url();
-		System.out.println(url.getHost());
-		System.out.println(url.getFile());
-		InetAddress[] addresses = InetAddress.getAllByName(url.getHost());
-		for (InetAddress address : addresses) {
-			System.out.println(address.getHostAddress());
-		}
+		String urlString = "https://www.reddit.com/";
+		Document stuff = Jsoup.connect(urlString).get();
+		System.out.println(stuff.toString());
+//		Connection cn = Jsoup.connect(urlString);
+//		Request rq = cn.request();
+//		URL url = rq.url();
+//		System.out.println(url.getHost());
+//		System.out.println(url.getFile());
+//		InetAddress[] addresses = InetAddress.getAllByName(url.getHost());
+//		for (InetAddress address : addresses) {
+//			System.out.println(address.getHostAddress());
+//		}
 //		String req = Jsoup.connect(urlString).get().toString();
 //		System.out.println(req);
 	}
@@ -125,9 +127,10 @@ public class Tests {
 		
 	}
 	
-	@Test
+//	@Test
 	public void urlNormalization() throws MalformedURLException, URISyntaxException, UnknownHostException {
-//		URL url = new URL("http://www.EXAMPLE.com:80/index.html/../HelloGOodbye.html");
+		URL url = new URL("http://www.EXAMPLE.com:80/index.html/../HelloGOodbye.html");
+		System.out.println(url.getHost());
 //		String str = url.getProtocol().toLowerCase() + "://"
 //						+ url.getHost().toLowerCase()
 //						+ (url.getPort() != -1 && url.getPort() != 80 ? ":"
