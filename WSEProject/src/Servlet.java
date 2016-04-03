@@ -19,13 +19,11 @@ public class Servlet extends HttpServlet {
 		//TODO: try to implement this asynchronously
 //		final AsyncContext context = request.startAsync();
 		
-		String action = request.getParameter("action");
-		
-		if (action.equals("crawl")) {
+		if (request.getParameter("crawl") != null) {
 			processCrawl(request, response);
 		}
 		
-		if (action.equals("search")) {
+		if (request.getParameter("search") != null) {
 			processSearch(request, response);
 		}
 		
