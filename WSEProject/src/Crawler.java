@@ -1,5 +1,4 @@
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -43,6 +42,8 @@ public class Crawler {
     public static final String DISALLOW = "Disallow:";
     public static final String USER_AGENT_STAR = "user-agent: *";
     public static final String USER_AGENT = "user-agent:";
+	public static final int DEFAULT_MAX_NUM_PAGES = 50;
+	public static final String DEFAULT_STARTING_URL = "http://cs.nyu.edu/";
 	public Options options;
 	public String url;
 	public String query;
@@ -61,14 +62,14 @@ public class Crawler {
 	private Set<Page> pageCollection;
 	private int numThreads;
 	private Object pageIdLock;
-	private int pageId;
+//	private int pageId;
 	private Object indexerLock;
 	private Indexer indexer;
 	private Retriever retriever;
 	
 	public Crawler(String[] args) {
 		this.trace = false;
-		this.maxNumOfPages = 50;
+		this.maxNumOfPages = DEFAULT_MAX_NUM_PAGES;
 		initOptions();
 		try {
 			if (!checkArgs(args)) {
@@ -77,7 +78,7 @@ public class Crawler {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		this.pageId = 0;
+//		this.pageId = 0;
 		this.robotSafeHostsMap = new HashMap<String, List<String>>();
 		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
 		this.urlToURLScoreMap = new HashMap<String, URLScore>();
@@ -100,7 +101,7 @@ public class Crawler {
 		this.maxNumOfPages = maxNumPages;
 		this.url = url;
 		this.query = query;
-		this.pageId = 0;
+//		this.pageId = 0;
 		this.robotSafeHostsMap = new HashMap<String, List<String>>();
 		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
 		this.urlToURLScoreMap = new HashMap<String, URLScore>();
@@ -160,22 +161,11 @@ public class Crawler {
 		}
 		return true;
 	}
-	private void deleteDirectory(File directoryFile) {
-		File[] contents = directoryFile.listFiles();
-		if (contents != null) {
-			for (File file : contents) {
-				deleteDirectory(file);
-			}
-		}
-		directoryFile.delete();
+	
+	public String search(String indexPath, String query) throws IOException, org.apache.lucene.queryparser.classic.ParseException {
+		return this.retriever.go(indexPath, query);
 	}
-
-	private void removeIndexerContents() {
-		File indDir = new File(this.indexPath);
-		if (indDir.exists())
-			deleteDirectory(indDir);
-	}
-
+	
 	public void run() {
 		long start = System.nanoTime();
 		//TODO: remove when going online
