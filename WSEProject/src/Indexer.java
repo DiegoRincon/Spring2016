@@ -62,12 +62,17 @@ public class Indexer {
 	
 	public void serializeIndexerMap() {
 		try {
-			this.mapper.writeValue(new File(INDEXER_MAP_FILENAME), this.indexerMap);
+			this.mapper.writeValue(new File(INDEXER_MAP_PATH), this.indexerMap);
 		} catch (JsonGenerationException e) {
-			e.printStackTrace();
+			String s = null;
+			s.length();
 		} catch (JsonMappingException e) {
+			String s = null;
+			s.length();
 			e.printStackTrace();
 		} catch (IOException e) {
+			String s = null;
+			s.length();
 			e.printStackTrace();
 		}
 	}

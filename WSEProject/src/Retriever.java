@@ -31,6 +31,7 @@ public class Retriever {
 			return null;
 		}
 		System.out.println("Searching for " + queryString);
+		System.out.println("Searching in " + indexerName);
 		Path indexPath = Paths.get(indexerName);
 		Directory indexDir = FSDirectory.open(indexPath);
 		IndexReader reader = DirectoryReader.open(indexDir);
