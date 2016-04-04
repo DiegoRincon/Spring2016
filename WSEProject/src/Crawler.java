@@ -289,6 +289,7 @@ public class Crawler {
 			Future<Boolean> future = ecs.submit(new CrawlerCallable(bestURL));
 			listOfResults.add(future);
 			//Needed so that the crawler doesn't stop at the start
+			//Need to add a delay perhaps
 			if (started) {
 				started = false;
 				try {
@@ -428,7 +429,7 @@ public class Crawler {
 		int lastIndexOfForwardSlash = url.lastIndexOf('/');
 		if (lastIndexOfForwardSlash == -1)
 			lastIndexOfForwardSlash = url.length()-1;
-		return url.substring(0, lastIndexOfForwardSlash+1);
+		return "http://" + url.substring(0, lastIndexOfForwardSlash+1);
 	}
 		
 	private void processRobot(String urlString) {
