@@ -310,7 +310,11 @@ public class Crawler {
 			}
 		}		
 		executor.shutdown();
-		this.indexer.closeWriter();
+		try {
+			this.indexer.writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private boolean addToPageCollectionSynchronized(Page page) {

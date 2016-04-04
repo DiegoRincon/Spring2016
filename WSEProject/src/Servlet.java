@@ -64,10 +64,10 @@ public class Servlet extends HttpServlet {
 		sb.append("<p>Your query was: " + query + "</p>");
 		try {
 			String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
-			Crawler crawler = new Crawler(Crawler.DEFAULT_STARTING_URL, query, Crawler.DEFAULT_MAX_NUM_PAGES, indexerPathString);
+			Retriever retriever = new Retriever();
 			String results = null;
 			try {
-				results = crawler.search(indexerPathString, query);
+				results = retriever.go(indexerPathString, query);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

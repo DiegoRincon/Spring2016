@@ -29,7 +29,7 @@ public class Indexer {
 	public static final String DATA_DEFAULT = "data";
 	public static final String INDEXER_MAP_FILENAME = "indexer_map";
 	public final String INDEXER_MAP_PATH;
-	private IndexWriter writer;
+	public IndexWriter writer;
 	private IndexerMap indexerMap;
 	private ObjectMapper mapper;
 	
@@ -59,13 +59,6 @@ public class Indexer {
 		}
 	}
 	
-	public void closeWriter() {
-		try {
-			this.writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void serializeIndexerMap() {
 		try {
