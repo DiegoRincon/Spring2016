@@ -119,6 +119,11 @@ public class WeightedPageRank {
 	}
 	
 	private void runPageRankLocal() throws IOException {
+		File dir = new File(this.path);
+		if (!dir.exists() || !dir.isDirectory()) {
+			System.err.println(this.path + " is not a valid directory!");
+			System.exit(1);
+		}
 		List<Link> collection = getLinksDirectoryLocal(new File(this.path));
 		int numPages = collection.size();
 		this.epsilon = EPSILON_PARAM/numPages;
