@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Page {
 	@NonNull
-	private int id;
+	private Integer id;
 	@NonNull
 	private Link link;
 	@NonNull

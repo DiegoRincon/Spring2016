@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -22,8 +23,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.MissingArgumentException;
-import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -44,6 +43,8 @@ public class WeightedPageRank {
 	private static final String[] IMPORTANT_SCOPES = {"H1", "H2", "H3", "H4", "em", "b"};
 	private static final String DEFAULT_PROTOCOL = "http://";
 	private static final String SECURE_PROTOCOL = "https://";
+	private static final double EPSILON_PARAM = 0.01;
+	private boolean isLocal = false;
 	
 	public WeightedPageRank() {
 		initOptions();
@@ -58,21 +59,32 @@ public class WeightedPageRank {
 			System.exit(1);
 		} else {
 			try {
-				runPageRank();
+				if (this.isLocal)
+					runPageRankLocal();
+				else
+					runPageRank();
 			} catch (IOException e) {
 				e.printStackTrace();
+			} catch (IllegalArgumentException er) {
+				if (er.getCause() instanceof MalformedURLException) {
+					System.err.println("A url was malformed!");
+					MalformedURLException err = (MalformedURLException) er.getCause();
+					System.err.println("Problem was: " + err);
+					
+				}
 			}
 		}
 	}
 	
 	private void runPageRank() throws IOException {
 		String content = request(this.path);
+		
 //		String content2 = new Scanner(new File("test.txt")).useDelimiter("\\Z").next();
 		//This should be a set to discount duplicates
 		List<Link> collection = getLinks(content, getBaseFromURL(this.path));
 		confirmAllLinksThatExist(collection);
 		int numPages = collection.size();
-		this.epsilon = 0.01/numPages;
+		this.epsilon = EPSILON_PARAM/numPages;
 		for (Link link : collection) {
 			processLinks(link);
 		}
@@ -89,6 +101,42 @@ public class WeightedPageRank {
 		}
 		double[][] weights = getWeights(numPages);
 //		System.out.println(Arrays.deepToString(weights));
+		runWeightedPageRank(weights);
+		SortedSet<Page> sortedPages = new TreeSet<Page>(new Comparator<Page>() {
+			@Override
+			public int compare(Page o1, Page o2) {
+				if (o1.getScore() < o2.getScore())
+					return 1;
+				if (o1.getScore() > o2.getScore())
+					return -1;
+				return 0;
+			}			
+		});
+		sortedPages.addAll(this.pageCollection);
+		for (Page page : sortedPages) {
+			System.out.println(page.getLink().getUrl() + ": " + page.getScore());
+		}
+	}
+	
+	private void runPageRankLocal() throws IOException {
+		List<Link> collection = getLinksDirectoryLocal(new File(this.path));
+		int numPages = collection.size();
+		this.epsilon = EPSILON_PARAM/numPages;
+		for (Link link : collection) {
+			processLinksLocal(link);
+		}
+		double sum = 0;
+		for (Page page : this.pageCollection) {
+			double base = phiPage(page);
+			page.setBase(base);
+			sum += base;
+		}
+		for (Page page : this.pageCollection) {
+			double normalizedScore = page.getBase()/sum;
+			page.setScore(normalizedScore);
+			page.setBase(normalizedScore);
+		}
+		double[][] weights = getWeights(numPages);
 		runWeightedPageRank(weights);
 		SortedSet<Page> sortedPages = new TreeSet<Page>(new Comparator<Page>() {
 			@Override
@@ -214,6 +262,18 @@ public class WeightedPageRank {
 		this.absUrlToPageMap.put(page.getLink().getAbsUrl(), page);
 	}
 	
+	private void processLinksLocal(Link link) throws IOException {
+		Scanner sc = new Scanner(new File(link.getAbsUrl()));
+		String content = sc.useDelimiter("\\Z").next();
+		sc.close();
+//		String content = request(link.getAbsUrl());
+		List<Link> links = getLinksLocal(content, this.path);
+		Page page = new Page(getNewId(), link, new HashSet<Link>(links), content);
+		this.pageCollection.add(page);
+		this.idToPageMap.put(page.getId(), page);
+		this.absUrlToPageMap.put(page.getLink().getAbsUrl(), page);
+	}
+	
 	public boolean checkIfExists(String urlString) throws IOException {
 		final URL url = new URL(urlString);
 		HttpURLConnection huc = (HttpURLConnection)url.openConnection();
@@ -262,6 +322,7 @@ public class WeightedPageRank {
 		this.options = new Options();
 		this.options.addOption(Option.builder("docs").required().hasArg().desc("url to collection").build());
 		this.options.addOption(Option.builder("f").required().hasArg().desc("F value in (0,1)").build());
+		this.options.addOption(Option.builder("l").required(false).hasArg(false).desc("Add if the docs is a loca dir").build());
 //		this.options.addOption("docs", true, "Path");
 //		this.options.addOption("f", true, "F value in (0,1)");
 	}
@@ -276,6 +337,9 @@ public class WeightedPageRank {
 				this.path += "/";
 			}
 			this.f = Double.parseDouble(cmd.getOptionValue("f"));
+			if (cmd.hasOption("l")) {
+				this.isLocal = true;
+			}
 		} catch (ParseException e) {
 			formatter.printHelp("Weighted PageRank", this.options);
 			return false;
@@ -305,6 +369,33 @@ public class WeightedPageRank {
 			String anchor = link.text();
 			linkList.add(new Link(url, anchor, absUrl));
 		}
+		return linkList;
+	}
+	
+	private List<Link> getLinksLocal(String content, String base) {
+		Document document = Jsoup.parse(content, base);
+		Elements links = document.select("a");
+		List<Link> linkList = new ArrayList<Link>();
+		for (Element link : links) {
+			String url = link.attr("href");
+			String absUrl = this.path + url;
+//			String absUrl = link.absUrl("href");
+			if (!absUrl.endsWith("html")) {
+				continue;
+			}
+			String anchor = link.text();
+			linkList.add(new Link(url, anchor, absUrl));
+		}
+		return linkList;
+	}
+	
+	private List<Link> getLinksDirectoryLocal(File directory) {
+		List<Link> linkList = new ArrayList<Link>();
+		File[] listOfFiles = directory.listFiles();
+		for (File file : listOfFiles) {
+			linkList.add(new Link(file.getName(), null, file.getParent()+'/'+file.getName()));
+		}
+		
 		return linkList;
 	}
 	
