@@ -15,7 +15,7 @@ public class Servlet extends HttpServlet {
 			  "<form method=\"get\" action=\"crawl\">"
 			+ "		<input type=\"text\" name=\"url\" required placeholder=\"Starting URL\" />"
 			+ "		<input type=\"text\" name=\"query\" required placeholder=\"Query\" />"
-			+ "		<input type=\"number\" name=\"maxPages\" required placeholder=\"MaxNumPages\" />"
+			+ "		<input type=\"text\" name=\"maxPages\" required placeholder=\"MaxNumPages\" />"
 			+ "		<input type=\"submit\" name=\"crawl\" value=\"crawl\" />"
 			+ "</form>"
 			+ "<form method=\"get\" action=\"search\">"

@@ -558,12 +558,12 @@ public class Crawler {
 	}
 	
 	private boolean isUrlValid(String absUrl) {
-		Pattern hashPatern = Pattern.compile("http.*#[a-zA-Z0-9%_-]+$");
-		Matcher matcher = hashPatern.matcher(absUrl);
-		if (matcher.matches())
-			return false;
-		return true;
-//		return absUrl.endsWith("html");
+//		Pattern hashPatern = Pattern.compile("http.*#[a-zA-Z0-9%_-]+$");
+//		Matcher matcher = hashPatern.matcher(absUrl);
+//		if (matcher.matches())
+//			return false;
+//		return true;
+		return absUrl.endsWith("html");
 	}
 	
 	private String getUniqueURL(String absUrl) {
