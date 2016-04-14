@@ -118,8 +118,8 @@ public class Crawler {
 		this.seenLock = new Object();
 		this.numThreadsLock = new Object();
 		this.pageIdLock = new Object();
-		this.random = new Random();
 		this.pageCollectionLock = new Object();
+		this.random = new Random();
 	}
 
 	private void initOptions() {
@@ -716,6 +716,8 @@ public class Crawler {
 
 		
 	public static void main(String[] args) {
+
+		System.setProperty("log_dir", System.getProperty("user.dir")+"/logs");
 		Crawler crawler = new Crawler(args);
 		crawler.run();
 		crawler.closeWriter();

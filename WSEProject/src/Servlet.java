@@ -25,6 +25,8 @@ public class Servlet extends HttpServlet {
 			throws IOException {
 		//TODO: try to implement this asynchronously
 //		final AsyncContext context = request.startAsync();
+		
+		System.setProperty("log_dir", getServletContext().getRealPath("/logs/"));
 		PrintWriter out = response.getWriter();
 		String result = null;
 		if (request.getParameter("crawl") != null) {
