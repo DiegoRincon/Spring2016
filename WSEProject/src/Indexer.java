@@ -37,7 +37,7 @@ public class Indexer {
 	public static final String CONTENTS = "contents";
 	public static final String ABSURL = "absURL";
 	public static final String TITLE = "title";
-	public static final String INDEXER_DEFAULT_NAME = "indexer/";
+	public static final String INDEXER_DEFAULT_NAME = "indexer";
 	public static final String DATA_DEFAULT = "data";
 	public static final String INDEXER_MAP_FILENAME = "indexer_map";
 	public final String INDEXER_MAP_PATH;
@@ -46,6 +46,8 @@ public class Indexer {
 	private ObjectMapper mapper;
 	
 	public Indexer(String indexPath) {
+		if (indexPath.charAt(indexPath.length()-1) != '/')
+			indexPath += '/';
 		INDEXER_MAP_PATH = indexPath + INDEXER_MAP_FILENAME;
 		File indexerMapFile = new File(INDEXER_MAP_PATH);
 		this.mapper = new ObjectMapper();

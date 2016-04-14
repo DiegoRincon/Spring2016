@@ -180,25 +180,16 @@ public class Crawler {
 		log.info("Total time elapsed: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
 	}
 	
-	public void runCrawler() {
+	public double runCrawler() {
 		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
 				this.url, this.query, this.indexPath, this.maxNumOfPages);
 		log.info("Starting Crawler with parameters: " + parameters);
 		long start = System.nanoTime();
 		startCrawlerConcurrent();
 		this.indexer.serializeIndexerMap();
-		log.info("Total time elapsed: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
-	}
-	
-	/**
-	 * Crawls
-	 * @return the time it took
-	 */
-	public double crawl() {
-		long start = System.nanoTime();
-		startCrawlerConcurrent();
-		this.indexer.serializeIndexerMap();
-		return (System.nanoTime() - start)/1000000000.0;
+		double time = (System.nanoTime() - start)/1000000000.0;
+		log.info("Total time elapsed: " + time + " seconds");
+		return time;
 	}
 	
 	private boolean hasReachedMaxCapacitySynchronized() {

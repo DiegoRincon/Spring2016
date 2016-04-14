@@ -98,7 +98,7 @@ public class Servlet extends HttpServlet {
 		}
 		String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
 		Crawler crawler = new Crawler(startingUrl, query, maxPages, indexerPathString, true);
-		double time = crawler.crawl();
+		double time = crawler.runCrawler();
 
 		sb.append("<p>The indexer can be found at: " + indexerPathString + "</p>");
 		sb.append("<p>Your crawler took: " + time + " sec. to finish</p>");
