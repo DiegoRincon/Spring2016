@@ -716,8 +716,6 @@ public class Crawler {
 
 		
 	public static void main(String[] args) {
-
-		System.setProperty("log_dir", System.getProperty("user.dir")+"/logs");
 		Crawler crawler = new Crawler(args);
 		crawler.run();
 		crawler.closeWriter();

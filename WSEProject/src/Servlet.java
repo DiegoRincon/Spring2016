@@ -6,6 +6,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class Servlet extends HttpServlet {
 	private static final long serialVersionUID = 8778174121968337225L;
 	private static final String SEARCH_FORM =
@@ -26,7 +29,6 @@ public class Servlet extends HttpServlet {
 		//TODO: try to implement this asynchronously
 //		final AsyncContext context = request.startAsync();
 		
-		System.setProperty("log_dir", getServletContext().getRealPath("/logs/"));
 		PrintWriter out = response.getWriter();
 		String result = null;
 		if (request.getParameter("crawl") != null) {
@@ -62,6 +64,7 @@ public class Servlet extends HttpServlet {
 		// Allocate a output writer to write the response message into the network socket
 
 		// Write the response message, in an HTML page
+		log.info("Searching for query: " + query);
 		StringBuffer sb = new StringBuffer();
 		
 		// Echo client's request information
@@ -98,7 +101,11 @@ public class Servlet extends HttpServlet {
 				maxPages = 50;
 			}
 		}
+		
 		String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
+		String parameters = String.format("StartingUrl: %s, Query: %s, MaxNumPages: %d, IndexerPath: %s",
+				startingUrl, query, maxPages, indexerPathString);
+		log.info("Crawling with parameters: " + parameters);
 		Crawler crawler = new Crawler(startingUrl, query, maxPages, indexerPathString, true);
 		double time = crawler.runCrawler();
 

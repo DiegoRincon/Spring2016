@@ -4,7 +4,7 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
-        <File name="InfoFile" fileName="${log_dir}/INFO.log" immediateFlush="false" append="true">
+        <File name="InfoFile" fileName="logs/INFO.log" immediateFlush="false" append="true">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
             <Filters>
         		<ThresholdFilter level="warn"  onMatch="DENY" onMismatch="NEUTRAL"/>
@@ -14,7 +14,7 @@
         		<ThresholdFilter level="info"  onMatch="ACCEPT" onMismatch="DENY"/>
         	</Filters>
         </File>
-        <File name="DebugFile" fileName="${log_dir}/DEBUG.log" immediateFlush="false" append="true">
+        <File name="DebugFile" fileName="logs/DEBUG.log" immediateFlush="false" append="true">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
             <Filters>
         		<ThresholdFilter level="info"  onMatch="DENY" onMismatch="NEUTRAL"/>
@@ -25,7 +25,7 @@
         		<ThresholdFilter level="debug"  onMatch="ACCEPT" onMismatch="DENY"/>
         	</Filters>
         </File>
-        <File name="ErrorFile" fileName="${log_dir}/ERROR.log" immediateFlush="false" append="true">
+        <File name="ErrorFile" fileName="logs/ERROR.log" immediateFlush="false" append="true">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </File>
     </Appenders>
