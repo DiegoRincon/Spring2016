@@ -15,6 +15,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.search.Weight;
 import org.jsoup.Connection;
@@ -44,10 +46,10 @@ public class Tests {
 	public void testScore() {
 		//TODO: fix this
 		Crawler crawler = new Crawler(new String[10]);
-		Link link = new Link("file.html", "WalrusAndCarpenter", "dummy abs url");
+		Link link = new Link("file.html", "WalrusAndCarpenter", "dummy abs url", "uniqueURL");
 		String content = "<a href=\"file1.html\">WalrusAndCarpenter</a>";
 		String query = "walrus carpenter bread";
-		Page page = new Page(1L, link, new HashSet<Link>(), content, "title");
+		Page page = new Page("id1", link, new HashSet<Link>(), content, "title");
 		assertEquals(100, crawler.score(link, page, query), 0);
 		content = "<a href=\"walrus5.html\">Cute Poem</a>";
 		page.setContent(content);
@@ -83,11 +85,11 @@ public class Tests {
 //		System.out.println("Host Address:" + inetAddress.getHostAddress());
 	}
 	
-	@Test
+//	@Test
 	public void testUrlRequest() throws IOException {
-		String urlString = "https://www.reddit.com/";
-		Document stuff = Jsoup.connect(urlString).get();
-		System.out.println(stuff.toString());
+		String urlString = "http://cs.nyu.edu/courses/spring16/CSCI-GA.2580-001/MarineMammal/BrydesWhale.html";
+		String stuff = Jsoup.connect(urlString).get().baseUri();
+		System.out.println(stuff);
 //		Connection cn = Jsoup.connect(urlString);
 //		Request rq = cn.request();
 //		URL url = rq.url();
@@ -117,8 +119,8 @@ public class Tests {
 	public void testMapSerialization() throws JsonGenerationException, JsonMappingException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		IndexerMap indMap = new IndexerMap();
-		indMap.map.put("test1", new Page(1L,new Link("url", "anchor", "absURL"), new HashSet<Link>(), "content", "title"));
-		indMap.map.put("test2", new Page(2L,new Link("url2", "anchor2", "absURL2"), new HashSet<Link>(), "content2", "title2"));
+		indMap.map.put("test1", new Page("id1",new Link("url", "anchor", "absURL", "uniqueURL"), new HashSet<Link>(), "content", "title"));
+		indMap.map.put("test2", new Page("id2",new Link("url2", "anchor2", "absURL2", "uniqueURL2"), new HashSet<Link>(), "content2", "title2"));
 		mapper.writeValue(new File("map"), indMap);
 //		mapper.writeValueAsString(map);
 		
@@ -139,4 +141,12 @@ public class Tests {
 		System.out.println(Crawler.normalizeURL("http://www.EXAMPLE.com:80/index.html/../HelloGOodbye.html"));
 	}
 
+	@Test
+	public void testUrlMatching() {
+		Pattern p = Pattern.compile("http.*#[a-zA-z0-9]+$");
+		String str = "https://www.nytimes.com/pages/opinion/index.html#columnists";
+		Matcher m = p.matcher(str);
+		System.out.println(m.matches());
+	}
+	
 }

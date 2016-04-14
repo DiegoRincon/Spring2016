@@ -16,11 +16,16 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class Retriever {
 	
-	public String go(String indexerName, String... queryArgs) throws IOException, ParseException {
-		if (indexerName == null) {
-			indexerName = Indexer.INDEXER_DEFAULT_NAME;
+	public String go(String indexerPath, String... queryArgs) throws IOException, ParseException {
+
+		//TODO: Add a text snippet to the results from the retriever
+		if (indexerPath == null) {
+			indexerPath = Indexer.INDEXER_DEFAULT_NAME;
 		}
 		String queryString = "";
 		for (String str : queryArgs) {
@@ -30,9 +35,8 @@ public class Retriever {
 		if (queryString.length() == 0) {
 			return null;
 		}
-		System.out.println("Searching for " + queryString);
-		System.out.println("Searching in " + indexerName);
-		Path indexPath = Paths.get(indexerName);
+		log.info("Searching for " + queryString);
+		Path indexPath = Paths.get(indexerPath);
 		Directory indexDir = FSDirectory.open(indexPath);
 		IndexReader reader = DirectoryReader.open(indexDir);
 		IndexSearcher indexSearcher = new IndexSearcher(reader);
@@ -56,6 +60,7 @@ public class Retriever {
 			result.append(String.format("<div><b>%d: <a href=\"%s\">%s</a></b><br> <a href=\"%s\">%s</a></div>", resNum, absURL, title, absURL, absURL));
 			System.out.println(String.format("<div><b>%d: <a href=\"%s\">%s</a></b><br> <a href=\"%s\">%s</a></div>", resNum, absURL, title, absURL, absURL));			
 		}
+		reader.close();
 		return result.toString();
 	}
 	

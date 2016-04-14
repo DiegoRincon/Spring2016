@@ -52,6 +52,8 @@ public class Servlet extends HttpServlet {
 		out.println("</html>");
 		out.close();
 	}
+	
+	//TODO: Add a class field IndexWriter to pass to the Crawler and Indexer (for searching)
 
 	public String processSearch(String query) throws IOException {
 		// Set the response message's MIME type
@@ -95,7 +97,7 @@ public class Servlet extends HttpServlet {
 			}
 		}
 		String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
-		Crawler crawler = new Crawler(startingUrl, query, maxPages, indexerPathString);
+		Crawler crawler = new Crawler(startingUrl, query, maxPages, indexerPathString, true);
 		double time = crawler.crawl();
 
 		sb.append("<p>The indexer can be found at: " + indexerPathString + "</p>");

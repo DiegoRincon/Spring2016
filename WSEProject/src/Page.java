@@ -14,7 +14,7 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Page {
 	@NonNull
-	private Long id;
+	private String id;
 	@NonNull
 	private Link link;
 	@NonNull
@@ -26,14 +26,13 @@ public class Page {
 	private double base = 0;
 	private double score = 0;
 	private double newScore = 0;
-	private volatile int hashCode = 0;
 	
 	
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Page) {
 			Page other = (Page)o;
-			return this.id == other.getId() || this.link.equals(other.getLink());
+			return this.id == other.getId() && this.link.equals(other.getLink());
 		}
 		return false;
 	}
@@ -41,9 +40,6 @@ public class Page {
 	
 	@Override
 	public int hashCode() {
-		if (hashCode == 0) {
-			return 17*this.id.intValue() + 31*17;
-		}
-		return this.hashCode;
+		return 17*(this.id.hashCode() + this.link.hashCode()) + 31*17;
 	}
 }

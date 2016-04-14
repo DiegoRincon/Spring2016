@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
@@ -25,11 +26,14 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.jsoup.Jsoup;
@@ -37,6 +41,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class Crawler {
 	public static final int distanceFromQueryWords = 5;
     public static final String DISALLOW = "Disallow:";
@@ -44,6 +51,8 @@ public class Crawler {
     public static final String USER_AGENT = "user-agent:";
 	public static final int DEFAULT_MAX_NUM_PAGES = 50;
 	public static final String DEFAULT_STARTING_URL = "http://cs.nyu.edu/";
+	public static final String DEFAULT_PROTOCOL = "http://";
+	public static final String SECURE_PROTOCOL = "https://";
 	public Options options;
 	public String url;
 	public String query;
@@ -62,21 +71,16 @@ public class Crawler {
 	private Set<Page> pageCollection;
 	private int numThreads;
 	private Object pageIdLock;
-//	private int pageId;
 	private Object indexerLock;
 	private Indexer indexer;
-	private Retriever retriever;
+	private Random random;
 	
 	public Crawler(String[] args) {
 		this.trace = false;
 		this.maxNumOfPages = DEFAULT_MAX_NUM_PAGES;
 		initOptions();
-		try {
-			if (!checkArgs(args)) {
-				System.exit(1);
-			}
-		} catch (ParseException e) {
-			e.printStackTrace();
+		if (!checkArgs(args)) {
+			System.exit(1);
 		}
 //		this.pageId = 0;
 		this.robotSafeHostsMap = new HashMap<String, List<String>>();
@@ -92,11 +96,11 @@ public class Crawler {
 		this.numThreadsLock = new Object();
 		this.pageIdLock = new Object();
 		this.pageCollectionLock = new Object();
-		this.retriever = new Retriever();
+		this.random = new Random();
 	}
 	
-	public Crawler(String url, String query, int maxNumPages, String indexerPath) {
-		this.trace = false;
+	public Crawler(String url, String query, int maxNumPages, String indexerPath, boolean trace) {
+		this.trace = trace;
 		this.indexPath = indexerPath;
 		this.maxNumOfPages = maxNumPages;
 		this.url = url;
@@ -114,73 +118,76 @@ public class Crawler {
 		this.seenLock = new Object();
 		this.numThreadsLock = new Object();
 		this.pageIdLock = new Object();
+		this.random = new Random();
 		this.pageCollectionLock = new Object();
-		this.retriever = new Retriever();
-		
 	}
 
 	private void initOptions() {
 		this.options = new Options();
-		this.options.addOption("u", true, "URL argument");
-		this.options.addOption("q", true, "Query");
-		this.options.addOption("i", true, "IndexerPath");
-		this.options.addOption("m", true, "Max number of pages");
-		this.options.addOption("t", false, "Trace");
+		this.options.addOption(Option.builder("u").required().hasArg().desc("URL argument").build());
+		this.options.addOption(Option.builder("q").required().hasArg().desc("Query").build());
+		this.options.addOption(Option.builder("i").required(false).hasArg().desc("IndexerPath").build());
+		this.options.addOption(Option.builder("m").required(false).hasArg().desc("Max number of pages").build());
+		this.options.addOption(Option.builder("t").required(false).hasArg(false).desc("Trace").build());
 	}
 
-	private boolean checkArgs(String[] args) throws ParseException {
-		CommandLineParser parser = new DefaultParser();
-		CommandLine cmd = parser.parse(this.options, args);
+	private boolean checkArgs(String[] args) {
 		HelpFormatter formatter = new HelpFormatter();
-		if (cmd.hasOption("u") && cmd.hasOption("q")) {
+		try {
+			CommandLineParser parser = new DefaultParser();
+			CommandLine cmd = parser.parse(this.options, args);
 			this.url = cmd.getOptionValue("u");
 			this.query = cmd.getOptionValue("q");
 			if (cmd.hasOption("i")) {
 				this.indexPath = cmd.getOptionValue("i");
+				if (this.indexPath.charAt(this.indexPath.length()-1) != '/')
+					this.indexPath += '/';
 			} else {
-				this.indexPath = System.getProperty("user.dir");
-			}
-			if (this.indexPath.charAt(this.indexPath.length()-1) != '/') {
-				this.indexPath += "/indexer/";
+				this.indexPath = System.getProperty("user.dir") + "/indexer/";
 			}
 			if (cmd.hasOption("m")) {
 				try {
 					this.maxNumOfPages = Integer.parseInt(cmd.getOptionValue("m"));
 				} catch (NumberFormatException e) {
-					//print usage
 					formatter.printHelp("Crawler", this.options);
 					return false;
 				}
 			}
 			if (cmd.hasOption("t")) {
 				this.trace = true;
-			}
-		} else {
+			}			
+		} catch (ParseException e) {
 			formatter.printHelp("Crawler", this.options);
 			return false;
 		}
 		return true;
 	}
 	
-	public String search(String indexPath, String query) throws IOException, org.apache.lucene.queryparser.classic.ParseException {
-		return this.retriever.go(indexPath, query);
-	}
-	
 	public void run() {
+		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
+				this.url, this.query, this.indexPath, this.maxNumOfPages);
+		log.info("Starting Crawler with parameters: " + parameters);
 		long start = System.nanoTime();
-		//TODO: remove when going online
-//		removeIndexerContents();
 		startCrawlerConcurrent();
 		try {
-			this.retriever.go(this.indexPath, this.query);
+			this.indexer.search(this.query);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			e.printStackTrace();
 		}
 		this.indexer.serializeIndexerMap();
-		System.out.println((System.nanoTime() - start)/1000000000.0);
-//		System.out.println(this.pageCollection.size());
+		log.info("Total time elapsed: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
+	}
+	
+	public void runCrawler() {
+		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
+				this.url, this.query, this.indexPath, this.maxNumOfPages);
+		log.info("Starting Crawler with parameters: " + parameters);
+		long start = System.nanoTime();
+		startCrawlerConcurrent();
+		this.indexer.serializeIndexerMap();
+		log.info("Total time elapsed: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
 	}
 	
 	/**
@@ -205,8 +212,8 @@ public class Crawler {
 			URLScore urlScoreQueue =  this.urlScoreQueue.poll();
 			URLScore urlScoreMap = this.urlToURLScoreMap.remove(urlScoreQueue.getLink().getAbsUrl());
 			if (!urlScoreQueue.equals(urlScoreMap)) {
-				System.err.println(urlScoreQueue);
-				System.err.println(urlScoreMap);
+				log.error(urlScoreQueue);
+				log.error(urlScoreMap);
 				throw new RuntimeException("URLScore's should be equal!");
 			}
 			return urlScoreQueue;
@@ -250,7 +257,7 @@ public class Crawler {
 	}
 	
 	public void startCrawlerConcurrent() {
-		URLScore originalURLScore = new URLScore(new Link(this.url, "", this.url), 0);
+		URLScore originalURLScore = new URLScore(new Link(this.url, "", this.url, getUniqueURL(this.url)), 0);
 
 		this.urlScoreQueue.add(originalURLScore);
 
@@ -265,7 +272,6 @@ public class Crawler {
 		while (keepRunning) {
 			while (isQueueEmptySynchronized() && areThereThreadsOngoing()) {
 				try {
-//					System.out.println("waiting... num threads: " + this.numThreads);
 					Thread.sleep(20);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -283,7 +289,7 @@ public class Crawler {
 			
 			URLScore bestURL = getBestUrlScoreAndRemoveFromMapSynchronized();
 			
-			if (hasBeenVisitedSynchronized(bestURL.getLink().getAbsUrl()))
+			if (hasBeenVisitedSynchronized(bestURL.getLink().getUniqueUrl()))
 				continue;
 			
 			Future<Boolean> future = ecs.submit(new CrawlerCallable(bestURL));
@@ -311,11 +317,10 @@ public class Crawler {
 			}
 		}		
 		executor.shutdown();
-		try {
-			this.indexer.writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	}
+	
+	public void closeWriter() {
+		this.indexer.closeWriter();
 	}
 	
 	private boolean addToPageCollectionSynchronized(Page page) {
@@ -324,18 +329,15 @@ public class Crawler {
 		}
 	}
 	
-	private long getNewIdSynchronized() {
+	private String getNewIdSynchronized() {
 		synchronized (this.pageIdLock) {
-			//TODO: compare with new UUID(random.nextLong(), random.nextLong())
-			return UUID.randomUUID().getLeastSignificantBits();
-//			int id = this.pageId;
-//			this.pageId++;
-//			return id;
+			return new UUID(random.nextLong(), random.nextLong()).toString();
 		}
 	}
 	
 	private Page requestAndProcessLinks(Link link) throws IOException {
 		Document html = request(link.getAbsUrl());
+		link.setAbsUrl(html.baseUri());
 		String content = html.toString();
 		Element titleElement = html.select("title").first();
 		String title = (titleElement == null) ? link.getUrl() : titleElement.text();		
@@ -353,41 +355,50 @@ public class Crawler {
 		@Override
 		public Boolean call() throws Exception {
 			addNumThreadsSynchronized();
-			synchronized (Crawler.this.seenLock) {
-				Crawler.this.seen.add(this.bestURL.getLink().getAbsUrl());					
-			}
-			if (!robotSafe(this.bestURL.getLink().getAbsUrl())) {
-				System.out.println("Told not to go there by the robot.txt file");
-				subNumThreadsSynchronized();
-				return false;
-			}
 			Page page = null;
 			try {
 				page = requestAndProcessLinks(this.bestURL.getLink());
 			} catch (IOException e) {
 				//perhaps page doesn't exist!
 				if (Crawler.this.trace)
-					System.out.println("There was a problem fetching " + bestURL.getLink().getAbsUrl() + " (it probably doesn't exist!)");
+					log.debug("There was a problem fetching " + bestURL.getLink().getAbsUrl() + " (it probably doesn't exist!)");
+				synchronized(Crawler.this.seenLock) {
+					Crawler.this.seen.add(this.bestURL.getLink().getAbsUrl());					
+				}
 				subNumThreadsSynchronized();
 				return false;
 			}
-			if (page != null) {
-				addToPageCollectionSynchronized(page);
-				synchronized (Crawler.this.indexerLock) {
-					Crawler.this.indexer.indexPage(page);
+			//If the page is null, we are still interested in marking it as visited
+			synchronized(Crawler.this.seenLock) {
+				if (Crawler.this.seen.contains(this.bestURL.getLink().getAbsUrl())) {
+					return false;
+				} else {
+					Crawler.this.seen.add(this.bestURL.getLink().getAbsUrl());
 				}
-				if (Crawler.this.trace)
-					System.out.println("Received: " + this.bestURL.getLink().getAbsUrl());
-				Set<Link> links = page.getOutLinks();
-				for (Link link : links) {
-					double score = score(link, page, Crawler.this.query);
-					if (!hasBeenVisitedSynchronized(link.getAbsUrl())) {
-						if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
-							URLScore urlScore = new URLScore(link, score);
-							handleNewURL(urlScore);
-						} else {
-							handleExistingURL(link.getAbsUrl(), score);
-						}
+			}
+			if (page == null)
+				return false;
+			if (!robotSafe(this.bestURL.getLink().getAbsUrl())) {
+				log.info("Told not to go there by the robot.txt file");
+				subNumThreadsSynchronized();
+				return false;
+			}
+			addToPageCollectionSynchronized(page);
+			if (Crawler.this.trace) {
+				log.info("logging: " + "Received: " + this.bestURL.getLink().getAbsUrl());
+			}
+			synchronized (Crawler.this.indexerLock) {
+				Crawler.this.indexer.indexPage(page);
+			}
+			Set<Link> links = page.getOutLinks();
+			for (Link link : links) {
+				double score = score(link, page, Crawler.this.query);
+				if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
+					if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
+						URLScore urlScore = new URLScore(link, score);
+						handleNewURL(urlScore);
+					} else {
+						handleExistingURL(link.getAbsUrl(), score);
 					}
 				}
 			}
@@ -397,8 +408,6 @@ public class Crawler {
 
 		
 		private void handleNewURL(URLScore urlScore) {
-//			if (Crawler.this.trace)
-//				System.out.println("Adding to queue: " + urlScore);
 			synchronized (Crawler.this.mapHeapLock) {
 				Crawler.this.urlScoreQueue.add(urlScore);
 				Crawler.this.urlToURLScoreMap.put(urlScore.getLink().getAbsUrl(), urlScore);
@@ -409,8 +418,9 @@ public class Crawler {
 			synchronized (Crawler.this.mapHeapLock) {
 				URLScore existingUrl = Crawler.this.urlToURLScoreMap.get(urlString);
 				existingUrl.setScore(existingUrl.getScore() + score);
-				if (!Crawler.this.urlScoreQueue.remove(existingUrl))
-					throw new RuntimeException("This urlScore should be in the queue!");
+				if (!Crawler.this.urlScoreQueue.remove(existingUrl)) {
+					log.error(String.format("url %s should be in the queue", existingUrl.getLink().toString()));
+				}
 				Crawler.this.urlScoreQueue.add(existingUrl);
 			}
 		}
@@ -418,18 +428,17 @@ public class Crawler {
 	}
 	
 	private String getBaseFromURL(String url) {
-		int indexOfProtocol = url.indexOf("http://");
-		if (indexOfProtocol == -1)
-			indexOfProtocol = 0;
-		else
-			indexOfProtocol += "http://".length();
-		if (indexOfProtocol >= url.length())
-			indexOfProtocol = url.length();
-		url = url.substring(indexOfProtocol);
-		int lastIndexOfForwardSlash = url.lastIndexOf('/');
-		if (lastIndexOfForwardSlash == -1)
-			lastIndexOfForwardSlash = url.length()-1;
-		return "http://" + url.substring(0, lastIndexOfForwardSlash+1);
+		String urlMinusProtocol = url;
+		if (url.startsWith(DEFAULT_PROTOCOL)) {
+			urlMinusProtocol = url.substring(DEFAULT_PROTOCOL.length());
+		} else if (url.startsWith(SECURE_PROTOCOL)) {
+			urlMinusProtocol = url.substring(SECURE_PROTOCOL.length());
+		}
+		
+		//for cases such as "http://www.nyu.edu"
+		int lastIndexOfForwardSlash = (urlMinusProtocol.lastIndexOf('/') == -1) ? urlMinusProtocol.length() - 1 : urlMinusProtocol.lastIndexOf('/');
+		
+		return DEFAULT_PROTOCOL + urlMinusProtocol.substring(0, lastIndexOfForwardSlash+1);
 	}
 		
 	private void processRobot(String urlString) {
@@ -445,10 +454,8 @@ public class Crawler {
 				return;
 		}
 		String strRobot = "http://" + host + "/robots.txt";
-		if (strRobot.equals("http:///robots.txt"))
-			System.out.println("dude!!!");
 		if (this.trace)
-			System.out.println("Processing robot for: " + strRobot);
+			log.info("Processing robot for: " + strRobot);
 		String robotContent = null;
 		try {
 			Document robotDoc = request(strRobot);
@@ -466,7 +473,7 @@ public class Crawler {
 		} catch (IOException e) {
 			if (e instanceof MalformedURLException) {
 				if (this.trace)
-					System.out.println("URL " + strRobot + " was malformed!");
+					log.debug("URL " + strRobot + " was malformed!");
 				synchronized (this.robotSafeLock) {
 					this.robotSafeHostsMap.put(host, new ArrayList<String>(Arrays.asList("/")));
 					return;
@@ -527,7 +534,7 @@ public class Crawler {
 		synchronized (this.robotSafeLock) {
 			if ((badPaths = this.robotSafeHostsMap.get(host)) == null) {
 				if (this.trace)
-					System.out.println("Something went wrong with robot.txt file");
+					log.error("Something went wrong with robot.txt file");
 				return false;
 			}
 			for (String badPath : badPaths) {
@@ -542,27 +549,47 @@ public class Crawler {
 	
 	public List<Link> getLinks(String content, String base) {
 		Document document = Jsoup.parse(content, base);
-		Elements links = document.select("a");
+		Elements links = document.select("a[href]");
 		List<Link> linkList = new ArrayList<Link>();
 		for (Element link : links) {
 			String url = link.attr("href");
 			String absUrl = link.absUrl("href");
-			if (!absUrl.endsWith("html")) {
+			if (absUrl.isEmpty())
+				continue;
+			if (!isUrlValid(absUrl)) {
 				continue;
 			}
-//			String normalized = normalizeURL(absUrl);
-//			if (normalized != null) {
-//				absUrl = normalized;
-//			}
 			String anchor = link.text();
-			linkList.add(new Link(url, anchor, absUrl));
+			String uniqueUrl = getUniqueURL(absUrl);
+			linkList.add(new Link(url, anchor, absUrl, uniqueUrl));
 		}
 		return linkList;
 	}
 	
+	private boolean isUrlValid(String absUrl) {
+		Pattern hashPatern = Pattern.compile("http.*#[a-zA-Z0-9%_-]+$");
+		Matcher matcher = hashPatern.matcher(absUrl);
+		if (matcher.matches())
+			return false;
+		return true;
+//		return absUrl.endsWith("html");
+	}
+	
+	private String getUniqueURL(String absUrl) {
+		String url = normalizeURL(absUrl);
+		if (url==null)
+			return absUrl;
+		if (url.startsWith(DEFAULT_PROTOCOL)) {
+			return url.substring(DEFAULT_PROTOCOL.length());
+		} else if (url.startsWith(SECURE_PROTOCOL)) {
+			return url.substring(SECURE_PROTOCOL.length());
+		}
+		
+		return url;
+	}
+	
 	public static String normalizeURL(String urlString) {
 		try {
-//			System.out.println(urlString);
 			URL url = new URI(urlString).normalize().toURL();
 			final String path = url.getPath().replace("/$", "");
 			String semiNormalizedString = url.getProtocol().toLowerCase()
@@ -576,12 +603,39 @@ public class Crawler {
 			return null;
 		} catch (URISyntaxException e) {
 			return null;
+		} catch (IllegalArgumentException e) {
+			return null;
 		}
 	}
 		
 	private Document request(String url) throws IOException {
 		Document doc = Jsoup.connect(url).followRedirects(true).get();
+		String redirect = hasRedirect(doc);
+		if (redirect != null) {
+			if (this.trace)
+				log.info("Redirecting to: " + redirect + " from: " + url);
+			doc = Jsoup.connect(redirect).followRedirects(true).get();
+		}
 		return doc;
+	}
+	
+	private String hasRedirect(Document doc) throws MalformedURLException {
+		//looking for stuff like: <meta http-equiv="Refresh" content="0; URL=home/index.html">
+		Elements meta = doc.select("html head meta");
+		if (meta == null)
+			return null;
+		String httpEquiv = meta.attr("http-equiv");
+		if (httpEquiv != null && httpEquiv.toLowerCase().contains("refresh")) {
+			String content = meta.attr("content");
+			if (content != null) {
+				String[] contentArray = content.split("=");
+				if (contentArray.length > 1) {
+					URL base = new URL(doc.baseUri());
+					return new URL(base, contentArray[1]).toString();
+				}
+			}
+		}
+		return null;
 	}
 		
 	public void writeToFile(String name, String content) {
@@ -671,7 +725,9 @@ public class Crawler {
 
 		
 	public static void main(String[] args) {
-		new Crawler(args).run();
+		Crawler crawler = new Crawler(args);
+		crawler.run();
+		crawler.closeWriter();
 	}
 
 	

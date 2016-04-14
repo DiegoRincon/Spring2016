@@ -17,12 +17,14 @@ public class Link {
 	private String anchor;
 	@NonNull
 	private String absUrl;
+	@NonNull
+	private String uniqueUrl;
 	
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Link) {
 			Link other = (Link)o;
-			return this.absUrl.equals(other.getAbsUrl());
+			return this.uniqueUrl.equals(other.getUniqueUrl());
 		}
 		return false;
 	}
