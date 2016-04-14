@@ -37,7 +37,7 @@ public class Indexer {
 	public static final String CONTENTS = "contents";
 	public static final String ABSURL = "absURL";
 	public static final String TITLE = "title";
-	public static final String INDEXER_DEFAULT_NAME = "indexer";
+	public static final String INDEXER_DEFAULT_NAME = "indexer/";
 	public static final String DATA_DEFAULT = "data";
 	public static final String INDEXER_MAP_FILENAME = "indexer_map";
 	public final String INDEXER_MAP_PATH;
