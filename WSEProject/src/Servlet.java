@@ -15,7 +15,7 @@ public class Servlet extends HttpServlet {
 			  "<form method=\"get\" action=\"crawl\">"
 			+ "		<input type=\"text\" name=\"url\" required placeholder=\"Starting URL\" />"
 			+ "		<input type=\"text\" name=\"query\" required placeholder=\"Query\" />"
-			+ "		<input type=\"text\" name=\"maxPages\" required placeholder=\"MaxNumPages\" />"
+			+ "		<input type=\"number\" min=\"1\" name=\"maxPages\" required placeholder=\"MaxNumPages\" />"
 			+ "		<input type=\"submit\" name=\"crawl\" value=\"crawl\" />"
 			+ "</form>"
 			+ "<form method=\"get\" action=\"search\">"
@@ -94,7 +94,7 @@ public class Servlet extends HttpServlet {
 		StringBuffer sb = new StringBuffer();
 		// Echo client's request information
 		int maxPages = 50;
-		if (maxNumPages == null) {
+		if (maxNumPages != null) {
 			try {
 				maxPages = Integer.parseInt(maxNumPages);
 			} catch (NumberFormatException e) {

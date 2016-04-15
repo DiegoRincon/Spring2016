@@ -195,6 +195,7 @@ public class Crawler {
 		log.info("Starting Crawler with parameters: " + parameters);
 		long start = System.nanoTime();
 		startCrawlerConcurrent();
+		log.info("Serializing indexer");
 		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Crawling time: " + time + " seconds");
