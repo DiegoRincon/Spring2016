@@ -19,7 +19,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -27,8 +26,6 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -266,7 +263,8 @@ public class Crawler {
 		this.urlToURLScoreMap.put(this.url, originalURLScore);
 		
 //		ExecutorService executor = new ThreadPoolExecutor(5, 25, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50));
-		ExecutorService executor = Executors.newCachedThreadPool();
+		ExecutorService executor = Executors.newFixedThreadPool(15);
+		
 		CompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(executor);
 		
 		List<Future<Boolean>> listOfResults = new ArrayList<Future<Boolean>>();
@@ -574,7 +572,7 @@ public class Crawler {
 	}
 	
 	private boolean isUrlValid(String absUrl) {
-		Pattern pattern = Pattern.compile("http.*/[a-z\\.A-Z0-9_-]+$");
+		Pattern pattern = Pattern.compile("https?://[^#\\?]+");
 		Matcher matcher = pattern.matcher(absUrl);
 		if (matcher.matches())
 			return true;
