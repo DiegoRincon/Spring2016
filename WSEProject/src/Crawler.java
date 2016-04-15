@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +54,9 @@ public class Crawler {
 	public static final String DEFAULT_STARTING_URL = "http://cs.nyu.edu/";
 	public static final String DEFAULT_PROTOCOL = "http://";
 	public static final String SECURE_PROTOCOL = "https://";
+	public static final int DEFAULT_NUM_REQUEST_THREADS = 15;
+	public static final int DEFAULT_NUM_PROCESS_LINK_THREADS = 15;
+	public static final int MAX_NUM_OF_LINKS_TO_PROCESS = 200;
 	public Options options;
 	public String url;
 	public String query;
@@ -71,9 +75,34 @@ public class Crawler {
 	private Set<Page> pageCollection;
 	private int numThreads;
 	private Object pageIdLock;
-	private Object indexerLock;
 	private Indexer indexer;
 	private Random random;
+	private CompletionService<Boolean> linksExecutorCompletionService;
+	private Object linksExecutorListLock;
+	
+	private ExecutorService linksExecutor;
+	private List<Future<Boolean>> linkTasks;
+	
+	private void commonInit() {
+		this.numThreads = 0;
+		this.robotSafeHostsMap = new HashMap<String, List<String>>();
+		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
+		this.urlToURLScoreMap = new HashMap<String, URLScore>();
+		this.pageCollection = new HashSet<Page>();
+		this.indexer = new Indexer(this.indexPath);
+		this.seen = new HashSet<String>();
+		this.robotSafeLock = new Object();
+		this.mapHeapLock = new Object();
+		this.seenLock = new Object();
+		this.numThreadsLock = new Object();
+		this.pageIdLock = new Object();
+		this.pageCollectionLock = new Object();
+		this.random = new Random();
+		this.linksExecutorListLock = new Object();
+		this.linkTasks = new ArrayList<Future<Boolean>>();		
+		this.linksExecutor = Executors.newFixedThreadPool(DEFAULT_NUM_PROCESS_LINK_THREADS);
+		this.linksExecutorCompletionService = new ExecutorCompletionService<Boolean>(this.linksExecutor);
+	}
 	
 	public Crawler(String[] args) {
 		this.trace = false;
@@ -82,21 +111,7 @@ public class Crawler {
 		if (!checkArgs(args)) {
 			System.exit(1);
 		}
-//		this.pageId = 0;
-		this.robotSafeHostsMap = new HashMap<String, List<String>>();
-		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
-		this.urlToURLScoreMap = new HashMap<String, URLScore>();
-		this.pageCollection = new HashSet<Page>();
-		this.indexer = new Indexer(this.indexPath);
-		this.indexerLock = new Object();
-		this.seen = new HashSet<String>();
-		this.robotSafeLock = new Object();
-		this.mapHeapLock = new Object();
-		this.seenLock = new Object();
-		this.numThreadsLock = new Object();
-		this.pageIdLock = new Object();
-		this.pageCollectionLock = new Object();
-		this.random = new Random();
+		commonInit();
 	}
 	
 	public Crawler(String url, String query, int maxNumPages, String indexerPath, boolean trace) {
@@ -105,21 +120,7 @@ public class Crawler {
 		this.maxNumOfPages = maxNumPages;
 		this.url = url;
 		this.query = query;
-//		this.pageId = 0;
-		this.robotSafeHostsMap = new HashMap<String, List<String>>();
-		this.urlScoreQueue = new PriorityQueue<URLScore>(1000, Collections.reverseOrder());
-		this.urlToURLScoreMap = new HashMap<String, URLScore>();
-		this.pageCollection = new HashSet<Page>();
-		this.indexer = new Indexer(this.indexPath);
-		this.indexerLock = new Object();
-		this.seen = new HashSet<String>();
-		this.robotSafeLock = new Object();
-		this.mapHeapLock = new Object();
-		this.seenLock = new Object();
-		this.numThreadsLock = new Object();
-		this.pageIdLock = new Object();
-		this.pageCollectionLock = new Object();
-		this.random = new Random();
+		commonInit();
 	}
 
 	private void initOptions() {
@@ -180,7 +181,7 @@ public class Crawler {
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			e.printStackTrace();
 		}
-		this.indexer.serializeIndexerMap();
+//		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Searching time: " + time + " seconds");
 		return time;
@@ -192,12 +193,29 @@ public class Crawler {
 		log.info("Starting Crawler with parameters: " + parameters);
 		long start = System.nanoTime();
 		startCrawlerConcurrent();
-		log.info("Serializing indexer");
-		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
+		shutDownExecutor(this.linksExecutorCompletionService, this.linksExecutor, this.linkTasks.size());
 		log.info("Total Crawling time: " + time + " seconds");
+		start = System.nanoTime();
+		log.info("Indexing Collection");
+		indexCollection();
+		this.indexer.serializeIndexerMap();
+		time = (System.nanoTime() - start)/1000000000.0;
+		log.info("Total Indexing (and serializing indexer map) time: " + time + " seconds");
+//		this.linksExecutor.shutdown();
+//		try {
+//			this.linksExecutor.awaitTermination(100, TimeUnit.MICROSECONDS);
+//		} catch (InterruptedException e) {
+//			log.error(e.getCause());
+//		}
 		closeWriter();
 		return time;
+	}
+	
+	private void indexCollection() {
+		for (Page page : this.pageCollection) {
+			this.indexer.indexPage(page);
+		}
 	}
 	
 	private boolean hasReachedMaxCapacitySynchronized() {
@@ -211,9 +229,7 @@ public class Crawler {
 			URLScore urlScoreQueue =  this.urlScoreQueue.poll();
 			URLScore urlScoreMap = this.urlToURLScoreMap.remove(urlScoreQueue.getLink().getAbsUrl());
 			if (!urlScoreQueue.equals(urlScoreMap)) {
-				log.error(urlScoreQueue);
-				log.error(urlScoreMap);
-				throw new RuntimeException("URLScore's should be equal!");
+				log.error("URlScore's should be equal! From queue: " + urlScoreQueue + " \nFrom Map: " + urlScoreMap);
 			}
 			return urlScoreQueue;
 		}
@@ -263,7 +279,7 @@ public class Crawler {
 		this.urlToURLScoreMap.put(this.url, originalURLScore);
 		
 //		ExecutorService executor = new ThreadPoolExecutor(5, 25, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50));
-		ExecutorService executor = Executors.newFixedThreadPool(15);
+		ExecutorService executor = Executors.newFixedThreadPool(DEFAULT_NUM_REQUEST_THREADS);
 		
 		CompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(executor);
 		
@@ -283,13 +299,10 @@ public class Crawler {
 				}
 			}
 			if (!areThereThreadsOngoing() && isQueueEmptySynchronized()) {
-				keepRunning = false;
-				continue;
+				break;
 			}
-			
 			if (hasReachedMaxCapacitySynchronized()) {
-				keepRunning = false;
-				continue;
+				break;
 			}
 			
 			URLScore bestURL = getBestUrlScoreAndRemoveFromMapSynchronized();
@@ -312,7 +325,26 @@ public class Crawler {
 				}
 			}
 		}
-		for (int i = 0; i < listOfResults.size(); i++) {
+		shutDownExecutor(ecs, executor, listOfResults.size());
+//		for (int i = 0; i < listOfResults.size(); i++) {
+//			try {
+//				ecs.take().get();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			} catch (ExecutionException e) {
+//				e.printStackTrace();
+//			}
+//		}		
+//		executor.shutdown();
+//		try {
+//			executor.awaitTermination(100, TimeUnit.MICROSECONDS);
+//		} catch (InterruptedException e) {
+//			log.error(e.getCause());
+//		}
+	}
+	
+	private <E> void shutDownExecutor(CompletionService<E> ecs, ExecutorService executor, int n) {
+		for (int i = 0; i < n; i++) {
 			try {
 				ecs.take().get();
 			} catch (InterruptedException e) {
@@ -322,6 +354,11 @@ public class Crawler {
 			}
 		}		
 		executor.shutdown();
+		try {
+			executor.awaitTermination(100, TimeUnit.MICROSECONDS);
+		} catch (InterruptedException e) {
+			log.error(e.getCause());
+		}
 	}
 	
 	public void closeWriter() {
@@ -340,64 +377,40 @@ public class Crawler {
 		}
 	}
 	
-	private Page requestAndProcessLinks(Link link) throws IOException {
+	private Page requestAndProcessLinksAsync(Link link) throws IOException {
 		Document html = request(link.getAbsUrl());
 		link.setAbsUrl(html.baseUri());
 		String content = html.toString();
 		Element titleElement = html.select("title").first();
-		String title = (titleElement == null) ? link.getUrl() : titleElement.text();		
-		List<Link> links = getLinks(content, getBaseFromURL(link.getAbsUrl()));
-		Page page = new Page(getNewIdSynchronized(), link, new HashSet<Link>(links), content, title);
+		String title = (titleElement == null) ? link.getUrl() : titleElement.text();
+		
+		Page page = new Page(getNewIdSynchronized(), link, content, title);
+		//TODO: get Links asyc.
+		synchronized (this.linksExecutorListLock) {
+			this.linkTasks.add(this.linksExecutorCompletionService.submit(new HandleLinksCallable(page, getBaseFromURL(link.getAbsUrl()))));
+		}
 		return page;
 	}
 	
-	private class CrawlerCallable implements Callable<Boolean> {
-		private URLScore bestURL;
-		public CrawlerCallable(URLScore bestURL) {
-			this.bestURL = bestURL;
+	private class HandleLinksCallable implements Callable<Boolean> {
+		
+		private String base;
+		private Page page;
+		
+		public HandleLinksCallable(Page page, String base) {
+			this.page = page;
+			this.base = base;
 		}
 
 		@Override
 		public Boolean call() throws Exception {
 			addNumThreadsSynchronized();
-			Page page = null;
-			try {
-				page = requestAndProcessLinks(this.bestURL.getLink());
-			} catch (IOException e) {
-				//perhaps page doesn't exist!
-				if (Crawler.this.trace)
-					log.debug("There was a problem fetching " + bestURL.getLink().getAbsUrl() + " (it probably doesn't exist!)");
-				synchronized(Crawler.this.seenLock) {
-					Crawler.this.seen.add(this.bestURL.getLink().getAbsUrl());					
-				}
-				subNumThreadsSynchronized();
-				return false;
-			}
-			//If the page is null, we are still interested in marking it as visited
-			synchronized(Crawler.this.seenLock) {
-				if (Crawler.this.seen.contains(this.bestURL.getLink().getAbsUrl())) {
-					return false;
-				} else {
-					Crawler.this.seen.add(this.bestURL.getLink().getAbsUrl());
-				}
-			}
-			if (page == null)
-				return false;
-			if (!robotSafe(this.bestURL.getLink().getAbsUrl())) {
-				log.info("Told not to go there by the robot.txt file");
-				subNumThreadsSynchronized();
-				return false;
-			}
-			addToPageCollectionSynchronized(page);
-			if (Crawler.this.trace) {
-				log.info("logging: " + "Received: " + this.bestURL.getLink().getAbsUrl());
-			}
-			synchronized (Crawler.this.indexerLock) {
-				Crawler.this.indexer.indexPage(page);
-			}
-			Set<Link> links = page.getOutLinks();
-			for (Link link : links) {
-				double score = score(link, page, Crawler.this.query);
+			if (Crawler.this.trace)
+				log.info("Processing out links for page: " + this.page.getLink().getAbsUrl());
+			Set<Link> outlinks = new HashSet<Link>(getLinks(this.page.getContent(), this.base));
+			page.setOutLinks(outlinks);
+			for (Link link : outlinks) {
+				double score = score(link, this.page.getContent(), Crawler.this.query);
 				if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
 					if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
 						URLScore urlScore = new URLScore(link, score);
@@ -411,7 +424,6 @@ public class Crawler {
 			return true;
 		}
 
-		
 		private void handleNewURL(URLScore urlScore) {
 			synchronized (Crawler.this.mapHeapLock) {
 				Crawler.this.urlScoreQueue.add(urlScore);
@@ -428,6 +440,45 @@ public class Crawler {
 				}
 				Crawler.this.urlScoreQueue.add(existingUrl);
 			}
+		}
+		
+	}
+	
+	private class CrawlerCallable implements Callable<Boolean> {
+		private URLScore bestURL;
+		public CrawlerCallable(URLScore bestURL) {
+			this.bestURL = bestURL;
+		}
+
+		@Override
+		public Boolean call() throws Exception {
+			addNumThreadsSynchronized();
+			Page page = null;
+			try {
+				page = requestAndProcessLinksAsync(this.bestURL.getLink());
+			} catch (IOException e) {
+				//perhaps page doesn't exist!
+				if (Crawler.this.trace)
+					log.debug("There was a problem fetching " + bestURL.getLink().getAbsUrl() + " (it probably doesn't exist!)");
+				subNumThreadsSynchronized();
+				return false;
+			}
+			if (page == null)
+				return false;
+			synchronized(Crawler.this.seenLock) {
+				Crawler.this.seen.add(this.bestURL.getLink().getUniqueUrl());					
+			}
+			if (!robotSafe(this.bestURL.getLink().getAbsUrl())) {
+				log.info("Told not to go there by the robot.txt file");
+				subNumThreadsSynchronized();
+				return false;
+			}
+			addToPageCollectionSynchronized(page);
+			if (Crawler.this.trace) {
+				log.info("logging: " + "Received: " + this.bestURL.getLink().getAbsUrl());
+			}
+			subNumThreadsSynchronized();
+			return true;
 		}
 
 	}
@@ -556,7 +607,11 @@ public class Crawler {
 		Document document = Jsoup.parse(content, base);
 		Elements links = document.select("a[href]");
 		List<Link> linkList = new ArrayList<Link>();
+		int count = 0;
 		for (Element link : links) {
+			count++;
+			if (count > MAX_NUM_OF_LINKS_TO_PROCESS)
+				break;
 			String url = link.attr("href");
 			String absUrl = link.absUrl("href");
 			if (absUrl.isEmpty())
@@ -685,7 +740,7 @@ public class Crawler {
 		return -1;
 	}
 		
-	public double score(Link link, Page page, String query) {
+	public double score(Link link, String pageContent, String query) {
 		if (query == null)
 			return 0;
 		String[] words = query.split(" ");
@@ -702,7 +757,7 @@ public class Crawler {
 		}
 		if (k > 0)
 			return 40;
-		Document doc = Jsoup.parse(page.getContent());
+		Document doc = Jsoup.parse(pageContent);
 		String docTextLowerCaseWithoutSpecialChars = doc.text().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
 		String[] wordsInDocText = docTextLowerCaseWithoutSpecialChars.split(" ");
 		Set<String> setOfGoodQueryWords = new HashSet<String>();

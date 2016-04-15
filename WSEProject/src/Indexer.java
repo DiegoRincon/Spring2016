@@ -159,9 +159,10 @@ public class Indexer {
 			return;
 		}
 		try {
+			log.info("Indexing Page: " + page.getLink().getAbsUrl());
 			indexBody(page.getContent(), page.getLink().getAbsUrl(), page.getTitle());
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Error indexing Page: " + page.getLink().getAbsUrl() + " cause " + e.getCause());
 		}
 		this.indexerMap.addToMap(page.getLink().getAbsUrl(), page);
 	}

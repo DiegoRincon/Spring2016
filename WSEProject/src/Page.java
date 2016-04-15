@@ -17,7 +17,6 @@ public class Page {
 	private String id;
 	@NonNull
 	private Link link;
-	@NonNull
 	private Set<Link> outLinks;
 	@NonNull
 	private String content;
@@ -36,7 +35,6 @@ public class Page {
 		}
 		return false;
 	}
-	
 	
 	@Override
 	public int hashCode() {

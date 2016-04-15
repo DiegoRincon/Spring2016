@@ -49,17 +49,17 @@ public class Tests {
 		Link link = new Link("file.html", "WalrusAndCarpenter", "dummy abs url", "uniqueURL");
 		String content = "<a href=\"file1.html\">WalrusAndCarpenter</a>";
 		String query = "walrus carpenter bread";
-		Page page = new Page("id1", link, new HashSet<Link>(), content, "title");
-		assertEquals(100, crawler.score(link, page, query), 0);
+		Page page = new Page("id1", link, content, "title");
+		assertEquals(100, crawler.score(link, page.getContent(), query), 0);
 		content = "<a href=\"walrus5.html\">Cute Poem</a>";
 		page.setContent(content);
 		link.setAnchor("Cute Poem");
 		link.setUrl("walrus5.html");
-		assertEquals(40, crawler.score(link, page, query), 0);
+		assertEquals(40, crawler.score(link, page.getContent(), query), 0);
 		String content2 = "walrus word walrus word3 word4 <a href=\"dummy.html\">Cute Poem</a> w1 w2 w3 w4 w5 bread dude bread";
 		page.setContent(content2);
 		link.setUrl("dummy.html");
-		assertEquals(5, crawler.score(link, page, query), 0);
+		assertEquals(5, crawler.score(link, page.getContent(), query), 0);
 		
 	}
 	private InetAddress[] dnslookup(String url) {
@@ -119,8 +119,8 @@ public class Tests {
 	public void testMapSerialization() throws JsonGenerationException, JsonMappingException, IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		IndexerMap indMap = new IndexerMap();
-		indMap.map.put("test1", new Page("id1",new Link("url", "anchor", "absURL", "uniqueURL"), new HashSet<Link>(), "content", "title"));
-		indMap.map.put("test2", new Page("id2",new Link("url2", "anchor2", "absURL2", "uniqueURL2"), new HashSet<Link>(), "content2", "title2"));
+		indMap.map.put("test1", new Page("id1",new Link("url", "anchor", "absURL", "uniqueURL"), "content", "title"));
+		indMap.map.put("test2", new Page("id2",new Link("url2", "anchor2", "absURL2", "uniqueURL2"), "content2", "title2"));
 		mapper.writeValue(new File("map"), indMap);
 //		mapper.writeValueAsString(map);
 		
