@@ -143,10 +143,13 @@ public class Tests {
 
 	@Test
 	public void testUrlMatching() {
-		Pattern p = Pattern.compile("http.*#[a-zA-z0-9]+$");
-		String str = "https://www.nytimes.com/pages/opinion/index.html#columnists";
-		Matcher m = p.matcher(str);
-		System.out.println(m.matches());
+		String url = "";
+		String[] urls = {"https://en.wikipedia.org/wiki/Vladimir_Nabokov", "http://www.nyu.edu", "http://www.wikipedia.org/something#blabla", "http://www.nyu.edu/index.html"};
+		Pattern pattern = Pattern.compile("http.*/[a-z\\.A-Z0-9_-]+$");
+		for (String string : urls) {
+			Matcher m = pattern.matcher(string);
+			System.out.println(string + " " + m.matches());
+		}
 	}
 	
 }

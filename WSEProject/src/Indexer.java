@@ -67,7 +67,6 @@ public class Indexer {
 		}
 		try {
 			this.writer = getBasicIndexWriter(indexPath);
-			this.writer.commit();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +183,7 @@ public class Indexer {
 		}
 		doc.add(new StringField(ABSURL, absUrl, Field.Store.YES));
 		this.writer.addDocument(doc);
-		this.writer.commit();
+//		this.writer.commit();
 	}
 		
 	public void updateDocument(String body, String absUrl, String title) throws IOException {
@@ -197,7 +196,7 @@ public class Indexer {
 		}
 		doc.add(new StringField(ABSURL, absUrl, Field.Store.YES));
 		this.writer.updateDocument(new Term(ABSURL, absUrl), doc);
-		this.writer.commit();
+//		this.writer.commit();
 	}
 
 }

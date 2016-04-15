@@ -19,6 +19,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -26,6 +27,8 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,20 +167,26 @@ public class Crawler {
 	}
 	
 	public void run() {
-		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
-				this.url, this.query, this.indexPath, this.maxNumOfPages);
-		log.info("Starting Crawler with parameters: " + parameters);
+		runCrawler();
+		runSearch();
+	}
+	
+	public double runSearch() {
+		log.info("Starting Search for query: " + this.query);
 		long start = System.nanoTime();
-		startCrawlerConcurrent();
 		try {
-			this.indexer.search(this.query);
+			Retriever retriever = new Retriever();
+			retriever.go(this.indexPath, this.query);
+//			this.indexer.search(this.query);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			e.printStackTrace();
 		}
 		this.indexer.serializeIndexerMap();
-		log.info("Total time elapsed: " + (System.nanoTime() - start)/1000000000.0 + " seconds");
+		double time = (System.nanoTime() - start)/1000000000.0;
+		log.info("Total Searching time: " + time + " seconds");
+		return time;
 	}
 	
 	public double runCrawler() {
@@ -188,7 +197,8 @@ public class Crawler {
 		startCrawlerConcurrent();
 		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
-		log.info("Total time elapsed: " + time + " seconds");
+		log.info("Total Crawling time: " + time + " seconds");
+		closeWriter();
 		return time;
 	}
 	
@@ -254,6 +264,7 @@ public class Crawler {
 
 		this.urlToURLScoreMap.put(this.url, originalURLScore);
 		
+//		ExecutorService executor = new ThreadPoolExecutor(5, 25, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50));
 		ExecutorService executor = Executors.newCachedThreadPool();
 		CompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(executor);
 		
@@ -261,7 +272,11 @@ public class Crawler {
 		boolean started = true;
 		boolean keepRunning = true;
 		while (keepRunning) {
+			int count = 0;
 			while (isQueueEmptySynchronized() && areThereThreadsOngoing()) {
+				count++;
+				if (count >= 100)
+					System.out.println("something wrong is happening");
 				try {
 					Thread.sleep(20);
 				} catch (InterruptedException e) {
@@ -558,12 +573,13 @@ public class Crawler {
 	}
 	
 	private boolean isUrlValid(String absUrl) {
-//		Pattern hashPatern = Pattern.compile("http.*#[a-zA-Z0-9%_-]+$");
-//		Matcher matcher = hashPatern.matcher(absUrl);
-//		if (matcher.matches())
-//			return false;
-//		return true;
-		return absUrl.endsWith("html");
+		Pattern pattern = Pattern.compile("http.*/[a-z\\.A-Z0-9_-]+$");
+		Matcher matcher = pattern.matcher(absUrl);
+		if (matcher.matches())
+			return true;
+		return false;
+		
+//		return absUrl.endsWith("html");
 	}
 	
 	private String getUniqueURL(String absUrl) {
@@ -718,7 +734,6 @@ public class Crawler {
 	public static void main(String[] args) {
 		Crawler crawler = new Crawler(args);
 		crawler.run();
-		crawler.closeWriter();
 	}
 
 	
