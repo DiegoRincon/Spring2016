@@ -42,6 +42,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -51,12 +52,14 @@ public class Crawler {
     public static final String USER_AGENT_STAR = "user-agent: *";
     public static final String USER_AGENT = "user-agent:";
 	public static final int DEFAULT_MAX_NUM_PAGES = 50;
-	public static final String DEFAULT_STARTING_URL = "http://cs.nyu.edu/";
+	public static final String DEFAULT_STARTING_URL = "http://www.cs.nyu.edu/";
 	public static final String DEFAULT_PROTOCOL = "http://";
 	public static final String SECURE_PROTOCOL = "https://";
 	public static final int DEFAULT_NUM_REQUEST_THREADS = 15;
 	public static final int DEFAULT_NUM_PROCESS_LINK_THREADS = 15;
 	public static final int MAX_NUM_OF_LINKS_TO_PROCESS = 200;
+	public static final double DEFAULT_F = 0.7;
+	public static final int DEFAULT_NUM_OF_DOCS = 10;
 	public Options options;
 	public String url;
 	public String query;
@@ -72,6 +75,7 @@ public class Crawler {
 	private Map<String, URLScore> urlToURLScoreMap;
 	private Object numThreadsLock;
 	private Object pageCollectionLock;
+	@Getter
 	private Set<Page> pageCollection;
 	private int numThreads;
 	private Object pageIdLock;
@@ -173,8 +177,15 @@ public class Crawler {
 		log.info("Starting Search for query: " + this.query);
 		long start = System.nanoTime();
 		try {
-			Retriever retriever = new Retriever();
-			retriever.go(this.indexPath, this.query);
+			Retriever retriever = new Retriever(this.indexPath);
+//			retriever.getResultsAsHtml(this.query);
+			Set<Page> pageColl = new HashSet<Page>(this.indexer.getIndexerMap().map.values());
+			String result = retriever.getResultsPageRank(this.indexer.getIndexerMap().map,
+					pageColl,
+					DEFAULT_F,
+					DEFAULT_NUM_OF_DOCS,
+					this.query);
+			System.out.println(result.replaceAll("(</div>)", "$1\n"));
 //			this.indexer.search(this.query);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -192,6 +203,7 @@ public class Crawler {
 				this.url, this.query, this.indexPath, this.maxNumOfPages);
 		log.info("Starting Crawler with parameters: " + parameters);
 		long start = System.nanoTime();
+		long firstStart = start;
 		startCrawlerConcurrent();
 		double time = (System.nanoTime() - start)/1000000000.0;
 		shutDownExecutor(this.linksExecutorCompletionService, this.linksExecutor, this.linkTasks.size());
@@ -202,14 +214,8 @@ public class Crawler {
 		this.indexer.serializeIndexerMap();
 		time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Indexing (and serializing indexer map) time: " + time + " seconds");
-//		this.linksExecutor.shutdown();
-//		try {
-//			this.linksExecutor.awaitTermination(100, TimeUnit.MICROSECONDS);
-//		} catch (InterruptedException e) {
-//			log.error(e.getCause());
-//		}
 		closeWriter();
-		return time;
+		return (System.nanoTime() - firstStart)/1000000000.0;
 	}
 	
 	private void indexCollection() {
@@ -293,7 +299,7 @@ public class Crawler {
 				if (count >= 100)
 					System.out.println("something wrong is happening");
 				try {
-					Thread.sleep(20);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -326,21 +332,6 @@ public class Crawler {
 			}
 		}
 		shutDownExecutor(ecs, executor, listOfResults.size());
-//		for (int i = 0; i < listOfResults.size(); i++) {
-//			try {
-//				ecs.take().get();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			} catch (ExecutionException e) {
-//				e.printStackTrace();
-//			}
-//		}		
-//		executor.shutdown();
-//		try {
-//			executor.awaitTermination(100, TimeUnit.MICROSECONDS);
-//		} catch (InterruptedException e) {
-//			log.error(e.getCause());
-//		}
 	}
 	
 	private <E> void shutDownExecutor(CompletionService<E> ecs, ExecutorService executor, int n) {
@@ -380,6 +371,7 @@ public class Crawler {
 	private Page requestAndProcessLinksAsync(Link link) throws IOException {
 		Document html = request(link.getAbsUrl());
 		link.setAbsUrl(html.baseUri());
+		link.setUniqueUrl(getUniqueURL(link.getAbsUrl()));
 		String content = html.toString();
 		Element titleElement = html.select("title").first();
 		String title = (titleElement == null) ? link.getUrl() : titleElement.text();
@@ -452,7 +444,13 @@ public class Crawler {
 
 		@Override
 		public Boolean call() throws Exception {
+			String uniqueUrl = this.bestURL.getLink().getUniqueUrl();
+			if (hasBeenVisitedSynchronized(uniqueUrl))
+				return false;
 			addNumThreadsSynchronized();
+			synchronized(Crawler.this.seenLock) {
+				Crawler.this.seen.add(this.bestURL.getLink().getUniqueUrl());					
+			}
 			Page page = null;
 			try {
 				page = requestAndProcessLinksAsync(this.bestURL.getLink());
@@ -465,8 +463,10 @@ public class Crawler {
 			}
 			if (page == null)
 				return false;
-			synchronized(Crawler.this.seenLock) {
-				Crawler.this.seen.add(this.bestURL.getLink().getUniqueUrl());					
+			if (!page.getLink().getUniqueUrl().equals(uniqueUrl)) {
+				synchronized(Crawler.this.seenLock) {
+					Crawler.this.seen.add(page.getLink().getUniqueUrl());					
+				}
 			}
 			if (!robotSafe(this.bestURL.getLink().getAbsUrl())) {
 				log.info("Told not to go there by the robot.txt file");
@@ -620,8 +620,7 @@ public class Crawler {
 				continue;
 			}
 			String anchor = link.text();
-			String uniqueUrl = getUniqueURL(absUrl);
-			linkList.add(new Link(url, anchor, absUrl, uniqueUrl));
+			linkList.add(new Link(url, anchor, absUrl, getUniqueURL(absUrl)));
 		}
 		return linkList;
 	}

@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IndexerMap {
+	//AbsUrl to Page
 	public Map<String, Page> map;
 	
 	public IndexerMap() {

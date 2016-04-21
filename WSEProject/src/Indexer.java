@@ -29,11 +29,11 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class Indexer {
-	
+public class Indexer {	
 	public static final String CONTENTS = "contents";
 	public static final String ABSURL = "absURL";
 	public static final String TITLE = "title";
@@ -42,33 +42,40 @@ public class Indexer {
 	public static final String INDEXER_MAP_FILENAME = "indexer_map";
 	public final String INDEXER_MAP_PATH;
 	public IndexWriter writer;
+	@Getter
 	private IndexerMap indexerMap;
-	private ObjectMapper mapper;
 	
 	public Indexer(String indexPath) {
 		if (indexPath.charAt(indexPath.length()-1) != '/')
 			indexPath += '/';
 		INDEXER_MAP_PATH = indexPath + INDEXER_MAP_FILENAME;
-		File indexerMapFile = new File(INDEXER_MAP_PATH);
-		this.mapper = new ObjectMapper();
-		if (indexerMapFile.exists() && !indexerMapFile.isDirectory()) {
-			try {
-				log.info("recovering map");
-				this.indexerMap = this.mapper.readValue(indexerMapFile, IndexerMap.class);
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			} catch (JsonMappingException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			this.indexerMap = new IndexerMap();
-		}
+		this.indexerMap = getIndexerMapFromFile(INDEXER_MAP_PATH);
 		try {
 			this.writer = getBasicIndexWriter(indexPath);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public static IndexerMap getIndexerMapFromFile(String absPathToFile) {
+		File indexerMapFile = new File(absPathToFile);
+		ObjectMapper mapper = new ObjectMapper();
+		if (indexerMapFile.exists() && !indexerMapFile.isDirectory()) {
+			try {
+				log.info("recovering map");
+				return mapper.readValue(indexerMapFile, IndexerMap.class);
+			} catch (JsonParseException e) {
+				log.error("JsonParseException recovering IndexerMap - returning empty map. " + e.getCause());
+				return new IndexerMap();
+			} catch (JsonMappingException e) {
+				log.error("JsonMappingException recovering IndexerMap - returning empty map. " + e.getCause());
+				return new IndexerMap();
+			} catch (IOException e) {
+				log.error("IOException recovering IndexerMap - returning empty map. " + e.getCause());
+				return new IndexerMap();
+			}
+		} else {
+			return new IndexerMap();
 		}
 	}
 	
@@ -119,7 +126,7 @@ public class Indexer {
 
 	public void serializeIndexerMap() {
 		try {
-			this.mapper.writerWithDefaultPrettyPrinter().writeValue(new File(INDEXER_MAP_PATH), this.indexerMap);
+			new ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(new File(INDEXER_MAP_PATH), this.indexerMap);
 		} catch (JsonGenerationException e) {
 			e.printStackTrace();
 		} catch (JsonMappingException e) {

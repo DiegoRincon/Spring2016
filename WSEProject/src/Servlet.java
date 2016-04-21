@@ -71,10 +71,16 @@ public class Servlet extends HttpServlet {
 		sb.append("<p>Your query was: " + query + "</p>");
 		try {
 			String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
-			Retriever retriever = new Retriever();
+			Retriever retriever = new Retriever(indexerPathString);
+			String indexerMapPath = indexerPathString + "/" + Indexer.INDEXER_MAP_FILENAME;
+			IndexerMap indexerMap = Indexer.getIndexerMapFromFile(indexerMapPath);
 			String results = null;
 			try {
-				results = retriever.go(indexerPathString, query);
+				results = retriever.getResultsPageRank(indexerMap,
+						Crawler.DEFAULT_F,
+						Crawler.DEFAULT_NUM_OF_DOCS,
+						query.split(" "));
+//				results = retriever.getResultsAsHtml(indexerPathString, query);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -109,7 +115,6 @@ public class Servlet extends HttpServlet {
 		Crawler crawler = new Crawler(startingUrl, query, maxPages, indexerPathString, true);
 		double time = crawler.runCrawler();
 
-		sb.append("<p>The indexer can be found at: " + indexerPathString + "</p>");
 		sb.append("<p>Your crawler took: " + time + " sec. to finish</p>");
 		
 		return sb.toString();

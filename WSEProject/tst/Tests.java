@@ -12,9 +12,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,7 +145,7 @@ public class Tests {
 		System.out.println(Crawler.normalizeURL("http://www.EXAMPLE.com:80/index.html/../HelloGOodbye.html"));
 	}
 
-	@Test
+//	@Test
 	public void testUrlMatching() {
 		String url = "";
 		String[] urls = {"https://en.wikipedia.org/wiki/Vladimir_Nabokov", "http://www.abc.com/index?hello", "http://www.nyu.edu", "http://www.wikipedia.org/something#blabla", "http://www.nyu.edu/index.html"};
@@ -152,5 +156,49 @@ public class Tests {
 			System.out.println(string + " " + m.matches());
 		}
 	}
+	
+//	@Test
+	public void sortedSetTest() {
+		SortedSet<Integer> sortedSet = new TreeSet<Integer>();
+		sortedSet.add(10);
+		sortedSet.add(19);
+		sortedSet.add(12);
+		sortedSet.add(1);
+		sortedSet.add(100);
+		sortedSet.add(99);
+		System.out.println(sortedSet);
+		List<Integer> list = new ArrayList<Integer>(sortedSet);
+		System.out.println(list);
+	}
+	
+	@Test
+	public void testSnippet() {
+		String fullContent = "It was the best of times, it was the worst of times, it was the age of wisdom,"
+				+ "it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity,"
+				+ "it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair,"
+				+ "we had everything before us, we had nothing before us, we were all going direct to Heaven,"
+				+ "we were all going direct the other way – in short, the period was so far like the present period,"
+				+ "that some of its noisiest authorities insisted on its being received, for good or for evil, in the superlative degree of comparison only";
+		String content = "It was the best of times, it was the worst of times, it was the age of ";
+		Retriever retriever = new Retriever("indexPath");
+		System.out.println(retriever.getSnippet(fullContent, "best of times season of authorities"));
+//		System.out.println(Retriever.getSnippetFromStringWithSubstring(content, 0, "best of times"));
+//		System.out.println(Retriever.getSnippetFromStringWithSubstring(content, 0, "it was"));
+//		System.out.println(Retriever.getSnippetFromStringWithSubstring(content, 0, "best times worst times"));
+	}
+	
+//	@Test
+	public void testIntervals() {
+		Retriever retriever = new Retriever("indexPath");
+		List<Interval> intervals = new ArrayList<Interval>();
+		intervals.add(new Interval(0,3));
+		intervals.add(new Interval(2,4));
+		intervals.add(new Interval(7,10));
+		intervals.add(new Interval(6,13));
+		intervals.add(new Interval(18,20));
+		List<Interval> reduced = retriever.reduceIntervals(intervals,0);
+		System.out.println(reduced);
+	}
+	
 	
 }
