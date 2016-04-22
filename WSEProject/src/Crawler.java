@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
@@ -195,6 +196,7 @@ public class Crawler {
 //		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Searching time: " + time + " seconds");
+		
 		return time;
 	}
 	
@@ -215,7 +217,9 @@ public class Crawler {
 		time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Indexing (and serializing indexer map) time: " + time + " seconds");
 		closeWriter();
-		return (System.nanoTime() - firstStart)/1000000000.0;
+		double totalTime = (System.nanoTime() - firstStart)/1000000000.0;
+		log.info("Total process time: " + totalTime + " seconds");
+		return totalTime;
 	}
 	
 	private void indexCollection() {
@@ -293,11 +297,8 @@ public class Crawler {
 		boolean started = true;
 		boolean keepRunning = true;
 		while (keepRunning) {
-			int count = 0;
+//			int count = 0;
 			while (isQueueEmptySynchronized() && areThereThreadsOngoing()) {
-				count++;
-				if (count >= 100)
-					System.out.println("something wrong is happening");
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
@@ -318,6 +319,9 @@ public class Crawler {
 			
 			Future<Boolean> future = ecs.submit(new CrawlerCallable(bestURL));
 			listOfResults.add(future);
+//			count++;
+//			if (count>this.maxNumOfPages)
+//				break;
 			//Needed so that the crawler doesn't stop at the start
 			//Need to add a delay perhaps
 			if (started) {
@@ -331,6 +335,7 @@ public class Crawler {
 				}
 			}
 		}
+//		System.out.println("IM OUT!!!!!!!!!!!!!!!");
 		shutDownExecutor(ecs, executor, listOfResults.size());
 	}
 	
@@ -401,14 +406,34 @@ public class Crawler {
 				log.info("Processing out links for page: " + this.page.getLink().getAbsUrl());
 			Set<Link> outlinks = new HashSet<Link>(getLinks(this.page.getContent(), this.base));
 			page.setOutLinks(outlinks);
+//			for (Link link : outlinks) {
+//				double score = score(link, this.page.getContent(), Crawler.this.query);
+//				if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
+//					if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
+//						URLScore urlScore = new URLScore(link, score);
+//						handleNewURL(urlScore);
+//					} else {
+//						handleExistingURL(link.getAbsUrl(), score);
+//					}
+//				}
+//			}
+			URLScore[] urlScoreArray = new URLScore[outlinks.size()];
+			int index = 0;
 			for (Link link : outlinks) {
 				double score = score(link, this.page.getContent(), Crawler.this.query);
-				if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
-					if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
-						URLScore urlScore = new URLScore(link, score);
-						handleNewURL(urlScore);
-					} else {
-						handleExistingURL(link.getAbsUrl(), score);
+				urlScoreArray[index] = new URLScore(link, score);
+				index++;
+			}
+			synchronized(Crawler.this.mapHeapLock) {
+				for (URLScore urlScore : urlScoreArray) {
+					Link link = urlScore.getLink();
+					double score = urlScore.getScore();
+					if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
+						if (!Crawler.this.urlToURLScoreMap.containsKey(link.getAbsUrl())) {
+							handleNewURL(urlScore);
+						} else {
+							handleExistingURL(link.getAbsUrl(), score);
+						}
 					}
 				}
 			}
@@ -417,21 +442,21 @@ public class Crawler {
 		}
 
 		private void handleNewURL(URLScore urlScore) {
-			synchronized (Crawler.this.mapHeapLock) {
+//			synchronized (Crawler.this.mapHeapLock) {
 				Crawler.this.urlScoreQueue.add(urlScore);
 				Crawler.this.urlToURLScoreMap.put(urlScore.getLink().getAbsUrl(), urlScore);
-			}
+//			}
 		}
 		
 		private void handleExistingURL(String urlString, double score) {
-			synchronized (Crawler.this.mapHeapLock) {
+//			synchronized (Crawler.this.mapHeapLock) {
 				URLScore existingUrl = Crawler.this.urlToURLScoreMap.get(urlString);
 				existingUrl.setScore(existingUrl.getScore() + score);
 				if (!Crawler.this.urlScoreQueue.remove(existingUrl)) {
 					log.error(String.format("url %s should be in the queue", existingUrl.getLink().toString()));
 				}
 				Crawler.this.urlScoreQueue.add(existingUrl);
-			}
+//			}
 		}
 		
 	}
@@ -446,6 +471,8 @@ public class Crawler {
 		public Boolean call() throws Exception {
 			String uniqueUrl = this.bestURL.getLink().getUniqueUrl();
 			if (hasBeenVisitedSynchronized(uniqueUrl))
+				return false;
+			if (hasReachedMaxCapacitySynchronized())
 				return false;
 			addNumThreadsSynchronized();
 			synchronized(Crawler.this.seenLock) {
@@ -785,8 +812,10 @@ public class Crawler {
 
 		
 	public static void main(String[] args) {
+		long start = System.nanoTime();
 		Crawler crawler = new Crawler(args);
 		crawler.run();
+		System.out.println("Total time: " + (System.nanoTime()-start)/1000000000.0);
 	}
 
 	

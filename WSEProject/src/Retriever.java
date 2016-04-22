@@ -212,7 +212,7 @@ public class Retriever {
 		int it = 0;
 		while (true) {
 			it++;
-			int indexFirstWordOfQueryInContent = findInArray(contentArray, queryArray[0], 0);
+			int indexFirstWordOfQueryInContent = Math.max(0, findInArray(contentArray, queryArray[0], 0));
 			int begin = Math.max(0, indexFirstWordOfQueryInContent - minus);
 			String joinedBeginString = joinStringsWithSpace(contentArray, begin, indexFirstWordOfQueryInContent);
 			int end = Math.min(contentArray.length, indexFirstWordOfQueryInContent + minus);
