@@ -54,16 +54,16 @@ public class Tests {
 		String content = "<a href=\"file1.html\">WalrusAndCarpenter</a>";
 		String query = "walrus carpenter bread";
 		Page page = new Page("id1", link, content, "title");
-		assertEquals(100, crawler.score(link, page.getContent(), query), 0);
+		assertEquals(100, crawler.scoreComplex(link, page.getContent(), query), 0);
 		content = "<a href=\"walrus5.html\">Cute Poem</a>";
 		page.setContent(content);
 		link.setAnchor("Cute Poem");
 		link.setUrl("walrus5.html");
-		assertEquals(40, crawler.score(link, page.getContent(), query), 0);
+		assertEquals(40, crawler.scoreComplex(link, page.getContent(), query), 0);
 		String content2 = "walrus word walrus word3 word4 <a href=\"dummy.html\">Cute Poem</a> w1 w2 w3 w4 w5 bread dude bread";
 		page.setContent(content2);
 		link.setUrl("dummy.html");
-		assertEquals(5, crawler.score(link, page.getContent(), query), 0);
+		assertEquals(5, crawler.scoreComplex(link, page.getContent(), query), 0);
 		
 	}
 	private InetAddress[] dnslookup(String url) {
@@ -171,7 +171,7 @@ public class Tests {
 		System.out.println(list);
 	}
 	
-	@Test
+//	@Test
 	public void testSnippet() {
 		String fullContent = "It was the best of times, it was the worst of times, it was the age of wisdom,"
 				+ "it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity,"
@@ -200,5 +200,19 @@ public class Tests {
 		System.out.println(reduced);
 	}
 	
+	@Test
+	public void doctypeTest() {
+		String url = "https://en.wikipedia.org/wiki/bla-Bla";
+		System.out.println(isUrlValid(url));
+	}
 	
+	private boolean isUrlValid(String absUrl) {
+		Pattern pattern = Pattern.compile("https?://[-a-zA-Z0-9 \\._/]+");
+		Matcher matcher = pattern.matcher(absUrl);
+		if (matcher.matches())
+			return true;
+		return false;
+		
+//		return absUrl.endsWith("html");
+	}
 }

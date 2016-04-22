@@ -87,6 +87,7 @@ public class Crawler {
 	
 	private ExecutorService linksExecutor;
 	private List<Future<Boolean>> linkTasks;
+	private Pattern splitSpacePattern;
 	
 	private void commonInit() {
 		this.numThreads = 0;
@@ -107,6 +108,7 @@ public class Crawler {
 		this.linkTasks = new ArrayList<Future<Boolean>>();		
 		this.linksExecutor = Executors.newFixedThreadPool(DEFAULT_NUM_PROCESS_LINK_THREADS);
 		this.linksExecutorCompletionService = new ExecutorCompletionService<Boolean>(this.linksExecutor);
+		this.splitSpacePattern = Pattern.compile(" ");
 	}
 	
 	public Crawler(String[] args) {
@@ -408,9 +410,13 @@ public class Crawler {
 			page.setOutLinks(outlinks);
 			URLScore[] urlScoreArray = new URLScore[outlinks.size()];
 			int index = 0;
+			Document doc = Jsoup.parse(this.page.getContent());
+			String docTextLowerCaseWithoutSpecialChars = doc.text().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
+			String[] wordsInDocText = docTextLowerCaseWithoutSpecialChars.split(" ");
 			for (Link link : outlinks) {
-//				double score = score(link, this.page.getContent(), Crawler.this.query);
-				double score = 1;
+				//TODO: This is slowing the program down waaaaay too much
+				double score = score(link, wordsInDocText, Crawler.this.query);
+//				double score = 1;
 				urlScoreArray[index] = new URLScore(link, score);
 				index++;
 			}
@@ -460,10 +466,10 @@ public class Crawler {
 		@Override
 		public Boolean call() throws Exception {
 			String uniqueUrl = this.bestURL.getLink().getUniqueUrl();
-			if (hasBeenVisitedSynchronized(uniqueUrl))
+			if (hasBeenVisitedSynchronized(uniqueUrl) || hasReachedMaxCapacitySynchronized()) {
+				subNumThreadsSynchronized();
 				return false;
-			if (hasReachedMaxCapacitySynchronized())
-				return false;
+			}
 			addNumThreadsSynchronized();
 			synchronized(Crawler.this.seenLock) {
 				Crawler.this.seen.add(this.bestURL.getLink().getUniqueUrl());					
@@ -478,8 +484,10 @@ public class Crawler {
 				subNumThreadsSynchronized();
 				return false;
 			}
-			if (page == null)
+			if (page == null) {
+				subNumThreadsSynchronized();
 				return false;
+			}
 			if (!page.getLink().getUniqueUrl().equals(uniqueUrl)) {
 				synchronized(Crawler.this.seenLock) {
 					Crawler.this.seen.add(page.getLink().getUniqueUrl());					
@@ -665,7 +673,7 @@ public class Crawler {
 	}
 	
 	private boolean isUrlValid(String absUrl) {
-		Pattern pattern = Pattern.compile("https?://[^#\\?]+");
+		Pattern pattern = Pattern.compile("https?://[-a-zA-Z0-9 \\._/]+");
 		Matcher matcher = pattern.matcher(absUrl);
 		if (matcher.matches())
 			return true;
@@ -777,8 +785,51 @@ public class Crawler {
 		}
 		return -1;
 	}
+
+	public double score(Link link, String[] wordsInDocText, String query) {
+		if (query == null)
+			return 0;
+		String[] queryArray = query.split(" ");
+		int k = 0;
+		for (String word : queryArray) {
+			if (link.getAnchor().toLowerCase(Locale.US).contains(word.toLowerCase(Locale.US)))
+				k++;
+		}
+		if (k > 0)
+			return k*50;
+		for (String queryToken : queryArray) {
+			if (link.getUrl().toLowerCase(Locale.US).contains(queryToken.toLowerCase(Locale.US)))
+				k++;
+		}
+		if (k > 0)
+			return 40;
+		Set<String> setOfGoodQueryWords = new HashSet<String>();
+		String anchorLowerCaseWithoutSpecialChars = link.getAnchor().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
+		int indexOfStartAnchor = findStringsInArray(wordsInDocText, anchorLowerCaseWithoutSpecialChars);
+		int indexOfEndAnchor = indexOfStartAnchor + link.getAnchor().split(" ").length-1;
+		for (String word : queryArray) {
+			for (int i=1; i<=distanceFromQueryWords; i++) {
+				int less = Math.max(0,indexOfStartAnchor-i);
+				int more = Math.min(wordsInDocText.length-1, indexOfEndAnchor+i);
+				String lessLC = wordsInDocText[less].toLowerCase(Locale.US);
+				String moreLC = wordsInDocText[more].toLowerCase(Locale.US);
+				String wordLowerCase = word.toLowerCase(Locale.US);
+				if (wordLowerCase.equals(lessLC) ||wordLowerCase.equals(moreLC))
+					setOfGoodQueryWords.add(word);
+			}
+		}
+		Set<String> setOfQueryWords = new HashSet<String>();
+		for (String word : queryArray) {
+			if (findWordInArrayNotCaseSensitive(wordsInDocText, word) != -1) {
+				setOfQueryWords.add(word);
+			}
+		}
+//		return setOfQueryWords.size();
+		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
 		
-	public double score(Link link, String pageContent, String query) {
+	}
+	
+	public double scoreComplex(Link link, String pageContent, String query) {
 		if (query == null)
 			return 0;
 		String[] words = query.split(" ");
@@ -819,7 +870,6 @@ public class Crawler {
 			}
 		}
 		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
-				
 	}
 
 		
