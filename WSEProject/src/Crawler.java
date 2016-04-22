@@ -404,23 +404,13 @@ public class Crawler {
 			addNumThreadsSynchronized();
 			if (Crawler.this.trace)
 				log.info("Processing out links for page: " + this.page.getLink().getAbsUrl());
-			Set<Link> outlinks = new HashSet<Link>(getLinks(this.page.getContent(), this.base));
+			Set<Link> outlinks = getLinksAsSet(this.page.getContent(), this.base);
 			page.setOutLinks(outlinks);
-//			for (Link link : outlinks) {
-//				double score = score(link, this.page.getContent(), Crawler.this.query);
-//				if (!hasBeenVisitedSynchronized(link.getUniqueUrl())) {
-//					if (!isInURLScoreMapSynchronized(link.getAbsUrl())) {
-//						URLScore urlScore = new URLScore(link, score);
-//						handleNewURL(urlScore);
-//					} else {
-//						handleExistingURL(link.getAbsUrl(), score);
-//					}
-//				}
-//			}
 			URLScore[] urlScoreArray = new URLScore[outlinks.size()];
 			int index = 0;
 			for (Link link : outlinks) {
-				double score = score(link, this.page.getContent(), Crawler.this.query);
+//				double score = score(link, this.page.getContent(), Crawler.this.query);
+				double score = 1;
 				urlScoreArray[index] = new URLScore(link, score);
 				index++;
 			}
@@ -650,6 +640,28 @@ public class Crawler {
 			linkList.add(new Link(url, anchor, absUrl, getUniqueURL(absUrl)));
 		}
 		return linkList;
+	}
+	
+	public Set<Link> getLinksAsSet(String content, String base) {
+		Document document = Jsoup.parse(content, base);
+		Elements links = document.select("a[href]");
+		Set<Link> linkSet = new HashSet<Link>();
+		int count = 0;
+		for (Element link : links) {
+			count++;
+			if (count > MAX_NUM_OF_LINKS_TO_PROCESS)
+				break;
+			String url = link.attr("href");
+			String absUrl = link.absUrl("href");
+			if (absUrl.isEmpty())
+				continue;
+			if (!isUrlValid(absUrl)) {
+				continue;
+			}
+			String anchor = link.text();
+			linkSet.add(new Link(url, anchor, absUrl, getUniqueURL(absUrl)));
+		}
+		return linkSet;
 	}
 	
 	private boolean isUrlValid(String absUrl) {
