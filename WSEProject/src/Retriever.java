@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -40,6 +41,10 @@ public class Retriever {
 	public static final int DEFAULT_SNIPPET_SIZE = 40;
 	private static final int DEFAULT_WORDS_BEFORE_HIT = 5;
 	private static final String STOPWORDS_FILE_PATH = "stopwordslist.txt";
+	private static final String acceptedCharactersRegex = "[^-a-zA-Z0-9_ ]";
+	private static final int DEFAULT_DIVISOR_TO_MARGIN_WORDS = 2;
+	private static final int DEFAULT_ODD_NUMBER_OF_MARGIN_WORDS = 7;
+	private static final int DEFAULT_OVERLAP_LIMIT = 5;
 	private String indexerPath;
 	
 	private String getQuery(String... queryArgs) {
@@ -52,9 +57,8 @@ public class Retriever {
 	}
 	
 	public String getResultsAsHtml(int maxNumDocs, String... queryArgs) throws IOException, ParseException {
-		//TODO: Add a text snippet to the results from the retriever
 		Set<Document> docs = getResultsFromQuery(maxNumDocs, queryArgs);
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (docs.size() == 0) {
 			result.append("<h3>No results were found</h3>");
 			return result.toString();
@@ -97,6 +101,7 @@ public class Retriever {
 	
 	public Set<Document> getResultsFromQuery(int maxNumDocs, String... queryArgs)  throws IOException, ParseException {
 		String queryString = getQuery(queryArgs);
+//		queryString = queryString.replaceAll(acceptedCharactersRegex, "");
 		if (queryString.length() == 0) {
 			return null;
 		}
@@ -156,7 +161,7 @@ public class Retriever {
 	
 	private String getSortedSetOfPagesAsHtml(SortedSet<Page> sortedSet, String... queryArgs) {
 		int resNum = 0;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if (sortedSet.isEmpty()) {
 			sb.append("<h3>No results were found</h3>");
 			return sb.toString();
@@ -168,7 +173,7 @@ public class Retriever {
 			String absURL = page.getLink().getAbsUrl();
 			sb.append(String.format("<div><b>%d: <a href=\"%s\">%s</a></b><br> <a href=\"%s\">%s</a></div>", resNum, absURL, title, absURL, absURL));
 			org.jsoup.nodes.Document doc = Jsoup.parse(page.getContent());
-			String snippet = getSnippet(doc.text(), getQuery(queryArgs));
+			String snippet = getSnippet(doc.body().text(), getQuery(queryArgs));
 			sb.append(String.format("<div>%s</div>", snippet));
 		}
 		return sb.toString();
@@ -184,12 +189,13 @@ public class Retriever {
 	}
 	
 	public String addHtmlTagsToSnippet(String snippet, String queryString) {
-		StringBuffer sb = new StringBuffer(snippet);
+		StringBuilder sb = new StringBuilder(snippet);
 		//TODO: Assumes query will be well formed. Enforce this assumption!! (e.g. no punctuation)
-		int indexOfQuery = sb.indexOf(queryString);
+		int indexOfQuery = sb.toString().toLowerCase(Locale.US).indexOf(queryString.toLowerCase(Locale.US));
 		if (indexOfQuery != -1) {
 			while (indexOfQuery != -1) {
-				String replacement = "<b>" + queryString + "</b>";
+				String queryInText = sb.substring(indexOfQuery, indexOfQuery+queryString.length());
+				String replacement = "<b>" + queryInText + "</b>";
 				sb.replace(indexOfQuery, indexOfQuery+queryString.length(), replacement);
 				indexOfQuery = sb.indexOf(queryString, sb.indexOf(replacement, indexOfQuery) + replacement.length());
 			}
@@ -197,17 +203,18 @@ public class Retriever {
 		}
 		Set<String> queries = new HashSet<String>(Arrays.asList(queryString.split(" ")));
 		for (String q : queries) {
-			int index = sb.indexOf(q);
+			int index = sb.toString().toLowerCase(Locale.US).indexOf(q.toLowerCase(Locale.US));
 			while (index != -1) {
-				String replacement = "<b>" + q + "</b>";
+				String queryInText = sb.substring(index, index+q.length());
+				String replacement = "<b>" + queryInText + "</b>";
 				sb.replace(index, index+q.length(), replacement);
-				index = sb.indexOf(q, sb.indexOf(replacement, index) + replacement.length());
+				index = sb.toString().toLowerCase(Locale.US).indexOf(q.toLowerCase(Locale.US), sb.indexOf(replacement, index) + replacement.length());
 			}
 		}
 		return sb.toString();
 	}
 	
-	public String queryIsFoundEntirely(StringBuffer sb, String[] contentArray, String[] queryArray) {
+	private String queryIsFoundEntirely(String content, String[] contentArray, String[] queryArray) {
 		int minus = DEFAULT_WORDS_BEFORE_HIT;
 		int it = 0;
 		while (true) {
@@ -217,7 +224,7 @@ public class Retriever {
 			String joinedBeginString = joinStringsWithSpace(contentArray, begin, indexFirstWordOfQueryInContent);
 			int end = Math.min(contentArray.length, indexFirstWordOfQueryInContent + minus);
 			String joinedEndString = joinStringsWithSpace(contentArray, indexFirstWordOfQueryInContent, end);
-			String tempResult = sb.subSequence(sb.indexOf(joinedBeginString), sb.indexOf(joinedEndString)+joinedEndString.length()).toString();
+			String tempResult = content.subSequence(content.indexOf(joinedBeginString), content.indexOf(joinedEndString)+joinedEndString.length()).toString();
 			String[] lengthOfTempResult = tempResult.split(" ");
 			if (lengthOfTempResult.length > DEFAULT_SNIPPET_SIZE || it > 15) {
 				return tempResult;
@@ -227,7 +234,7 @@ public class Retriever {
 		}
 	}
 	
-	public String queryNotFoundEntirely(StringBuffer sb, String[] contentArray, String[] queryArray) {
+	private String queryNotFoundEntirely(String[] contentArray, String[] queryArray) {
 		String[] queryNoStopWords = removeStopWords(queryArray);
 		Set<String> queries = new HashSet<String>(Arrays.asList(queryNoStopWords));
 		List<Integer> indices = new ArrayList<Integer>(); 
@@ -257,33 +264,34 @@ public class Retriever {
 				}
 			}
 		} else {
-			int oddThreshold = 7;
+			int oddThreshold = DEFAULT_ODD_NUMBER_OF_MARGIN_WORDS;
 			List<Interval> intervals = new ArrayList<Interval>();
-//			while (buffer.toString().split(" ").length < DEFAULT_SNIPPET_SIZE) {
+			String snippet = "";
+			while (snippet.split(" ").length < DEFAULT_SNIPPET_SIZE) {
 				intervals.clear();
 				for (int i=0; i<indices.size()-1; i++) {
 					int index1 = indices.get(i);
 					int index2 = indices.get(i+1);
 					if (index2 - index1 > oddThreshold) {
-						intervals.add(new Interval(Math.max(0, index1-oddThreshold/4),
-								Math.min(contentArray.length,index1+oddThreshold/4)));
-						intervals.add(new Interval(Math.max(0, index2-oddThreshold/4),
-								Math.min(contentArray.length,index2+oddThreshold/4)));
+						intervals.add(new Interval(Math.max(0, index1-oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS),
+								Math.min(contentArray.length,index1+oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS)));
+						intervals.add(new Interval(Math.max(0, index2-oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS),
+								Math.min(contentArray.length,index2+oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS)));
 					} else {
-						intervals.add(new Interval(Math.max(0, index1-oddThreshold/4),
-								Math.min(contentArray.length,index2+oddThreshold/4)));
+						intervals.add(new Interval(Math.max(0, index1-oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS),
+								Math.min(contentArray.length,index2+oddThreshold/DEFAULT_DIVISOR_TO_MARGIN_WORDS)));
 					}
 				}
 				oddThreshold += 2;
-//			}
-			intervals = reduceIntervals(intervals, 3);
-			String snippet = getStringFromIntervals(intervals, contentArray);
+				intervals = reduceIntervals(intervals, DEFAULT_OVERLAP_LIMIT);
+				snippet = getStringFromIntervals(intervals, contentArray);
+			}
 			return snippet;
 		}
 	}
 	
-	public String getStringFromIntervals(List<Interval> intervals, String[] contentArray) {
-		StringBuffer sb = new StringBuffer();
+	private String getStringFromIntervals(List<Interval> intervals, String[] contentArray) {
+		StringBuilder sb = new StringBuilder();
 		for (int i=0; i<intervals.size()-1 ; i++) {
 			Interval interval = intervals.get(i);
 			sb.append(joinStringsWithSpace(contentArray, interval.start, interval.end));
@@ -334,25 +342,28 @@ public class Retriever {
 	}
 	
 	public String getSnippet(String content, String queryString) {
+//		content = content.toLowerCase(Locale.US);
+//		queryString = queryString.toLowerCase(Locale.US);
 		String reducedSnippet = reduceToSnippetSize(content, queryString);
-		return addHtmlTagsToSnippet(reducedSnippet, queryString);
+		return addHtmlTagsToSnippet(reducedSnippet, queryString.replaceAll(acceptedCharactersRegex, ""));
 	}
 	
-	public String reduceToSnippetSize(String content, String queryString) {
-		StringBuffer sb = new StringBuffer(content);
-		int indexQueryString = sb.indexOf(queryString);
-		String[] contentArray = sb.toString().split(" ");
+	private String reduceToSnippetSize(String content, String queryString) {
+//		StringBuilder sb = new StringBuilder(content);
+		//Check if the queryString is in content. Ignore case.
+		int indexQueryString = content.toLowerCase(Locale.US).indexOf(queryString.toLowerCase(Locale.US));
+		String[] contentArray = content.split(" ");
 		String[] queryArray = queryString.split(" ");
 		if (indexQueryString != -1) {
-			return queryIsFoundEntirely(sb, contentArray, queryArray);
+			return queryIsFoundEntirely(content, contentArray, queryArray);
 		} else {
-			return queryNotFoundEntirely(sb, contentArray, queryArray);
+			return queryNotFoundEntirely(contentArray, queryArray);
 		}
 	}
 	
 	private int findInArray(String[] array, String word, int start) {
 		for (int i=start; i<array.length; i++) {
-			if (array[i].replaceAll("[^a-zA-Z0-9 ]", "").equals(word)) {
+			if (array[i].toLowerCase(Locale.US).replaceAll(acceptedCharactersRegex, "").equals(word.toLowerCase())) {
 				return i;
 			}
 		}
@@ -370,14 +381,14 @@ public class Retriever {
 		return stopWords;
 	}
 	
-	public String[] removeStopWords(String[] query) {
+	private String[] removeStopWords(String[] query) {
 		try {
 			Set<String> stopWords = getStopWords();
 			List<String> list = new ArrayList<String>();
 			for (String q : query) {
 				if (!stopWords.contains(q))
 //					list.add(q);
-					list.add(q.replaceAll("[^a-zA-Z0-9]", ""));
+					list.add(q.replaceAll(acceptedCharactersRegex, ""));
 			}
 			return list.toArray(new String[0]);
 		} catch (IOException e) {
@@ -387,7 +398,7 @@ public class Retriever {
 	}
 	
 	private String joinStringsWithSpace(String[] array, int begin, int end) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i=begin; i<=end; i++) {
 			sb.append(array[i] + " ");
 		}
@@ -406,9 +417,6 @@ public class Retriever {
 	}
 	
 	public static void main(String[] args) {
-		
-
-		
 		try {
 			if (args.length < 1) {
 				System.err.println("Usage: <query>");

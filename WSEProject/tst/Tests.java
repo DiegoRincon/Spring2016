@@ -187,6 +187,13 @@ public class Tests {
 //		System.out.println(Retriever.getSnippetFromStringWithSubstring(content, 0, "best times worst times"));
 	}
 	
+	@Test
+	public void testSnippet2() throws IOException {
+		Document doc = Jsoup.connect("http://www.nytimes.com/").get();
+		Retriever retriever = new Retriever("indexPath");
+		System.out.println(retriever.getSnippet(doc.body().text(), "tom brady"));
+	}
+	
 //	@Test
 	public void testIntervals() {
 		Retriever retriever = new Retriever("indexPath");
@@ -200,10 +207,17 @@ public class Tests {
 		System.out.println(reduced);
 	}
 	
-	@Test
+//	@Test
 	public void doctypeTest() {
 		String url = "https://en.wikipedia.org/wiki/bla-Bla";
 		System.out.println(isUrlValid(url));
+	}
+	
+//	@Test
+	public void testingRegex() {
+		String queryString = "science, fiction!!";
+		String reducedQuery = queryString.replaceAll("[^-a-zA-Z0-9_ ]", "");
+		System.out.println(reducedQuery);
 	}
 	
 	private boolean isUrlValid(String absUrl) {

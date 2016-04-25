@@ -48,10 +48,13 @@ public class Servlet extends HttpServlet {
 		out.println("<!DOCTYPE html>");
 		out.println("<html><head>");
 		out.println("<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
+		out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"css/general.css\">");
 		out.println("<title>Crawl results</title></head>");
 		out.println("<body>");
 		out.println(SEARCH_FORM);
+		out.println("<div id=\"content\">");
 		out.println(result);
+		out.println("</div>");
 		out.println("</body>");
 		out.println("</html>");
 		out.close();
@@ -65,7 +68,7 @@ public class Servlet extends HttpServlet {
 
 		// Write the response message, in an HTML page
 		log.info("Searching for query: " + query);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		
 		// Echo client's request information
 		sb.append("<p>Your query was: " + query + "</p>");
@@ -82,7 +85,7 @@ public class Servlet extends HttpServlet {
 						query.split(" "));
 //				results = retriever.getResultsAsHtml(indexerPathString, query);
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("There was a problem searching for " + query + " returned error message. Cause " + e.getCause());
 			}
 			if (results != null) {
 				sb.append(results);
@@ -97,7 +100,7 @@ public class Servlet extends HttpServlet {
 
 	public String processCrawl(String query, String startingUrl, String maxNumPages) throws IOException {
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		// Echo client's request information
 		int maxPages = 50;
 		if (maxNumPages != null) {

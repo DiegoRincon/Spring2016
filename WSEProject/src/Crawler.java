@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
@@ -87,7 +86,6 @@ public class Crawler {
 	
 	private ExecutorService linksExecutor;
 	private List<Future<Boolean>> linkTasks;
-	private Pattern splitSpacePattern;
 	
 	private void commonInit() {
 		this.numThreads = 0;
@@ -108,7 +106,6 @@ public class Crawler {
 		this.linkTasks = new ArrayList<Future<Boolean>>();		
 		this.linksExecutor = Executors.newFixedThreadPool(DEFAULT_NUM_PROCESS_LINK_THREADS);
 		this.linksExecutorCompletionService = new ExecutorCompletionService<Boolean>(this.linksExecutor);
-		this.splitSpacePattern = Pattern.compile(" ");
 	}
 	
 	public Crawler(String[] args) {
@@ -253,12 +250,6 @@ public class Crawler {
 		}
 	}
 	
-	private boolean isInURLScoreMapSynchronized(String url) {
-		synchronized (this.mapHeapLock) {
-			return this.urlToURLScoreMap.containsKey(url);
-		}
-	}
-	
 	private boolean isQueueEmptySynchronized() {
 		synchronized (this.mapHeapLock) {
 			return this.urlScoreQueue.isEmpty();
@@ -384,7 +375,6 @@ public class Crawler {
 		String title = (titleElement == null) ? link.getUrl() : titleElement.text();
 		
 		Page page = new Page(getNewIdSynchronized(), link, content, title);
-		//TODO: get Links asyc.
 		synchronized (this.linksExecutorListLock) {
 			this.linkTasks.add(this.linksExecutorCompletionService.submit(new HandleLinksCallable(page, getBaseFromURL(link.getAbsUrl()))));
 		}
@@ -414,9 +404,7 @@ public class Crawler {
 			String docTextLowerCaseWithoutSpecialChars = doc.text().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
 			String[] wordsInDocText = docTextLowerCaseWithoutSpecialChars.split(" ");
 			for (Link link : outlinks) {
-				//TODO: This is slowing the program down waaaaay too much
 				double score = score(link, wordsInDocText, Crawler.this.query);
-//				double score = 1;
 				urlScoreArray[index] = new URLScore(link, score);
 				index++;
 			}
