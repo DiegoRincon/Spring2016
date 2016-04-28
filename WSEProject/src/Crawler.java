@@ -128,6 +128,8 @@ public class Crawler {
 	public Crawler(String url, String query, int maxNumPages, String indexerPath, boolean trace) {
 		this.trace = trace;
 		this.indexPath = indexerPath;
+		if (this.indexPath.charAt(this.indexPath.length()-1) != '/')
+			this.indexPath += '/';
 		this.maxNumOfPages = maxNumPages;
 		this.url = url;
 		this.query = query;
@@ -217,7 +219,7 @@ public class Crawler {
 		
 		return time;
 	}
-	
+		
 	public double runCrawler() {
 		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
 				this.url, this.query, this.indexPath, this.maxNumOfPages);
