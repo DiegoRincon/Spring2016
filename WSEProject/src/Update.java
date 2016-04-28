@@ -59,6 +59,8 @@ public class Update {
 			CommandLine cmd = parser.parse(this.options, args);
 			if (cmd.hasOption("u")) {
 				this.url = cmd.getOptionValue("u");
+			} else {
+				this.url = Crawler.DEFAULT_STARTING_WEBPAGE;
 			}
 			if (cmd.hasOption("q")) {
 				this.query = cmd.getOptionValue("q");

@@ -65,6 +65,7 @@ public class Crawler {
 	public static final int DEFAULT_NUM_OF_DOCS = 10;
 	public static final String LAST_PAGE_FILENAME = "lastGoodPage";
 	public static final String DEFAULT_QUERY = "computer science";
+	public static final String DEFAULT_STARTING_WEBPAGE = "http://www.cs.nyu.edu/";
 	public Options options;
 	public String url;
 	public String query;
