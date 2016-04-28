@@ -1,6 +1,9 @@
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -60,6 +63,8 @@ public class Crawler {
 	public static final int MAX_NUM_OF_LINKS_TO_PROCESS = 200;
 	public static final double DEFAULT_F = 0.7;
 	public static final int DEFAULT_NUM_OF_DOCS = 10;
+	public static final String LAST_PAGE_FILENAME = "lastGoodPage";
+	public static final String DEFAULT_QUERY = "computer science";
 	public Options options;
 	public String url;
 	public String query;
@@ -83,6 +88,7 @@ public class Crawler {
 	private Random random;
 	private CompletionService<Boolean> linksExecutorCompletionService;
 	private Object linksExecutorListLock;
+	private String lastPage;
 	
 	private ExecutorService linksExecutor;
 	private List<Future<Boolean>> linkTasks;
@@ -173,6 +179,18 @@ public class Crawler {
 		runSearch();
 	}
 	
+	public void saveLastGoodPage() {
+		try {
+			PrintWriter writer = new PrintWriter(this.indexPath + LAST_PAGE_FILENAME, "UTF-8");
+			writer.println(this.lastPage);
+			writer.close();
+		} catch (FileNotFoundException e) {
+			log.error("Could not save last good page " + e.getCause());
+		} catch (UnsupportedEncodingException e) {
+			log.error("Could not save last good page " + e.getCause());
+		}
+	}
+	
 	public double runSearch() {
 		log.info("Starting Search for query: " + this.query);
 		long start = System.nanoTime();
@@ -217,6 +235,7 @@ public class Crawler {
 		log.info("Total Indexing (and serializing indexer map) time: " + time + " seconds");
 		closeWriter();
 		double totalTime = (System.nanoTime() - firstStart)/1000000000.0;
+		saveLastGoodPage();
 		log.info("Total process time: " + totalTime + " seconds");
 		return totalTime;
 	}
@@ -421,6 +440,9 @@ public class Crawler {
 					}
 				}
 			}
+
+			if (!this.page.getOutLinks().isEmpty())
+				Crawler.this.lastPage = this.page.getLink().getAbsUrl();
 			subNumThreadsSynchronized();
 			return true;
 		}
