@@ -183,6 +183,8 @@ public class Crawler {
 	}
 	
 	public void saveLastGoodPage() {
+		if (this.lastPage == null)
+			return;
 		try {
 			PrintWriter writer = new PrintWriter(this.indexPath + LAST_PAGE_FILENAME, "UTF-8");
 			writer.println(this.lastPage);
