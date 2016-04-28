@@ -5,8 +5,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +47,7 @@ public class Retriever {
 	private static final int DEFAULT_DIVISOR_TO_MARGIN_WORDS = 2;
 	private static final int DEFAULT_ODD_NUMBER_OF_MARGIN_WORDS = 7;
 	private static final int DEFAULT_OVERLAP_LIMIT = 5;
+	private static final int DEFAULT_SNIPPET_MARGIN = 10;
 	private String indexerPath;
 	
 	private String getQuery(String... queryArgs) {
@@ -57,7 +60,7 @@ public class Retriever {
 	}
 	
 	public String getResultsAsHtml(int maxNumDocs, String... queryArgs) throws IOException, ParseException {
-		Set<Document> docs = getResultsFromQuery(maxNumDocs, queryArgs);
+		Set<DocScore> docs = getResultsFromQuery(maxNumDocs, queryArgs);
 		StringBuilder result = new StringBuilder();
 		if (docs.size() == 0) {
 			result.append("<h3>No results were found</h3>");
@@ -65,7 +68,8 @@ public class Retriever {
 		}
 		int resNum = 0;
 		result.append("<h3>Results:</h3>");
-		for (Document doc : docs) {
+		for (DocScore docScore : docs) {
+			Document doc = docScore.getDocument();
 			resNum++;
 			String title = doc.get(Indexer.TITLE);
 			String absURL =  doc.get(Indexer.ABSURL);
@@ -82,24 +86,25 @@ public class Retriever {
 		return getResultsAsHtml(DEFAULT_NUM_OF_RESULTS, queryArgs);
 	}
 	
-	public Set<String> getResultsAsAbsUrls(String... queryArgs) throws IOException, ParseException {
-		return getResultsAsAbsUrls(DEFAULT_NUM_OF_RESULTS, queryArgs);
+	public Set<DocScore> getResultAsDocScore(String... queryArgs) throws IOException, ParseException {
+		return getResultAsDocScore(DEFAULT_NUM_OF_RESULTS, queryArgs);
 	}
 	
-	public Set<String> getResultsAsAbsUrls(int maxNumDocs, String... queryArgs) throws IOException, ParseException {
-		Set<Document> docs = getResultsFromQuery(maxNumDocs, queryArgs);
-		Set<String> docsUrls = new HashSet<String>(docs.size());
-		for (Document doc : docs) {
-			docsUrls.add(doc.get(Indexer.ABSURL));
-		}
-		return docsUrls;
+	public Set<DocScore> getResultAsDocScore(int maxNumDocs, String... queryArgs) throws IOException, ParseException {
+		Set<DocScore> docs = getResultsFromQuery(maxNumDocs, queryArgs);
+//		Set<String> docsUrls = new HashSet<String>(docs.size());
+//		for (DocScore doc : docs) {
+//			docsUrls.add(doc.get(Indexer.ABSURL));
+//		}
+		return docs;
+//		return docsUrls;
 	}
 	
-	public Set<Document> getResultsFromQuery(String... queryArgs) throws IOException, ParseException {
+	public Set<DocScore> getResultsFromQuery(String... queryArgs) throws IOException, ParseException {
 		return getResultsFromQuery(DEFAULT_NUM_OF_RESULTS, queryArgs);
 	}
 	
-	public Set<Document> getResultsFromQuery(int maxNumDocs, String... queryArgs)  throws IOException, ParseException {
+	public Set<DocScore> getResultsFromQuery(int maxNumDocs, String... queryArgs)  throws IOException, ParseException {
 		String queryString = getQuery(queryArgs);
 //		queryString = queryString.replaceAll(acceptedCharactersRegex, "");
 		if (queryString.length() == 0) {
@@ -114,23 +119,63 @@ public class Retriever {
 		QueryParser contentsParser = new QueryParser(Indexer.CONTENTS, analyzer);
 		Query contentsQuery = contentsParser.parse(queryString);
 		TopDocs docs = indexSearcher.search(contentsQuery, maxNumDocs);
-		Set<Document> setOfDocs = new HashSet<Document>();
+		Set<DocScore> setOfDocs = new HashSet<DocScore>();
 		for (ScoreDoc doc : docs.scoreDocs) {
 			int docId = doc.doc;
 			Document document = indexSearcher.doc(docId);
-			setOfDocs.add(document);
+			DocScore docScore = new DocScore(document, doc.score);
+			setOfDocs.add(docScore);
 		}
 		reader.close();
 		return setOfDocs;
 	}
 	
 	public String getResultsPageRank(Map<String, Page> map, Set<Page> pageCollection, double f, int numOfDocs, String... queryArgs) throws IOException, ParseException {
-		Set<String> absUrls = getResultsAsAbsUrls(queryArgs);
+		//TODO: Think about whether this is the best way to go about this...
+		//Perhaps it's better to combine the score with the pageRank!
+		Set<DocScore> docScores = getResultAsDocScore(queryArgs);
 		WeightedPageRank pageRank = new WeightedPageRank(pageCollection, f);
-		Set<Page> selectedPages = getPagesFromAbsUrls(absUrls, pageRank.getAbsUrlToPageMap());
+		Set<Page> selectedPages = getPagesFromAbsUrls(docScores, pageRank.getAbsUrlToPageMap());
 		SortedSet<Page> sortedSet = pageRank.runPageRank();
 		reduceSetOfPages(sortedSet, selectedPages);
-		return getSortedSetOfPagesAsHtml(getFirstKElementsFromSet(sortedSet, numOfDocs), queryArgs);
+		SortedSet<Page> reducedSelectedPages = getFirstKElementsFromSet(sortedSet, numOfDocs);
+		List<Page> finalOrderedListOfPages = mergePageRankWithLuceneScores(reducedSelectedPages, docScores);
+		String html = getSortedSetOfPagesAsHtml(finalOrderedListOfPages, queryArgs);
+		return html;
+	}
+	
+	private List<Page> mergePageRankWithLuceneScores(SortedSet<Page> reducedSelectedPages, Set<DocScore> docScores) {
+		List<Page> finalOrderedList = new ArrayList<Page>();
+		Map<String, DocScore> mapOfDocScores = new HashMap<String, DocScore>();
+		for (DocScore docScore : docScores) {
+			mapOfDocScores.put(docScore.getAbsUrl(), docScore);
+		}
+		
+		for (Page page : reducedSelectedPages) {
+			DocScore docScore = mapOfDocScores.get(page.getLink().getAbsUrl());
+			if (docScore == null) {
+				throw new RuntimeException("All the pages in the reducedSelectedPages must be included in the DocScores");
+			}
+			double pageRank = page.getScore();
+			float luceneScore = docScore.getScore();
+			double combine = pageRank + luceneScore;
+			page.setScore(combine);
+			finalOrderedList.add(page);
+		}	
+		
+		Collections.sort(finalOrderedList, new Comparator<Page>(){
+			@Override
+			public int compare(Page o1, Page o2) {
+				//Reverse comparator - we want the page with highest score first
+				if (o1.getScore() > o2.getScore())
+					return -1;
+				if (o1.getScore() < o2.getScore())
+					return 1;
+				return 0;
+			}
+		});
+		
+		return finalOrderedList;
 	}
 	
 	public String getResultsPageRank(IndexerMap indexerMap, double f, int numOfDocs, String... queryArgs) throws IOException, ParseException {
@@ -159,15 +204,15 @@ public class Retriever {
 		return sortedSet;
 	}
 	
-	private String getSortedSetOfPagesAsHtml(SortedSet<Page> sortedSet, String... queryArgs) {
+	private String getSortedSetOfPagesAsHtml(Collection<Page> pages, String... queryArgs) {
 		int resNum = 0;
 		StringBuilder sb = new StringBuilder();
-		if (sortedSet.isEmpty()) {
+		if (pages.isEmpty()) {
 			sb.append("<h3>No results were found</h3>");
 			return sb.toString();
 		}
 		sb.append("<h3>Results:</h3>");
-		for (Page page : sortedSet) {
+		for (Page page : pages) {
 			resNum++;
 			String title = page.getTitle();
 			String absURL = page.getLink().getAbsUrl();
@@ -190,7 +235,6 @@ public class Retriever {
 	
 	public String addHtmlTagsToSnippet(String snippet, String queryString) {
 		StringBuilder sb = new StringBuilder(snippet);
-		//TODO: Assumes query will be well formed. Enforce this assumption!! (e.g. no punctuation)
 		int indexOfQuery = sb.toString().toLowerCase(Locale.US).indexOf(queryString.toLowerCase(Locale.US));
 		if (indexOfQuery != -1) {
 			while (indexOfQuery != -1) {
@@ -345,7 +389,33 @@ public class Retriever {
 //		content = content.toLowerCase(Locale.US);
 //		queryString = queryString.toLowerCase(Locale.US);
 		String reducedSnippet = reduceToSnippetSize(content, queryString);
+		//check if the snippet is of the right size
+		if (reducedSnippet.split(" ").length + DEFAULT_SNIPPET_MARGIN > DEFAULT_SNIPPET_SIZE) {
+			reducedSnippet = reduceSnippetToSize(reducedSnippet, DEFAULT_SNIPPET_SIZE);
+		}
 		return addHtmlTagsToSnippet(reducedSnippet, queryString.replaceAll(acceptedCharactersRegex, ""));
+	}
+	
+	private String reduceSnippetToSize(String snippet, int size) {
+		String[] words = snippet.split(" ");
+		StringBuilder sb = new StringBuilder();
+		boolean hasClosedTag = true;
+		int index = 0;
+		while (index < Math.min(size, words.length) || !hasClosedTag) {
+			if (index >= words.length)
+				break;
+			String word = words[index];
+			if (word.contains("<b>")) {
+				hasClosedTag = false;
+			}
+			if (word.contains("</b>")) {
+				hasClosedTag = true;
+			}
+			sb.append(word);
+			sb.append(" ");
+			index++;
+		}
+		return sb.toString().trim();
 	}
 	
 	private String reduceToSnippetSize(String content, String queryString) {
@@ -405,9 +475,10 @@ public class Retriever {
 		return sb.toString();
 	}
 	
-	private Set<Page> getPagesFromAbsUrls(Set<String> absUrls, Map<String, Page> map) {
+	private Set<Page> getPagesFromAbsUrls(Set<DocScore> absUrls, Map<String, Page> map) {
 		Set<Page> pages = new HashSet<Page>(absUrls.size());
-		for (String absUrl : absUrls) {
+		for (DocScore scoreDoc : absUrls) {
+			String absUrl = scoreDoc.getAbsUrl();
 			Page page = map.get(absUrl);
 			if (page == null)
 				throw new RuntimeException("There is no such page!!");
