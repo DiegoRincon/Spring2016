@@ -26,7 +26,6 @@ public class Update {
 		initOptions();
 		if (!checkArgs(args))
 			System.exit(1);
-		this.crawler = new Crawler(this.url, this.query, this.maxNumOfPages, this.indexPath, this.trace);
 	}
 	
 	public void go() throws FileNotFoundException {
@@ -40,6 +39,7 @@ public class Update {
 		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
 				this.url, this.query, this.indexPath, this.maxNumOfPages);
 		log.info("Initializing Update with parameters: " + parameters);
+		this.crawler = new Crawler(this.url, this.query, this.maxNumOfPages, this.indexPath, this.trace);
 		this.crawler.runCrawler();
 	}
 	
