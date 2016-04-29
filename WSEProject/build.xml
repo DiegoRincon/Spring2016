@@ -1,6 +1,6 @@
 <!--This buildfile compiles, tests and runs the main application -->
 
-<project name="Crawler" default="dist" basedir=".">
+<project name="Crawler" default="compile" basedir=".">
 	<description>
 		Ant Build File for Crawler
 	</description>
@@ -9,7 +9,6 @@
 	<property name="lib" location="lib" />
 	<property name="build" location="classes"/>
 	<property name="dist" location="dist"/>
-	<property name="conf" location="conf" />
 	
 	<path id="src.path">
 		<pathelement path="src/" />
@@ -31,9 +30,6 @@
 		<fileset dir="${build}">
 			<include name="**/*.class" />
 		</fileset>
-		<fileset dir="${conf}">
-			<include name="*" />
-		</fileset>
 	</path>
 	
 	
@@ -49,7 +45,7 @@
 		<javac includeantruntime="false" srcdir="${src}" destdir="${build}">
 			<classpath refid="compile.path"/>
 		</javac>
-		<!-- <copy file="log4j2.xml" todir="${build}"/> -->
+		<copy file="log4j2.xml" todir="${build}"/>
 	</target>
 	
 	<target name="dist" depends="compile" description="generate the distribution">
@@ -58,8 +54,7 @@
 		<mkdir dir="${dist}/jar"/>
 		<jar jarfile="${dist}/jar/Crawler-${DSTAMP}.jar" basedir="${build}">
 			<fileset dir="${build}" includes="**/*.class"/>
-			<zipfileset dir="${conf}" includes="log4j2.xml" fullpath="${conf}/log4j2.xml" />
-			<zipgroupfileset dir="lib/" includes="**/*.jar" />
+			<zipgroupfileset dir="${lib}" includes="**/*.jar" />
 			<manifest>
 				<attribute name="Main-Class" value="nyu.crawler.crawler.Crawler"/>
 				<attribute name="Class-Path" value="${classpath}"/>

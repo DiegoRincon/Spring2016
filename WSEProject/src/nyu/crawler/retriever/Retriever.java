@@ -35,8 +35,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.jsoup.Jsoup;
 
 import lombok.AllArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import nyu.crawler.crawler.Crawler;
 import nyu.crawler.data.DocScore;
 import nyu.crawler.data.Interval;
@@ -45,8 +44,8 @@ import nyu.crawler.indexer.Indexer;
 import nyu.crawler.indexer.IndexerMap;
 
 @AllArgsConstructor
+@Log4j2
 public class Retriever {
-	private static final Logger log = LogManager.getLogger(Retriever.class);
 	public static final int DEFAULT_NUM_OF_RESULTS = 50;
 	public static final int DEFAULT_SNIPPET_SIZE = 40;
 	private static final int DEFAULT_WORDS_BEFORE_HIT = 5;
