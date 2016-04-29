@@ -1,3 +1,4 @@
+package nyu.crawler.retriever;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,6 +36,12 @@ import org.jsoup.Jsoup;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import nyu.crawler.crawler.Crawler;
+import nyu.crawler.data.DocScore;
+import nyu.crawler.data.Interval;
+import nyu.crawler.data.Page;
+import nyu.crawler.indexer.Indexer;
+import nyu.crawler.indexer.IndexerMap;
 
 @Log4j2
 @AllArgsConstructor

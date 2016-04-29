@@ -1,3 +1,4 @@
+package nyu.crawler.update;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -11,6 +12,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import lombok.extern.log4j.Log4j2;
+import nyu.crawler.crawler.Crawler;
 
 @Log4j2
 public class Update {

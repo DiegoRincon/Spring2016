@@ -34,6 +34,13 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import nyu.crawler.crawler.Crawler;
+import nyu.crawler.data.Interval;
+import nyu.crawler.data.Link;
+import nyu.crawler.data.Page;
+import nyu.crawler.indexer.IndexerMap;
+import nyu.crawler.retriever.Retriever;
+
 public class Tests {
 
 //	@Test
@@ -54,16 +61,16 @@ public class Tests {
 		String content = "<a href=\"file1.html\">WalrusAndCarpenter</a>";
 		String query = "walrus carpenter bread";
 		Page page = new Page("id1", link, content, "title");
-		assertEquals(100, crawler.scoreComplex(link, page.getContent(), query), 0);
+		assertEquals(100, crawler.score(link, page.getContent().split(" "), query), 0);
 		content = "<a href=\"walrus5.html\">Cute Poem</a>";
 		page.setContent(content);
 		link.setAnchor("Cute Poem");
 		link.setUrl("walrus5.html");
-		assertEquals(40, crawler.scoreComplex(link, page.getContent(), query), 0);
+		assertEquals(40, crawler.score(link, page.getContent().split(" "), query), 0);
 		String content2 = "walrus word walrus word3 word4 <a href=\"dummy.html\">Cute Poem</a> w1 w2 w3 w4 w5 bread dude bread";
 		page.setContent(content2);
 		link.setUrl("dummy.html");
-		assertEquals(5, crawler.scoreComplex(link, page.getContent(), query), 0);
+		assertEquals(5, crawler.score(link, page.getContent().split(" "), query), 0);
 		
 	}
 	private InetAddress[] dnslookup(String url) {

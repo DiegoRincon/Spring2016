@@ -1,4 +1,6 @@
+package nyu.crawler.data;
 import lombok.Data;
+import nyu.crawler.indexer.Indexer;
 
 import org.apache.lucene.document.Document;
 

@@ -1,8 +1,13 @@
+package nyu.crawler.update;
 import java.util.HashMap;
 import java.util.HashSet;
 //import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import nyu.crawler.data.Page;
+import nyu.crawler.data.Shingle;
+
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;

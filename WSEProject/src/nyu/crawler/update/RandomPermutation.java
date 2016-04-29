@@ -1,3 +1,4 @@
+package nyu.crawler.update;
 import java.util.Random;
 
 public class RandomPermutation {

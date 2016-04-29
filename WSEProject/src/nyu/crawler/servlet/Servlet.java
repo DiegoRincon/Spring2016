@@ -1,3 +1,4 @@
+package nyu.crawler.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.http.HttpServlet;
@@ -7,6 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import lombok.extern.log4j.Log4j2;
+import nyu.crawler.crawler.Crawler;
+import nyu.crawler.indexer.Indexer;
+import nyu.crawler.indexer.IndexerMap;
+import nyu.crawler.retriever.Retriever;
 
 @Log4j2
 public class Servlet extends HttpServlet {

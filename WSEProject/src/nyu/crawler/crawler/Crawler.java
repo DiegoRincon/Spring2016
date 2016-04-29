@@ -1,10 +1,9 @@
-import java.io.BufferedWriter;
+package nyu.crawler.crawler;
+
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +46,11 @@ import org.jsoup.select.Elements;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import nyu.crawler.data.Link;
+import nyu.crawler.data.Page;
+import nyu.crawler.data.URLScore;
+import nyu.crawler.indexer.Indexer;
+import nyu.crawler.retriever.Retriever;
 
 @Log4j2
 public class Crawler {
@@ -374,7 +378,7 @@ public class Crawler {
 		}
 	}
 	
-	public void closeWriter() {
+	private void closeWriter() {
 		this.indexer.closeWriter();
 	}
 	
@@ -453,25 +457,25 @@ public class Crawler {
 		}
 
 		private void handleNewURL(URLScore urlScore) {
-//			synchronized (Crawler.this.mapHeapLock) {
-				Crawler.this.urlScoreQueue.add(urlScore);
-				Crawler.this.urlToURLScoreMap.put(urlScore.getLink().getAbsUrl(), urlScore);
-//			}
+			//			synchronized (Crawler.this.mapHeapLock) {
+			Crawler.this.urlScoreQueue.add(urlScore);
+			Crawler.this.urlToURLScoreMap.put(urlScore.getLink().getAbsUrl(), urlScore);
+			//			}
 		}
-		
+
 		private void handleExistingURL(String urlString, double score) {
-//			synchronized (Crawler.this.mapHeapLock) {
-				URLScore existingUrl = Crawler.this.urlToURLScoreMap.get(urlString);
-				existingUrl.setScore(existingUrl.getScore() + score);
-				if (!Crawler.this.urlScoreQueue.remove(existingUrl)) {
-					log.error(String.format("url %s should be in the queue", existingUrl.getLink().toString()));
-				}
-				Crawler.this.urlScoreQueue.add(existingUrl);
-//			}
+			//			synchronized (Crawler.this.mapHeapLock) {
+			URLScore existingUrl = Crawler.this.urlToURLScoreMap.get(urlString);
+			existingUrl.setScore(existingUrl.getScore() + score);
+			if (!Crawler.this.urlScoreQueue.remove(existingUrl)) {
+				log.error(String.format("url %s should be in the queue", existingUrl.getLink().toString()));
+			}
+			Crawler.this.urlScoreQueue.add(existingUrl);
+			//			}
 		}
-		
+
 	}
-	
+
 	private class CrawlerCallable implements Callable<Boolean> {
 		private URLScore bestURL;
 		public CrawlerCallable(URLScore bestURL) {
@@ -522,7 +526,7 @@ public class Crawler {
 		}
 
 	}
-	
+
 	private String getBaseFromURL(String url) {
 		String urlMinusProtocol = url;
 		if (url.startsWith(DEFAULT_PROTOCOL)) {
@@ -530,13 +534,13 @@ public class Crawler {
 		} else if (url.startsWith(SECURE_PROTOCOL)) {
 			urlMinusProtocol = url.substring(SECURE_PROTOCOL.length());
 		}
-		
+
 		//for cases such as "http://www.nyu.edu"
 		int lastIndexOfForwardSlash = (urlMinusProtocol.lastIndexOf('/') == -1) ? urlMinusProtocol.length() - 1 : urlMinusProtocol.lastIndexOf('/');
-		
+
 		return DEFAULT_PROTOCOL + urlMinusProtocol.substring(0, lastIndexOfForwardSlash+1);
 	}
-		
+
 	private void processRobot(String urlString) {
 		URL url = null;
 		try {
@@ -562,7 +566,7 @@ public class Crawler {
 					return;
 				}
 			}
-			
+
 			processRobotHelper(robotContent, host);
 			return;
 
@@ -581,30 +585,30 @@ public class Crawler {
 				return;
 			}
 		}
-		
+
 	}
-	
+
 	private boolean processRobotHelper(String robotContent, String host) {
 		//We are only interested in the Disallow's for user-agent: *
 		int indexOfUserAgentStar = robotContent.toLowerCase(Locale.US).indexOf(USER_AGENT_STAR.toLowerCase(Locale.US));
 		int endOfUserAgentStar = robotContent.toLowerCase(Locale.US).indexOf(USER_AGENT.toLowerCase(Locale.US), indexOfUserAgentStar+USER_AGENT_STAR.length());
 		if (endOfUserAgentStar == -1)
 			endOfUserAgentStar = robotContent.length();
-		
+
 		if (indexOfUserAgentStar == -1)
 			indexOfUserAgentStar = 0;
-		
+
 		robotContent = robotContent.substring(indexOfUserAgentStar, endOfUserAgentStar);
-		
+
 		int lastDisallowIndex = 0;
 		while ((lastDisallowIndex = robotContent.indexOf(DISALLOW, lastDisallowIndex)) != -1) {
 			lastDisallowIndex += DISALLOW.length();
 			String badPaths = robotContent.substring(lastDisallowIndex);
 			StringTokenizer st = new StringTokenizer(badPaths);
-			
+
 			if (!st.hasMoreTokens())
 				break;
-			
+
 			String badPath = st.nextToken();
 			synchronized (this.robotSafeLock) {
 				if (this.robotSafeHostsMap.containsKey(host)) {
@@ -616,8 +620,8 @@ public class Crawler {
 		}
 		return true;
 	}
-	
-	public boolean robotSafe(String urlString) {
+
+	private boolean robotSafe(String urlString) {
 		processRobot(urlString);
 		URL url = null;
 		try {
@@ -642,30 +646,8 @@ public class Crawler {
 
 		return true;		
 	}
-	
-	public List<Link> getLinks(String content, String base) {
-		Document document = Jsoup.parse(content, base);
-		Elements links = document.select("a[href]");
-		List<Link> linkList = new ArrayList<Link>();
-		int count = 0;
-		for (Element link : links) {
-			count++;
-			if (count > MAX_NUM_OF_LINKS_TO_PROCESS)
-				break;
-			String url = link.attr("href");
-			String absUrl = link.absUrl("href");
-			if (absUrl.isEmpty())
-				continue;
-			if (!isUrlValid(absUrl)) {
-				continue;
-			}
-			String anchor = link.text();
-			linkList.add(new Link(url, anchor, absUrl, getUniqueURL(absUrl)));
-		}
-		return linkList;
-	}
-	
-	public Set<Link> getLinksAsSet(String content, String base) {
+
+	private Set<Link> getLinksAsSet(String content, String base) {
 		Document document = Jsoup.parse(content, base);
 		Elements links = document.select("a[href]");
 		Set<Link> linkSet = new HashSet<Link>();
@@ -686,17 +668,18 @@ public class Crawler {
 		}
 		return linkSet;
 	}
-	
+
+
 	private boolean isUrlValid(String absUrl) {
 		Pattern pattern = Pattern.compile("https?://[-a-zA-Z0-9 \\._/]+");
 		Matcher matcher = pattern.matcher(absUrl);
 		if (matcher.matches())
 			return true;
 		return false;
-		
-//		return absUrl.endsWith("html");
+
+		//		return absUrl.endsWith("html");
 	}
-	
+
 	private String getUniqueURL(String absUrl) {
 		String url = normalizeURL(absUrl);
 		if (url==null)
@@ -706,10 +689,11 @@ public class Crawler {
 		} else if (url.startsWith(SECURE_PROTOCOL)) {
 			return url.substring(SECURE_PROTOCOL.length());
 		}
-		
+
 		return url;
 	}
-	
+
+
 	public static String normalizeURL(String urlString) {
 		try {
 			URL url = new URI(urlString).normalize().toURL();
@@ -717,7 +701,7 @@ public class Crawler {
 			String semiNormalizedString = url.getProtocol().toLowerCase()
 					+ "://" + url.getHost().toLowerCase()
 					+ (url.getPort() != -1 && url.getPort() != 80 ? ":"
-					+ url.getPort() : "")
+							+ url.getPort() : "")
 					+ path
 					+ (url.getQuery() == null ? "" : url.getQuery());
 			return semiNormalizedString;
@@ -729,7 +713,8 @@ public class Crawler {
 			return null;
 		}
 	}
-		
+
+
 	private Document request(String url) throws IOException {
 		Document doc = Jsoup.connect(url).followRedirects(true).get();
 		String redirect = hasRedirect(doc);
@@ -740,7 +725,8 @@ public class Crawler {
 		}
 		return doc;
 	}
-	
+
+
 	private String hasRedirect(Document doc) throws MalformedURLException {
 		//looking for stuff like: <meta http-equiv="Refresh" content="0; URL=home/index.html">
 		Elements meta = doc.select("html head meta");
@@ -759,19 +745,9 @@ public class Crawler {
 		}
 		return null;
 	}
-		
-	public void writeToFile(String name, String content) {
-		String fileName = this.indexPath + name;
-		try {
-			Writer writer = new BufferedWriter(new FileWriter(fileName));
-			writer.write(content);
-			writer.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}		
-	}
-		
-	public  int findWordInArrayNotCaseSensitive(String[] array, String elem) {
+
+
+	private  int findWordInArrayNotCaseSensitive(String[] array, String elem) {
 		for (int i=0; i<array.length; i++) {
 			String string = array[i];
 			if (string.toLowerCase(Locale.US).equals(elem.toLowerCase(Locale.US))) {
@@ -780,8 +756,9 @@ public class Crawler {
 		}		
 		return -1;
 	}
-		
-	public int findStringsInArray(String[] array, String words) {
+
+
+	private int findStringsInArray(String[] array, String words) {
 		String[] wordsArray = words.split(" ");
 		if (wordsArray.length == 0) {
 			return -1;
@@ -800,6 +777,7 @@ public class Crawler {
 		}
 		return -1;
 	}
+
 
 	public double score(Link link, String[] wordsInDocText, String query) {
 		if (query == null)
@@ -839,55 +817,12 @@ public class Crawler {
 				setOfQueryWords.add(word);
 			}
 		}
-//		return setOfQueryWords.size();
+		//		return setOfQueryWords.size();
 		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
-		
-	}
-	
-	public double scoreComplex(Link link, String pageContent, String query) {
-		if (query == null)
-			return 0;
-		String[] words = query.split(" ");
-		int k = 0;
-		for (String word : words) {
-			if (link.getAnchor().toLowerCase(Locale.US).contains(word.toLowerCase(Locale.US)))
-				k++;
-		}
-		if (k > 0)
-			return k*50;
-		for (String word : words) {
-			if (link.getUrl().toLowerCase(Locale.US).contains(word.toLowerCase(Locale.US)))
-				k++;
-		}
-		if (k > 0)
-			return 40;
-		Document doc = Jsoup.parse(pageContent);
-		String docTextLowerCaseWithoutSpecialChars = doc.text().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
-		String[] wordsInDocText = docTextLowerCaseWithoutSpecialChars.split(" ");
-		Set<String> setOfGoodQueryWords = new HashSet<String>();
-		for (String word : words) {
-			String anchorLowerCaseWithoutSpecialChars = link.getAnchor().replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase(Locale.US);
-			int indexOfStartAnchor = findStringsInArray(wordsInDocText, anchorLowerCaseWithoutSpecialChars);
-			int indexOfEndAnchor = indexOfStartAnchor + link.getAnchor().split(" ").length-1;
-			for (int i=1; i<=distanceFromQueryWords; i++) {
-				int less = Math.max(0,indexOfStartAnchor-i);
-				int more = Math.min(wordsInDocText.length-1, indexOfEndAnchor+i);
-				String lessLC = wordsInDocText[less].toLowerCase(Locale.US);
-				String moreLC = wordsInDocText[more].toLowerCase(Locale.US);
-				if (word.toLowerCase(Locale.US).equals(lessLC) || word.toLowerCase(Locale.US).equals(moreLC))
-					setOfGoodQueryWords.add(word);
-			}
-		}
-		Set<String> setOfQueryWords = new HashSet<String>();
-		for (String word : words) {
-			if (findWordInArrayNotCaseSensitive(wordsInDocText, word) != -1) {
-				setOfQueryWords.add(word);
-			}
-		}
-		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
+
 	}
 
-		
+
 	public static void main(String[] args) {
 		long start = System.nanoTime();
 		Crawler crawler = new Crawler(args);
@@ -895,5 +830,5 @@ public class Crawler {
 		System.out.println("Total time: " + (System.nanoTime()-start)/1000000000.0);
 	}
 
-	
+
 }

@@ -7,6 +7,8 @@ import java.net.URLConnection;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
+import nyu.crawler.crawler.Crawler;
+
 public class TestRobot {
 
 	public static void main(String[] args) {

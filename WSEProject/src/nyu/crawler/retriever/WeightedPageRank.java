@@ -1,3 +1,4 @@
+package nyu.crawler.retriever;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import lombok.Getter;
+import nyu.crawler.data.Link;
+import nyu.crawler.data.Page;
 
 public class WeightedPageRank {
 	private double f;

@@ -1,3 +1,4 @@
+package nyu.crawler.data;
 import java.util.Set;
 
 import lombok.Getter;

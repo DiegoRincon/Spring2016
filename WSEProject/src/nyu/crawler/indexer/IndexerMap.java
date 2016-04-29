@@ -1,5 +1,8 @@
+package nyu.crawler.indexer;
 import java.util.HashMap;
 import java.util.Map;
+
+import nyu.crawler.data.Page;
 
 public class IndexerMap {
 	//AbsUrl to Page

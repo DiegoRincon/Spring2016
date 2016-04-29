@@ -1,3 +1,4 @@
+package nyu.crawler.indexer;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import nyu.crawler.data.Page;
+import nyu.crawler.update.Duplicate;
 
 @Log4j2
 public class Indexer {	

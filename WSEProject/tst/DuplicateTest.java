@@ -12,6 +12,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
 
+import nyu.crawler.update.Duplicate;
+
 public class DuplicateTest {
 
 //	@Test

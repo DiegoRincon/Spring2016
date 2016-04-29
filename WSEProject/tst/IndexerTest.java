@@ -5,6 +5,8 @@ import java.io.IOException;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 
+import nyu.crawler.indexer.Indexer;
+
 public class IndexerTest {
 
 	@Test

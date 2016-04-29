@@ -1,3 +1,4 @@
+package nyu.crawler.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
