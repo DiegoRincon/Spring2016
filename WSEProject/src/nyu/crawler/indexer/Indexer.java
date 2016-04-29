@@ -31,12 +31,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import nyu.crawler.data.Page;
 import nyu.crawler.update.Duplicate;
 
-@Log4j2
-public class Indexer {	
+public class Indexer {
+	private static final Logger log = LogManager.getLogger(Indexer.class);
 	public static final String CONTENTS = "contents";
 	public static final String ABSURL = "absURL";
 	public static final String TITLE = "title";

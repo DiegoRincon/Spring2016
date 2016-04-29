@@ -39,21 +39,22 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import nyu.crawler.data.Link;
 import nyu.crawler.data.Page;
 import nyu.crawler.data.URLScore;
 import nyu.crawler.indexer.Indexer;
 import nyu.crawler.retriever.Retriever;
 
-@Log4j2
 public class Crawler {
+	private static final Logger log = LogManager.getLogger(Crawler.class);
 	public static final int distanceFromQueryWords = 5;
     public static final String DISALLOW = "Disallow:";
     public static final String USER_AGENT_STAR = "user-agent: *";
@@ -824,6 +825,9 @@ public class Crawler {
 
 
 	public static void main(String[] args) {
+		System.out.print(org.apache.logging.log4j.Logger.class.getResource("/org/ap‌​ache/logging/log4j/Logger.class"));
+		System.out.println(org.apache.logging.log4j.Logger.class.getResource("/org/ap‌​ache/logging/log4j/core/Appender.class"));
+		System.out.println(org.apache.logging.log4j.Logger.class.getResource("/conf/log4j2.xml"));
 		long start = System.nanoTime();
 		Crawler crawler = new Crawler(args);
 		crawler.run();

@@ -10,12 +10,12 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
-import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import nyu.crawler.crawler.Crawler;
 
-@Log4j2
 public class Update {
+	private static final Logger log = LogManager.getLogger(Update.class);
 	private Options options;
 	private String url;
 	private String query;

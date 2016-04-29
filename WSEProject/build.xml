@@ -2,21 +2,37 @@
 
 <project name="Crawler" default="dist" basedir=".">
 	<description>
-		Ant Build File for Canvas
+		Ant Build File for Crawler
 	</description>
 	<!-- Globl properties for this build -->
 	<property name="src" location="src"/>
+	<property name="lib" location="lib" />
 	<property name="build" location="classes"/>
 	<property name="dist" location="dist"/>
+	<property name="conf" location="conf" />
 	
 	<path id="src.path">
 		<pathelement path="src/" />
 	</path>
 	
 	<path id="compile.path">
-		<path refid="src.path"/>
+		<fileset dir="src/">
+			<include name="**/*.xml" />
+		</fileset>
 		<fileset dir="lib/">
 			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="classpath.path">
+		<fileset dir="${lib}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${build}">
+			<include name="**/*.class" />
+		</fileset>
+		<fileset dir="${conf}">
+			<include name="*" />
 		</fileset>
 	</path>
 	
@@ -27,38 +43,25 @@
 		<!-- Create the build directory -->
 		<mkdir dir="${build}"/>
 	</target>
-		
+
 	<target name="compile" depends="init" description="compile the source">
 		<!-- Compile the java code from ${src} into ${build} -->
 		<javac includeantruntime="false" srcdir="${src}" destdir="${build}">
 			<classpath refid="compile.path"/>
 		</javac>
+		<!-- <copy file="log4j2.xml" todir="${build}"/> -->
 	</target>
 	
 	<target name="dist" depends="compile" description="generate the distribution">
-		<property name="classpath" refid="compile.path" />
+		<property name="classpath" refid="classpath.path" />
+		<echo>"${classpath}"</echo>
 		<mkdir dir="${dist}/jar"/>
 		<jar jarfile="${dist}/jar/Crawler-${DSTAMP}.jar" basedir="${build}">
 			<fileset dir="${build}" includes="**/*.class"/>
+			<zipfileset dir="${conf}" includes="log4j2.xml" fullpath="${conf}/log4j2.xml" />
 			<zipgroupfileset dir="lib/" includes="**/*.jar" />
 			<manifest>
 				<attribute name="Main-Class" value="nyu.crawler.crawler.Crawler"/>
-				<attribute name="Class-Path" value="${classpath}"/>
-			</manifest>
-		</jar>
-		<jar jarfile="${dist}/jar/Update-${DSTAMP}.jar" basedir="${build}">
-			<fileset dir="${build}" includes="**/*.class"/>
-			<zipgroupfileset dir="lib/" includes="**/*.jar" />
-			<manifest>
-				<attribute name="Main-Class" value="nyu.crawler.update.Update"/>
-				<attribute name="Class-Path" value="${classpath}"/>
-			</manifest>
-		</jar>
-		<jar jarfile="${dist}/jar/Retriever-${DSTAMP}.jar" basedir="${build}">
-			<fileset dir="${build}" includes="**/*.class"/>
-			<zipgroupfileset dir="lib/" includes="**/*.jar" />
-			<manifest>
-				<attribute name="Main-Class" value="nyu.crawler.retriever.Retriever"/>
 				<attribute name="Class-Path" value="${classpath}"/>
 			</manifest>
 		</jar>

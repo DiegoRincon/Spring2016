@@ -7,14 +7,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
-import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import nyu.crawler.crawler.Crawler;
 import nyu.crawler.indexer.Indexer;
 import nyu.crawler.indexer.IndexerMap;
 import nyu.crawler.retriever.Retriever;
 
-@Log4j2
 public class Servlet extends HttpServlet {
+	private static final Logger log = LogManager.getLogger(Servlet.class);
 	private static final long serialVersionUID = 8778174121968337225L;
 	private static final String SEARCH_FORM =
 			  "<form method=\"get\" action=\"crawl\">"
