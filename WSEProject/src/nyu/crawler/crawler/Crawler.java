@@ -210,21 +210,18 @@ public class Crawler {
 		long start = System.nanoTime();
 		try {
 			Retriever retriever = new Retriever(this.indexPath);
-//			retriever.getResultsAsHtml(this.query);
 			Set<Page> pageColl = new HashSet<Page>(this.indexer.getIndexerMap().map.values());
-			String result = retriever.getResultsPageRank(this.indexer.getIndexerMap().map,
+			String result = retriever.getResultsPageRankNOHTML(this.indexer.getIndexerMap().map,
 					pageColl,
 					DEFAULT_F,
 					DEFAULT_NUM_OF_DOCS,
 					this.query);
 			System.out.println(result.replaceAll("(</div>)", "$1\n"));
-//			this.indexer.search(this.query);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (org.apache.lucene.queryparser.classic.ParseException e) {
 			e.printStackTrace();
 		}
-//		this.indexer.serializeIndexerMap();
 		double time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Searching time: " + time + " seconds");
 		
@@ -674,7 +671,6 @@ public class Crawler {
 		return linkSet;
 	}
 
-
 	private boolean isUrlValid(String absUrl) {
 		Pattern pattern = Pattern.compile("https?://[-a-zA-Z0-9 \\._/]+");
 		Matcher matcher = pattern.matcher(absUrl);
@@ -698,7 +694,6 @@ public class Crawler {
 		return url;
 	}
 
-
 	public static String normalizeURL(String urlString) {
 		try {
 			URL url = new URI(urlString).normalize().toURL();
@@ -719,7 +714,6 @@ public class Crawler {
 		}
 	}
 
-
 	private Document request(String url) throws IOException {
 		Document doc = Jsoup.connect(url).followRedirects(true).get();
 		String redirect = hasRedirect(doc);
@@ -730,7 +724,6 @@ public class Crawler {
 		}
 		return doc;
 	}
-
 
 	private String hasRedirect(Document doc) throws MalformedURLException {
 		//looking for stuff like: <meta http-equiv="Refresh" content="0; URL=home/index.html">
@@ -751,7 +744,6 @@ public class Crawler {
 		return null;
 	}
 
-
 	private  int findWordInArrayNotCaseSensitive(String[] array, String elem) {
 		for (int i=0; i<array.length; i++) {
 			String string = array[i];
@@ -761,7 +753,6 @@ public class Crawler {
 		}		
 		return -1;
 	}
-
 
 	private int findStringsInArray(String[] array, String words) {
 		String[] wordsArray = words.split(" ");
@@ -782,7 +773,6 @@ public class Crawler {
 		}
 		return -1;
 	}
-
 
 	public double score(Link link, String[] wordsInDocText, String query) {
 		if (query == null)

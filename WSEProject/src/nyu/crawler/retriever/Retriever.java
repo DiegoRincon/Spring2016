@@ -138,8 +138,6 @@ public class Retriever {
 	}
 	
 	public String getResultsPageRank(Map<String, Page> map, Set<Page> pageCollection, double f, int numOfDocs, String... queryArgs) throws IOException, ParseException {
-		//TODO: Think about whether this is the best way to go about this...
-		//Perhaps it's better to combine the score with the pageRank!
 		Set<DocScore> docScores = getResultAsDocScore(queryArgs);
 		WeightedPageRank pageRank = new WeightedPageRank(pageCollection, f);
 		Set<Page> selectedPages = getPagesFromAbsUrls(docScores, pageRank.getAbsUrlToPageMap());
@@ -148,6 +146,18 @@ public class Retriever {
 		SortedSet<Page> reducedSelectedPages = getFirstKElementsFromSet(sortedSet, numOfDocs);
 		List<Page> finalOrderedListOfPages = mergePageRankWithLuceneScores(reducedSelectedPages, docScores);
 		String html = getSortedSetOfPagesAsHtml(finalOrderedListOfPages, queryArgs);
+		return html;
+	}
+	
+	public String getResultsPageRankNOHTML(Map<String, Page> map, Set<Page> pageCollection, double f, int numOfDocs, String... queryArgs) throws IOException, ParseException {
+		Set<DocScore> docScores = getResultAsDocScore(queryArgs);
+		WeightedPageRank pageRank = new WeightedPageRank(pageCollection, f);
+		Set<Page> selectedPages = getPagesFromAbsUrls(docScores, pageRank.getAbsUrlToPageMap());
+		SortedSet<Page> sortedSet = pageRank.runPageRank();
+		reduceSetOfPages(sortedSet, selectedPages);
+		SortedSet<Page> reducedSelectedPages = getFirstKElementsFromSet(sortedSet, numOfDocs);
+		List<Page> finalOrderedListOfPages = mergePageRankWithLuceneScores(reducedSelectedPages, docScores);
+		String html = getSortedSetOfPagesNOHTML(finalOrderedListOfPages, queryArgs);
 		return html;
 	}
 	
@@ -190,6 +200,11 @@ public class Retriever {
 		return getResultsPageRank(indexerMap.map, pageCollection, f, numOfDocs, queryArgs);
 	}
 	
+	public String getResultsPageRankNOHTML(IndexerMap indexerMap, double f, int numOfDocs, String... queryArgs) throws IOException, ParseException {
+		Set<Page> pageCollection = new HashSet<Page>(indexerMap.map.values());
+		return getResultsPageRankNOHTML(indexerMap.map, pageCollection, f, numOfDocs, queryArgs);
+	}
+	
 	private SortedSet<Page> getFirstKElementsFromSet(SortedSet<Page> set, int numOfDocs) {
 		SortedSet<Page> sortedSet = new TreeSet<Page>(new Comparator<Page>() {
 			@Override
@@ -209,6 +224,26 @@ public class Retriever {
 			count++;
 		}
 		return sortedSet;
+	}
+	
+	private String getSortedSetOfPagesNOHTML(Collection<Page> pages, String... queryArgs) {
+		int resNum = 0;
+		StringBuilder sb = new StringBuilder();
+		if (pages.isEmpty()) {
+			sb.append("No results were found");
+			return sb.toString();
+		}
+		sb.append("Results:\n");
+		for (Page page : pages) {
+			resNum++;
+			org.jsoup.nodes.Document doc = Jsoup.parse(page.getContent());
+			String snippet = getSnippet(doc.body().text(), getQuery(queryArgs));
+			String title = page.getTitle();
+			sb.append(resNum + ": " + title + '\n');
+			sb.append(snippet + '\n');
+			sb.append('\n');
+		}
+		return sb.toString();
 	}
 	
 	private String getSortedSetOfPagesAsHtml(Collection<Page> pages, String... queryArgs) {
@@ -507,7 +542,7 @@ public class Retriever {
 			IndexerMap indexerMap = Indexer.getIndexerMapFromFile(indexerMapPath);
 			String[] queryArgs = Arrays.copyOfRange(args, 1, args.length);
 			Retriever retriever = new Retriever(indexerDir);
-			String result = retriever.getResultsPageRank(indexerMap,
+			String result = retriever.getResultsPageRankNOHTML(indexerMap,
 					Crawler.DEFAULT_F,
 					Crawler.DEFAULT_NUM_OF_DOCS,
 					queryArgs);
