@@ -448,6 +448,7 @@ public class Retriever {
 	}
 	
 	private Set<String> getStopWords() throws IOException {
+		log.info("Fetching stop words in file: " + STOPWORDS_FILE_PATH);
 		Set<String> stopWords = new HashSet<String>();
 		BufferedReader br = new BufferedReader(new FileReader(STOPWORDS_FILE_PATH));
 		String line;
