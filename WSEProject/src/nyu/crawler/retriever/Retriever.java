@@ -241,7 +241,7 @@ public class Retriever {
 			String title = page.getTitle();
 			String absURL = page.getLink().getAbsUrl();
 			sb.append(resNum + ": " + title + '\n');
-			sb.append("URL: " + absURL);
+			sb.append("URL: " + absURL + '\n');
 			sb.append(snippet + '\n');
 			sb.append('\n');
 		}
