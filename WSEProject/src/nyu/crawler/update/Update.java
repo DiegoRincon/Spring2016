@@ -93,6 +93,8 @@ public class Update {
 					formatter.printHelp("Crawler", this.options);
 					return false;
 				}
+			} else {
+				this.maxNumOfPages = Crawler.DEFAULT_MAX_NUM_PAGES;
 			}
 			if (cmd.hasOption("t")) {
 				this.trace = true;
