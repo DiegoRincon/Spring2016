@@ -142,6 +142,7 @@ public class Crawler {
 
 	private void initOptions() {
 		this.options = new Options();
+		this.options.addOption(Option.builder("h").longOpt("help").hasArg(false).desc("Help").build());
 		this.options.addOption(Option.builder("u").required().hasArg().desc("URL argument").build());
 		this.options.addOption(Option.builder("q").required().hasArg().desc("Query").build());
 		this.options.addOption(Option.builder("i").required(false).hasArg().desc("IndexerPath").build());
@@ -154,6 +155,10 @@ public class Crawler {
 		try {
 			CommandLineParser parser = new DefaultParser();
 			CommandLine cmd = parser.parse(this.options, args);
+			if (cmd.hasOption("h")) {
+				formatter.printHelp("Update", this.options);
+				System.exit(0);				
+			}
 			this.url = cmd.getOptionValue("u");
 			this.query = cmd.getOptionValue("q");
 			if (cmd.hasOption("i")) {
@@ -233,8 +238,8 @@ public class Crawler {
 		long start = System.nanoTime();
 		long firstStart = start;
 		startCrawlerConcurrent();
-		double time = (System.nanoTime() - start)/1000000000.0;
 		shutDownExecutor(this.linksExecutorCompletionService, this.linksExecutor, this.linkTasks.size());
+		double time = (System.nanoTime() - start)/1000000000.0;
 		log.info("Total Crawling time: " + time + " seconds");
 		start = System.nanoTime();
 		log.info("Indexing Collection");

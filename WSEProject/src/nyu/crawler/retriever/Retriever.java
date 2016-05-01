@@ -496,14 +496,15 @@ public class Retriever {
 	
 	public static void main(String[] args) {
 		try {
-			if (args.length < 1) {
-				System.err.println("Usage: <query>");
+			if (args.length < 2) {
+				System.err.println("Usage: <indexPath> <query>");
 				System.exit(1);
 			}
-			String indexerDir = System.getProperty("user.dir") + "/indexer/";
+			String indexerDir = args[0];
+			indexerDir = (indexerDir.charAt(indexerDir.length()-1) == '/') ? indexerDir : indexerDir + '/';
 			String indexerMapPath = indexerDir + Indexer.INDEXER_MAP_FILENAME;
 			IndexerMap indexerMap = Indexer.getIndexerMapFromFile(indexerMapPath);
-			String[] queryArgs = args;
+			String[] queryArgs = Arrays.copyOfRange(args, 1, args.length);
 			Retriever retriever = new Retriever(indexerDir);
 			String result = retriever.getResultsPageRank(indexerMap,
 					Crawler.DEFAULT_F,

@@ -23,6 +23,7 @@ public class Update {
 	private int maxNumOfPages;
 	private boolean trace;
 	private Crawler crawler;
+	private boolean hasUrl;
 	
 	public Update(String[] args) {
 		initOptions();
@@ -31,12 +32,14 @@ public class Update {
 	}
 	
 	public void go() throws FileNotFoundException {
-		File lastPageFile = new File(this.indexPath + Crawler.LAST_PAGE_FILENAME);
-		if (lastPageFile.exists() && lastPageFile.isFile()) {
-			Scanner scanner = new Scanner(lastPageFile);
-			this.url = scanner.useDelimiter("\\Z").next();
-			log.info("Recovered last Page File. Last Page was: " + this.url);
-			scanner.close();
+		if (!this.hasUrl) {
+			File lastPageFile = new File(this.indexPath + Crawler.LAST_PAGE_FILENAME);
+			if (lastPageFile.exists() && lastPageFile.isFile()) {
+				Scanner scanner = new Scanner(lastPageFile);
+				this.url = scanner.useDelimiter("\\Z").next();
+				log.info("Recovered last Page File. Last Page was: " + this.url);
+				scanner.close();
+			}
 		}
 		String parameters = String.format("StartingURL: %s, Query: %s, IndexerPath: %s, MaxNumPages: %d",
 				this.url, this.query, this.indexPath, this.maxNumOfPages);
@@ -47,6 +50,7 @@ public class Update {
 	
 	private void initOptions() {
 		this.options = new Options();
+		this.options.addOption(Option.builder("h").longOpt("help").hasArg(false).desc("Help").build());
 		this.options.addOption(Option.builder("u").required(false).hasArg().desc("URL argument").build());
 		this.options.addOption(Option.builder("q").required(false).hasArg().desc("Query").build());
 		this.options.addOption(Option.builder("i").required(false).hasArg().desc("IndexerPath").build());
@@ -59,10 +63,16 @@ public class Update {
 		try {
 			CommandLineParser parser = new DefaultParser();
 			CommandLine cmd = parser.parse(this.options, args);
+			if (cmd.hasOption("h")) {
+				formatter.printHelp("Update", this.options);
+				System.exit(0);				
+			}
 			if (cmd.hasOption("u")) {
 				this.url = cmd.getOptionValue("u");
+				this.hasUrl = true;
 			} else {
 				this.url = Crawler.DEFAULT_STARTING_WEBPAGE;
+				this.hasUrl = false;
 			}
 			if (cmd.hasOption("q")) {
 				this.query = cmd.getOptionValue("q");
