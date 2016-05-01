@@ -46,6 +46,7 @@
 			<classpath refid="compile.path"/>
 		</javac>
 		<copy file="log4j2.xml" todir="${build}"/>
+		<copy file="stopwordslist.txt" todir="${build}"/>
 	</target>
 	
 	<target name="dist" depends="compile" description="generate the distribution">
