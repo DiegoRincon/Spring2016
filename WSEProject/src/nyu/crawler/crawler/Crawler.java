@@ -143,11 +143,11 @@ public class Crawler {
 	private void initOptions() {
 		this.options = new Options();
 		this.options.addOption(Option.builder("h").longOpt("help").hasArg(false).desc("Help").build());
-		this.options.addOption(Option.builder("u").required().hasArg().desc("URL argument").build());
-		this.options.addOption(Option.builder("q").required().hasArg().desc("Query").build());
-		this.options.addOption(Option.builder("i").required(false).hasArg().desc("IndexerPath").build());
-		this.options.addOption(Option.builder("m").required(false).hasArg().desc("Max number of pages").build());
-		this.options.addOption(Option.builder("t").required(false).hasArg(false).desc("Trace").build());
+		this.options.addOption(Option.builder("u").required().hasArg().desc("URL argument (required)").build());
+		this.options.addOption(Option.builder("q").required().hasArg().desc("Query (required)").build());
+		this.options.addOption(Option.builder("i").required(false).hasArg().desc("IndexerPath - Defaults to " + System.getProperty("user.dir") + "/indexer/").build());
+		this.options.addOption(Option.builder("m").required(false).hasArg().desc("Max number of pages - Defaults to 50").build());
+		this.options.addOption(Option.builder("t").required(false).hasArg(false).desc("Trace - Defaults to false").build());
 	}
 
 	private boolean checkArgs(String[] args) {
