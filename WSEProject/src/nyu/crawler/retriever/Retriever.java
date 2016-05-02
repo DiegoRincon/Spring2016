@@ -99,12 +99,7 @@ public class Retriever {
 	
 	public Set<DocScore> getResultAsDocScore(int maxNumDocs, String... queryArgs) throws IOException, ParseException {
 		Set<DocScore> docs = getResultsFromQuery(maxNumDocs, queryArgs);
-//		Set<String> docsUrls = new HashSet<String>(docs.size());
-//		for (DocScore doc : docs) {
-//			docsUrls.add(doc.get(Indexer.ABSURL));
-//		}
 		return docs;
-//		return docsUrls;
 	}
 	
 	public Set<DocScore> getResultsFromQuery(String... queryArgs) throws IOException, ParseException {
@@ -113,7 +108,6 @@ public class Retriever {
 	
 	public Set<DocScore> getResultsFromQuery(int maxNumDocs, String... queryArgs)  throws IOException, ParseException {
 		String queryString = getQuery(queryArgs);
-//		queryString = queryString.replaceAll(acceptedCharactersRegex, "");
 		if (queryString.length() == 0) {
 			return null;
 		}
@@ -430,8 +424,6 @@ public class Retriever {
 	}
 	
 	public String getSnippet(String content, String queryString) {
-//		content = content.toLowerCase(Locale.US);
-//		queryString = queryString.toLowerCase(Locale.US);
 		String reducedSnippet = reduceToSnippetSize(content, queryString);
 		//check if the snippet is of the right size
 		if (reducedSnippet.split(" ").length + DEFAULT_SNIPPET_MARGIN > DEFAULT_SNIPPET_SIZE) {
@@ -463,7 +455,6 @@ public class Retriever {
 	}
 	
 	private String reduceToSnippetSize(String content, String queryString) {
-//		StringBuilder sb = new StringBuilder(content);
 		//Check if the queryString is in content. Ignore case.
 		int indexQueryString = content.toLowerCase(Locale.US).indexOf(queryString.toLowerCase(Locale.US));
 		String[] contentArray = content.split(" ");

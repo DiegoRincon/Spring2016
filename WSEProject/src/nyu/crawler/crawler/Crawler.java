@@ -311,7 +311,6 @@ public class Crawler {
 
 		this.urlToURLScoreMap.put(this.url, originalURLScore);
 		
-//		ExecutorService executor = new ThreadPoolExecutor(5, 25, 10L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50));
 		ExecutorService executor = Executors.newFixedThreadPool(DEFAULT_NUM_REQUEST_THREADS);
 		
 		CompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(executor);
@@ -320,7 +319,6 @@ public class Crawler {
 		boolean started = true;
 		boolean keepRunning = true;
 		while (keepRunning) {
-//			int count = 0;
 			while (isQueueEmptySynchronized() && areThereThreadsOngoing()) {
 				try {
 					Thread.sleep(100);
@@ -342,11 +340,6 @@ public class Crawler {
 			
 			Future<Boolean> future = ecs.submit(new CrawlerCallable(bestURL));
 			listOfResults.add(future);
-//			count++;
-//			if (count>this.maxNumOfPages)
-//				break;
-			//Needed so that the crawler doesn't stop at the start
-			//Need to add a delay perhaps
 			if (started) {
 				started = false;
 				try {
@@ -358,7 +351,6 @@ public class Crawler {
 				}
 			}
 		}
-//		System.out.println("IM OUT!!!!!!!!!!!!!!!");
 		shutDownExecutor(ecs, executor, listOfResults.size());
 	}
 	
@@ -459,21 +451,17 @@ public class Crawler {
 		}
 
 		private void handleNewURL(URLScore urlScore) {
-			//			synchronized (Crawler.this.mapHeapLock) {
 			Crawler.this.urlScoreQueue.add(urlScore);
 			Crawler.this.urlToURLScoreMap.put(urlScore.getLink().getAbsUrl(), urlScore);
-			//			}
 		}
 
 		private void handleExistingURL(String urlString, double score) {
-			//			synchronized (Crawler.this.mapHeapLock) {
 			URLScore existingUrl = Crawler.this.urlToURLScoreMap.get(urlString);
 			existingUrl.setScore(existingUrl.getScore() + score);
 			if (!Crawler.this.urlScoreQueue.remove(existingUrl)) {
 				log.error(String.format("url %s should be in the queue", existingUrl.getLink().toString()));
 			}
 			Crawler.this.urlScoreQueue.add(existingUrl);
-			//			}
 		}
 
 	}
@@ -812,7 +800,6 @@ public class Crawler {
 				setOfQueryWords.add(word);
 			}
 		}
-		//		return setOfQueryWords.size();
 		return 4*setOfGoodQueryWords.size() + (setOfQueryWords.size() - setOfGoodQueryWords.size());
 
 	}

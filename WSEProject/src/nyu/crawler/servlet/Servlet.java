@@ -25,6 +25,7 @@ public class Servlet extends HttpServlet {
 			+ "</form>"
 			+ "<form method=\"get\" action=\"search\">"
 			+ "		<input type=\"text\" name=\"query\" required placeholder=\"Query\" />"
+			+ "     <input type=\"number\" name=\"numDocs\" min=\"1\" required placeholder=\"Max # Of Pages to Return\" />"
 			+ "		<input type=\"submit\" name=\"search\" value=\"search\" />"
 			+ "</form>";
 
@@ -45,7 +46,14 @@ public class Servlet extends HttpServlet {
 		
 		if (request.getParameter("search") != null) {
 			String query = request.getParameter("query");
-			result = processSearch(query);
+			String maxNumPagesString = request.getParameter("numDocs");
+			int maxNumPages = Crawler.DEFAULT_NUM_OF_DOCS;
+			try {
+				maxNumPages = Integer.parseInt(maxNumPagesString);
+			} catch (NumberFormatException e) {
+				log.error("entered wrong number format for num of docs. Defaulting to " + maxNumPages);
+			}
+			result = processSearch(query, maxNumPages);
 		}
 		
 		response.setContentType("text/html;charset=UTF-8");
@@ -65,11 +73,8 @@ public class Servlet extends HttpServlet {
 		out.close();
 	}
 	
-	//TODO: Add a class field IndexWriter to pass to the Crawler and Indexer (for searching)
 
-	public String processSearch(String query) throws IOException {
-		// Set the response message's MIME type
-		// Allocate a output writer to write the response message into the network socket
+	public String processSearch(String query, int maxNumDocs) throws IOException {
 
 		// Write the response message, in an HTML page
 		log.info("Searching for query: " + query);
@@ -86,7 +91,7 @@ public class Servlet extends HttpServlet {
 			try {
 				results = retriever.getResultsPageRank(indexerMap,
 						Crawler.DEFAULT_F,
-						Crawler.DEFAULT_NUM_OF_DOCS,
+						maxNumDocs,
 						query.split(" "));
 //				results = retriever.getResultsAsHtml(indexerPathString, query);
 			} catch (IOException e) {

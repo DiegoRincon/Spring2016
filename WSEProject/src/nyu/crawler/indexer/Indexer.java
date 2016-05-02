@@ -92,7 +92,6 @@ public class Indexer {
 	}
 
 	public String search(String... queryArgs) throws IOException, ParseException {
-		//TODO: Add a text snippet to the results from the retriever
 		String queryString = "";
 		for (String str : queryArgs) {
 			queryString += str + " ";
@@ -153,7 +152,6 @@ public class Indexer {
 		return this.indexerMap.map.containsKey(page.getLink().getAbsUrl());
 	}
 	
-	//Don't index if page is in map AND the content is not similar.
 	public void indexPage(Page page) {
 		if (isPageInIndex(page)) {
 			if (pageNeedsUpdate(page)) {
@@ -195,7 +193,6 @@ public class Indexer {
 		}
 		doc.add(new StringField(ABSURL, absUrl, Field.Store.YES));
 		this.writer.addDocument(doc);
-//		this.writer.commit();
 	}
 		
 	public void updateDocument(String body, String absUrl, String title) throws IOException {
@@ -208,7 +205,6 @@ public class Indexer {
 		}
 		doc.add(new StringField(ABSURL, absUrl, Field.Store.YES));
 		this.writer.updateDocument(new Term(ABSURL, absUrl), doc);
-//		this.writer.commit();
 	}
 
 }
