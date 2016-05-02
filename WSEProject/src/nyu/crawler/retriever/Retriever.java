@@ -550,7 +550,7 @@ public class Retriever {
 			Retriever retriever = new Retriever(indexerDir);
 			String result = retriever.getResultsPageRankNOHTML(indexerMap,
 					Crawler.DEFAULT_F,
-					Crawler.DEFAULT_NUM_OF_DOCS,
+					maxNumOfDocs,
 					queryArgs);
 			System.out.println(result.replaceAll("(</div>)", "$1\n"));
 		} catch (IOException e) {
