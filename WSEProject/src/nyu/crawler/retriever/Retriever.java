@@ -296,26 +296,6 @@ public class Retriever {
 		return sb.toString();
 	}
 	
-	private String queryIsFoundEntirely(String content, String[] contentArray, String[] queryArray) {
-		int minus = DEFAULT_WORDS_BEFORE_HIT;
-		int it = 0;
-		while (true) {
-			it++;
-			int indexFirstWordOfQueryInContent = Math.max(0, findInArray(contentArray, queryArray[0], 0));
-			int begin = Math.max(0, indexFirstWordOfQueryInContent - minus);
-			String joinedBeginString = joinStringsWithSpace(contentArray, begin, indexFirstWordOfQueryInContent);
-			int end = Math.min(contentArray.length, indexFirstWordOfQueryInContent + minus);
-			String joinedEndString = joinStringsWithSpace(contentArray, indexFirstWordOfQueryInContent, end);
-			String tempResult = content.subSequence(content.indexOf(joinedBeginString), content.indexOf(joinedEndString)+joinedEndString.length()).toString();
-			String[] lengthOfTempResult = tempResult.split(" ");
-			if (lengthOfTempResult.length > DEFAULT_SNIPPET_SIZE || it > 15) {
-				return tempResult;
-			} else {
-				minus++;
-			}
-		}
-	}
-	
 	private String queryNotFoundEntirely(String[] contentArray, String[] queryArray) {
 		String[] queryNoStopWords = removeStopWords(queryArray);
 		Set<String> queries = new HashSet<String>(Arrays.asList(queryNoStopWords));
@@ -430,6 +410,42 @@ public class Retriever {
 			reducedSnippet = reduceSnippetToSize(reducedSnippet, DEFAULT_SNIPPET_SIZE);
 		}
 		return addHtmlTagsToSnippet(reducedSnippet, queryString.replaceAll(acceptedCharactersRegex, ""));
+	}
+	
+	private String queryIsFoundEntirely(String content, String[] contentArray, String[] queryArray) {
+		int minus = DEFAULT_WORDS_BEFORE_HIT;
+		int it = 0;
+		while (true) {
+			it++;
+			int indexFirstWordOfQueryInContent = Math.max(0, findInArray(contentArray, queryArray[0], 0));
+			int begin = Math.max(0, indexFirstWordOfQueryInContent - minus);
+			String joinedBeginString = joinStringsWithSpace(contentArray, begin, indexFirstWordOfQueryInContent);
+			int end = Math.min(contentArray.length, indexFirstWordOfQueryInContent + minus);
+			String joinedEndString = joinStringsWithSpace(contentArray, indexFirstWordOfQueryInContent, end);
+			
+			String contentLowerCase = content.toLowerCase(Locale.US);
+			String joinedBeginStringLowerCase = joinedBeginString.toLowerCase(Locale.US);
+			String joinedEndStringLowerCase = joinedEndString.toLowerCase(Locale.US);
+			int tempResultSubstringStart = contentLowerCase.indexOf(joinedBeginStringLowerCase);
+			int tempResultSubstringEnd = contentLowerCase.indexOf(joinedEndStringLowerCase)+joinedEndString.length();
+			
+			if (tempResultSubstringStart < 0) {
+				log.error("Encountered error while processing snippet (substrig start)");
+				tempResultSubstringStart = 0;
+			}
+			if (tempResultSubstringEnd < 0 ) {
+				log.error("Encountered error while processing snippet (substring end)");
+				tempResultSubstringStart = contentLowerCase.length() - 1;
+			}
+			
+			String tempResult = content.substring(tempResultSubstringStart, tempResultSubstringEnd);
+			String[] lengthOfTempResult = tempResult.split(" ");
+			if (lengthOfTempResult.length > DEFAULT_SNIPPET_SIZE || it > 15) {
+				return tempResult;
+			} else {
+				minus++;
+			}
+		}
 	}
 	
 	private String reduceSnippetToSize(String snippet, int size) {
