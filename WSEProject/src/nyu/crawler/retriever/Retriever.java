@@ -525,15 +525,28 @@ public class Retriever {
 	
 	public static void main(String[] args) {
 		try {
-			if (args.length < 2) {
-				System.err.println("Usage: <indexPath> <query>");
+			if (args.length < 3) {
+				System.err.println("Usage: <indexPath> <numOfDocs> <query>");
 				System.exit(1);
 			}
 			String indexerDir = args[0];
 			indexerDir = (indexerDir.charAt(indexerDir.length()-1) == '/') ? indexerDir : indexerDir + '/';
 			String indexerMapPath = indexerDir + Indexer.INDEXER_MAP_FILENAME;
 			IndexerMap indexerMap = Indexer.getIndexerMapFromFile(indexerMapPath);
-			String[] queryArgs = Arrays.copyOfRange(args, 1, args.length);
+			int maxNumOfDocs = Crawler.DEFAULT_NUM_OF_DOCS;
+			try {
+				maxNumOfDocs = Integer.parseInt(args[1]);
+				if (maxNumOfDocs <= 0) {
+					System.err.println("Number Of Documents must be a positive integer");
+					System.err.println("Usage: <indexPath> <numOfDocs> <query>");
+					System.exit(1);					
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Number Of Documents must be a positive integer");
+				System.err.println("Usage: <indexPath> <numOfDocs> <query>");
+				System.exit(1);
+			}
+			String[] queryArgs = Arrays.copyOfRange(args, 2, args.length);
 			Retriever retriever = new Retriever(indexerDir);
 			String result = retriever.getResultsPageRankNOHTML(indexerMap,
 					Crawler.DEFAULT_F,

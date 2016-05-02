@@ -77,11 +77,11 @@ public class Servlet extends HttpServlet {
 	public String processSearch(String query, int maxNumDocs) throws IOException {
 
 		// Write the response message, in an HTML page
-		log.info("Searching for query: " + query);
+		log.info("Searching for query: " + query + " max Num Of Docs: " + maxNumDocs);
 		StringBuilder sb = new StringBuilder();
 		
 		// Echo client's request information
-		sb.append("<p>Your query was: " + query + "</p>");
+		sb.append("<p>Your query was: " + query + " for " + maxNumDocs + " documents </p>");
 		try {
 			String indexerPathString = getServletContext().getRealPath("/WEB-INF/Indexer/" + Indexer.INDEXER_DEFAULT_NAME);
 			Retriever retriever = new Retriever(indexerPathString);
