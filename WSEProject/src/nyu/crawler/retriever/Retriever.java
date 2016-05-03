@@ -412,36 +412,22 @@ public class Retriever {
 		return addHtmlTagsToSnippet(reducedSnippet, queryString.replaceAll(acceptedCharactersRegex, ""));
 	}
 	
-	private String queryIsFoundEntirely(String content, String[] contentArray, String[] queryArray) {
+	private String queryIsFoundEntirely(String content, String[] contentArray, String queryString) {
 		int minus = DEFAULT_WORDS_BEFORE_HIT;
 		int it = 0;
 		while (true) {
 			it++;
-			int indexFirstWordOfQueryInContent = Math.max(0, findInArray(contentArray, queryArray[0], 0));
+			int indexFirstWordOfQueryInContent = Math.max(0, findInArrayPure(contentArray, queryString, 0));
+			
 			int begin = Math.max(0, indexFirstWordOfQueryInContent - minus);
 			String joinedBeginString = joinStringsWithSpace(contentArray, begin, indexFirstWordOfQueryInContent);
+			
 			int end = Math.min(contentArray.length, indexFirstWordOfQueryInContent + minus);
 			String joinedEndString = joinStringsWithSpace(contentArray, indexFirstWordOfQueryInContent, end);
 			
-			String contentLowerCase = content.toLowerCase(Locale.US);
-			String joinedBeginStringLowerCase = joinedBeginString.toLowerCase(Locale.US);
-			String joinedEndStringLowerCase = joinedEndString.toLowerCase(Locale.US);
-			int tempResultSubstringStart = contentLowerCase.indexOf(joinedBeginStringLowerCase);
-			int tempResultSubstringEnd = contentLowerCase.indexOf(joinedEndStringLowerCase)+joinedEndString.length();
-			
-			if (tempResultSubstringStart < 0) {
-				log.error("Encountered error while processing snippet (substrig start)");
-				tempResultSubstringStart = 0;
-			}
-			if (tempResultSubstringEnd < 0 ) {
-				log.error("Encountered error while processing snippet (substring end)");
-				tempResultSubstringStart = contentLowerCase.length() - 1;
-			}
-			
-			String tempResult = content.substring(tempResultSubstringStart, tempResultSubstringEnd);
-			String[] lengthOfTempResult = tempResult.split(" ");
-			if (lengthOfTempResult.length > DEFAULT_SNIPPET_SIZE || it > 15) {
-				return tempResult;
+			String goodString = joinedBeginString + joinedEndString.substring(queryString.length());
+			if (goodString.length() > DEFAULT_SNIPPET_SIZE || it > 15) {
+				return goodString;
 			} else {
 				minus++;
 			}
@@ -476,7 +462,7 @@ public class Retriever {
 		String[] contentArray = content.split(" ");
 		String[] queryArray = queryString.split(" ");
 		if (indexQueryString != -1) {
-			return queryIsFoundEntirely(content, contentArray, queryArray);
+			return queryIsFoundEntirely(content, contentArray, queryString);
 		} else {
 			return queryNotFoundEntirely(contentArray, queryArray);
 		}
@@ -489,6 +475,25 @@ public class Retriever {
 			}
 		}
 		return -1;
+	}
+	
+	private int findInArrayPure(String[] array, String query, int start) {
+		String[] queryArray = query.split(" ");
+		for (int i=start; i<array.length; i++) {
+			if (array[i].toLowerCase(Locale.US).equals(queryArray[0].toLowerCase())) {
+				boolean flag = true;
+				for (int j=1; j<queryArray.length; j++) {
+					if (!array[i+j].toLowerCase(Locale.US).equals(queryArray[j].toLowerCase())) {
+						flag = false;
+						break;
+					}
+						
+				}
+				if (flag)
+					return i;
+			}
+		}
+		return -1;		
 	}
 	
 	private Set<String> getStopWords() throws IOException {
